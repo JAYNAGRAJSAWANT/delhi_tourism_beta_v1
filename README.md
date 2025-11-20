@@ -1,93 +1,100 @@
-# delhi_tourism_beta_v1
+# Delhi Tourism – Beta v1
 
+`delhi_tourism_beta_v1` is a comprehensive digital platform designed to streamline the experience of exploring, booking, and managing official Delhi Tourism tours. The system provides a unified environment for users to browse curated tour packages, check real-time availability, make secure online payments, and manage their bookings with ease.
 
+This version represents the **beta release** of the platform, focusing on delivering core booking functionality, structured data flow, and end-to-end transparency for users and administrators.
 
-## Getting started
+---
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+## Key Features
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+### 1. Tour Catalogue & Discovery
+- Detailed listing of Delhi Tourism-approved tour packages  
+- Categorized tours (heritage, cultural, adventure, day trips, multi-day)  
+- Rich tour information: itinerary, locations covered, timings, prices, duration, and extra details  
 
-## Add your files
+### 2. Availability Management
+- Real-time seat availability for each tour and departure date  
+- Automatic seat adjustments during bookings and cancellations  
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+### 3. User & Passenger Management
+- Capture user information at booking time  
+- Support for multiple passengers per booking  
+- Structured passenger details: name, age, gender, and associations  
 
-```
-cd existing_repo
-git remote add origin http://38.224.226.24/dttdc_team/delhi_tourism_beta_v1.git
-git branch -M main
-git push -uf origin main
-```
+### 4. Booking Lifecycle
+- Complete booking workflow  
+  - Tour selection  
+  - Passenger mapping  
+  - Fare calculation  
+  - Payment initiation  
+  - Booking confirmation  
+- Generation of PNR, ticket numbers, and invoice IDs  
 
-## Integrate with your tools
+### 5. Secure Payment Integration
+- Integrated with PayU  
+- Captures transaction IDs, bank references, amounts, modes, and payment status  
+- Supports all required payment gateway metadata fields  
 
-- [ ] [Set up project integrations](http://38.224.226.24/dttdc_team/delhi_tourism_beta_v1/-/settings/integrations)
+### 6. Cancellation & Refund Workflow
+- Online cancellation request submission  
+- Admin approval tracking  
+- Refund processing linked to cancellations  
+- Transparent refund statuses and timestamps  
 
-## Collaborate with your team
+### 7. Auditable System Records
+- Timestamped bookings, cancellations, refunds, and payments  
+- Fully relational structure for complete traceability  
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+---
 
-## Test and Deploy
+## System Modules
 
-Use the built-in continuous integration in GitLab.
+### Tour Management
+Manages categories, tour details, itineraries, departure schedules, fare structures, and media assets.
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+### Availability Engine
+Tracks real-time tour seat counts and ensures consistent seat updates on booking and cancellation actions.
 
-***
+### User & Passenger Records
+Stores user profile and passenger-level information for identification, coordination, and compliance.
 
-# Editing this README
+### Booking Management
+Handles bookings, reference number generation, user-passenger mapping, and booking state transitions.
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+### Payments
+Records payment responses, payment statuses, gateway metadata, hashes, and banking details.
 
-## Suggestions for a good README
+### Cancellations & Refunds
+Processes cancellation requests, admin approvals, and refund issue tracking.
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+---
 
-## Name
-Choose a self-explaining name for your project.
+## Database Architecture Overview
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+The beta system uses a structured relational architecture composed of:
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+- **Tour Master Tables**  
+- **Tour Availability Tables**  
+- **User & Passenger Profiles**  
+- **Booking Records**  
+- **Payment Metadata Tables**  
+- **Cancellation & Refund Tables**  
+- **Booking–Passenger Mapping**  
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+This ensures high data integrity, traceability, and robust reporting.
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+---
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+## Purpose of Beta v1
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+The objective of **Delhi Tourism – Beta v1** is to:
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+- Validate complete booking workflows  
+- Test availability and seat tracking  
+- Verify payment gateway reliability  
+- Provide stable backend components for production rollout  
+- Establish a scalable and maintainable database structure  
+- Enable detailed cancellation and refund testing  
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+---
