@@ -1,0 +1,22 @@
+# Django-specific files
+*.log
+*.pot
+*.pyc
+__pycache__/
+__pycache__
+local_settings.py  # Or other files containing sensitive local settings
+db.sqlite3         # If using SQLite as your local database
+
+# Virtual Environment
+.env
+venv/
+env/
+
+# PyCharm-specific files (if using PyCharm)
+.idea/
+
+# Operating System files
+.DS_Store
+
+# Other files
+*.swp
