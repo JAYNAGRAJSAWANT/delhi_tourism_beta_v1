@@ -8,9 +8,12 @@ local_settings.py  # Or other files containing sensitive local settings
 db.sqlite3         # If using SQLite as your local database
 
 # Virtual Environment
-.env
+
 venv/
 env/
+Lib/
+Scripts/
+bin/
 
 # PyCharm-specific files (if using PyCharm)
 .idea/
@@ -20,3 +23,5 @@ env/
 
 # Other files
 *.swp
+
+.env
