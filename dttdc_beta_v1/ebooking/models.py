@@ -17,6 +17,7 @@ class DTTDCTourCategory(models.Model):
 
 
 # =========================DTTDC Tour Model===========================
+
 class DTTDCTour(models.Model):
     tour_name = models.CharField(max_length=200)
     tour_category = models.ForeignKey(DTTDCTourCategory,on_delete=models.PROTECT,related_name="tours")

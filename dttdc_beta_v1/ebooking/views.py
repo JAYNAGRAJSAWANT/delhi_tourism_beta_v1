@@ -2,4 +2,4 @@ from django.shortcuts import render
 from django.http import HttpResponse
 
 def home(request):
-    return HttpResponse("Ebooking Home View")
+    return render(request,"ebooking/base_ebooking.html")
