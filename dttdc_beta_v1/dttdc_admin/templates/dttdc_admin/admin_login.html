@@ -1,0 +1,181 @@
+{% extends "dttdc_admin/base_admin.html" %}
+{% load static %}
+
+{% block content %}
+
+<div class="container">
+  <div class="row my-3">
+    <h2 class="text-center fw-semibold fs-4">Admin Login</h2>
+
+    <div class="col-lg-3"></div>
+
+    <div class="col-lg-6">
+      <form method="post" action="">
+        {% csrf_token %}
+
+        <!-- Email -->
+        <div class="mb-3">
+          <label for="email" class="form-label">Email Address</label>
+          <input
+            type="email"
+            class="form-control"
+            id="email"
+            name="email"
+            aria-describedby="emailHelp"
+            required
+          />
+        </div>
+
+        <!-- Password -->
+        <div class="mb-3">
+          <label for="password" class="form-label">Password</label>
+          <input
+            type="password"
+            class="form-control"
+            id="password"
+            name="password"
+            required
+          />
+        </div>
+
+        <!-- Captcha Block -->
+        <div class="mb-3 row w-75 align-items-center">
+          <label class="col-sm-3 col-form-label required">Captcha</label>
+
+          <div class="col-sm-9 d-flex align-items-center">
+            <!-- Canvas CAPTCHA -->
+            <canvas
+              id="captchaCanvas"
+              class="border rounded"
+              width="150"
+              height="50"
+            >
+              TEXT
+            </canvas>
+
+            <!-- Reload icon -->
+            <i
+              class="fa fa-refresh ms-3 mt-2"
+              aria-hidden="true"
+              role="button"
+              title="Reload Captcha"
+              onclick="reloadCaptcha()"
+            ></i>
+            
+          </div>
+        </div>
+
+        <!-- Captcha Input -->
+        <div class="mb-3 row w-75">
+          <label for="userCaptchaInput" class="col-sm-3 col-form-label required">
+            Enter Captcha
+          </label>
+
+          <div class="col-sm-9">
+            <input
+              id="userCaptchaInput"
+              name="user_captcha_input"
+              class="form-control"
+              placeholder="Enter Captcha"
+              type="text"
+              maxlength="6"
+              required
+            />
+          </div>
+        </div>
+
+        <!-- Hidden Captcha Token -->
+        <input
+          type="hidden"
+          id="captchaTokenField"
+          name="captchaToken"
+          value="{{ captcha_token }}"
+        />
+
+        <!-- Error Message -->
+        {% if error_message %}
+        <div class="alert alert-danger p-2 fw-bold mt-2 w-75">
+          {{ error_message }}
+        </div>
+        {% endif %}
+
+        <!-- Submit Button -->
+        <button
+          type="submit"
+          class="btn btn-primary"
+          style="background: rgb(170, 22, 22); border: none;"
+        >
+          Login
+        </button>
+      </form>
+    </div>
+
+    <div class="col-lg-3"></div>
+  </div>
+</div>
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+  let CAPTCHA_VALUE = "{{ captcha_value|escapejs }}";
+
+  function drawLine(info, style = {}) {
+    const { x, y, x1, y1 } = info;
+    const { color = "black", width = 1 } = style;
+
+    const canvas = document.getElementById("captchaCanvas");
+    const ctx = canvas.getContext("2d");
+
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x1, y1);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.stroke();
+  }
+
+  function drawCaptcha(value) {
+    const canvas = document.getElementById("captchaCanvas");
+    const ctx = canvas.getContext("2d");
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Noise lines (same as your React version)
+    drawLine({ x: 0, y: 10, x1: 50, y1: 100 });
+    drawLine({ x: 60, y: 0, x1: 100, y1: 200 }, { color: "red" });
+    drawLine({ x: 75, y: 0, x1: 200, y1: 200 }, { color: "green" });
+    drawLine({ x: 110, y: 0, x1: 500, y1: 250 }, { color: "blue" });
+
+    ctx.font = "18px Arial";
+
+    if (!value || value.length < 6) return;
+
+    ctx.fillText(value.charAt(0), 6, 15);
+    ctx.fillText(value.charAt(1), 25, 30);
+    ctx.fillText(value.charAt(2), 50, 20);
+    ctx.fillText(value.charAt(3), 70, 40);
+    ctx.fillText(value.charAt(4), 100, 15);
+    ctx.fillText(value.charAt(5), 120, 35);
+  }
+
+  // Initial draw
+  document.addEventListener("DOMContentLoaded", function () {
+    drawCaptcha(CAPTCHA_VALUE);
+  });
+
+  // Reload captcha button handler
+  async function reloadCaptcha() {
+    const response = await fetch("{% url 'get_captcha' %}");
+    const data = await response.json();
+    console.log("Captcha data : ", data)
+
+    CAPTCHA_VALUE = data.captchaValue;
+    document.getElementById("captchaTokenField").value =
+      data.captchaToken;
+
+    drawCaptcha(CAPTCHA_VALUE);
+  }
+</script>
+
+{% endblock %}

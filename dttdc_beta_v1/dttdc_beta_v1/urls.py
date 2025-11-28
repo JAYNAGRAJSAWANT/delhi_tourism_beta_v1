@@ -7,7 +7,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include("core.urls")),
     path('ebooking',include("ebooking.urls")),
-    path('dttdc_admin',include("dttdc_admin.urls")),
+    path('dttdc_admin/',include('dttdc_admin.urls')),
 ]
 
 if settings.DEBUG:
