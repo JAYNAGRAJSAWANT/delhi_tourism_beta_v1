@@ -1,31 +1,101 @@
-from django.shortcuts import render
-from django.http import HttpResponse
+# views.py
+from django.shortcuts import render, redirect
 from django.http import JsonResponse
-from .captcha_utility import generateCaptchaValueWithToken, validate_captcha
+from django.contrib.auth import authenticate
+from django.conf import settings
 
-def admin_home(request):
-    return render(request,"dttdc_admin/base_admin.html")
+from .captcha_utility import generateCaptchaValueWithToken, validate_captcha
+from .jwt_utils import create_access_token
+from .decorators import admin_jwt_required
+
 
 def admin_login(request):
     if request.method == "GET":
         data = generateCaptchaValueWithToken()
-        
-    return render(request, "dttdc_admin/admin_login.html", {
-        "captcha_value": data["captchaValue"],
-        "captcha_token": data["captchaToken"],
-    })
+        return render(
+            request,
+            "dttdc_admin/admin_login.html",
+            {
+                "captcha_value": data["captchaValue"],
+                "captcha_token": data["captchaToken"],
+                "error_message": None,
+            },
+        )
+
+    # POST: handle login
+    email = request.POST.get("email")
+    print("Email : ", email)
+    password = request.POST.get("password")
+    user_captcha_input = request.POST.get("user_captcha_input")
+    captcha_token = request.POST.get("captchaToken")
+
+    # 1. Validate captcha
+    captcha_result = validate_captcha(user_captcha_input, captcha_token)
+    if captcha_result["status"] != "success":
+        # generate new captcha for re-render
+        data = generateCaptchaValueWithToken()
+        return render(
+            request,
+            "dttdc_admin/admin_login.html",
+            {
+                "captcha_value": data["captchaValue"],
+                "captcha_token": data["captchaToken"],
+                "error_message": captcha_result["message"],
+            },
+        )
+
+    # 2. Validate user credentials
+    # If your User model uses email as USERNAME_FIELD, this works.
+    user = authenticate(request, username=email, password=password)
+    if not user or not user.is_staff:
+        data = generateCaptchaValueWithToken()
+        return render(
+            request,
+            "dttdc_admin/admin_login.html",
+            {
+                "captcha_value": data["captchaValue"],
+                "captcha_token": data["captchaToken"],
+                "error_message": "Invalid email or password",
+            },
+        )
+
+    # 3. Create JWT and set in HttpOnly cookie
+    access_token = create_access_token(user, minutes=30)
+
+    response = redirect("dttdc_admin:admin_home")  # change to your dashboard URL name
+    response.set_cookie(
+        "admin_access_token",
+        access_token,
+        httponly=True,
+        secure=not settings.DEBUG,
+        samesite="Lax",
+        max_age=30 * 60,
+    )
+    return response
 
 
-## CAPTCHA FUNCTIONALITIES 
-
+## CAPTCHA FUNCTIONALITIES
 def get_captcha(request):
     data = generateCaptchaValueWithToken()
     return JsonResponse(data)
 
+
 def check_captcha(request):
-    if request.method =="POST":
+    if request.method == "POST":
         captcha_input = request.POST.get("captchaInput")
         captcha_token = request.POST.get("captchaToken")
-        result = validate_captcha(captcha_input,captcha_token)
+        result = validate_captcha(captcha_input, captcha_token)
         return JsonResponse(result)
-    
+    return JsonResponse({"detail": "Invalid method"}, status=405)
+
+
+@admin_jwt_required
+def admin_home(request):
+    # Only accessible if valid JWT cookie is present
+    return render(request, "dttdc_admin/admin_home.html")
+
+
+def admin_logout(request):
+    response = redirect("dttdc_admin:admin_login")
+    response.delete_cookie("admin_access_token")
+    return response
