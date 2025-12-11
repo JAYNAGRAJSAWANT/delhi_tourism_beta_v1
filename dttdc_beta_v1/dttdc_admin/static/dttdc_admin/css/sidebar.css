@@ -1,0 +1,40 @@
+.SideTitle {
+  padding: 0.75rem 1rem;
+  margin-top: 0.5rem;
+  background: linear-gradient(135deg, #e75a1e, #77340b, #e75a1e);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #fff;
+  border-top: 1px solid rgba(0,0,0,0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  white-space: nowrap;
+}
+
+/* Slightly smaller title on very small screens */
+@media (max-width: 575.98px) {
+  .SideTitle {
+    font-size: 0.95rem;
+    padding: 0.6rem 0.8rem;
+  }
+}
+
+/* Make sidebar links wrap nicely and have spacing */
+.tg {
+  display: inline-block;
+  padding-left: 0.25rem;
+  text-decoration: none;
+  color: inherit;
+}
+.pl_left_arrow ul li {
+  padding: 0.35rem 0;
+}
+
+/* ensure images don’t overflow */
+.banner2 .header-img {
+  max-height: 220px;
+  object-fit: cover;
+  width: 100%;
+}

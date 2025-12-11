@@ -1,7 +1,7 @@
 # views.py
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, get_user_model
 from django.conf import settings
 
 from .captcha_utility import generateCaptchaValueWithToken, validate_captcha
@@ -10,6 +10,12 @@ from .decorators import admin_jwt_required
 
 
 def admin_login(request):
+    
+    token = request.COOKIES.get("admin_access_token")
+    if token:
+        return redirect('admin_home')
+    
+    print("Access Token : ", token)
     if request.method == "GET":
         data = generateCaptchaValueWithToken()
         return render(
@@ -24,13 +30,13 @@ def admin_login(request):
 
     # POST: handle login
     email = request.POST.get("email")
-    print("Email : ", email)
     password = request.POST.get("password")
     user_captcha_input = request.POST.get("user_captcha_input")
     captcha_token = request.POST.get("captchaToken")
-
+    
     # 1. Validate captcha
     captcha_result = validate_captcha(user_captcha_input, captcha_token)
+
     if captcha_result["status"] != "success":
         # generate new captcha for re-render
         data = generateCaptchaValueWithToken()
@@ -46,7 +52,19 @@ def admin_login(request):
 
     # 2. Validate user credentials
     # If your User model uses email as USERNAME_FIELD, this works.
+    
+    User = get_user_model()
+    
     user = authenticate(request, username=email, password=password)
+    if not user:
+        try:
+            user_obj = User.objects.get(email__iexact=email)
+            user = authenticate(request,username=user_obj.username,password=password)
+        except User.DoesNotExist:
+            user = None
+            
+    print("Check valid user status : ", user)
+    
     if not user or not user.is_staff:
         data = generateCaptchaValueWithToken()
         return render(
@@ -61,8 +79,10 @@ def admin_login(request):
 
     # 3. Create JWT and set in HttpOnly cookie
     access_token = create_access_token(user, minutes=30)
+    print("If User is Valid ---")
+    print("Generating Access Token : ", access_token)
 
-    response = redirect("dttdc_admin:admin_home")  # change to your dashboard URL name
+    response = redirect("admin_home")  # change to your dashboard URL name
     response.set_cookie(
         "admin_access_token",
         access_token,

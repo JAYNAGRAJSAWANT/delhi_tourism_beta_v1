@@ -1,6 +1,67 @@
 {% extends "dttdc_admin/base_admin.html" %}
 {% load static %}
-
 {% block content %}
-<h3> Admin Home </h3>
+
+<div class="container-fluid">
+  <div class="row">
+
+    <!-- Offcanvas toggle button (visible only on small screens) -->
+    <div class="col-12 d-md-none my-2">
+      <button class="btn btn-outline-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#adminSidebar"
+        aria-controls="adminSidebar">
+        <i class="fa fa-bars"></i> Menu
+      </button>
+    </div>
+
+    <!-- Sidebar (offcanvas for small, static for md+) -->
+    <aside class="col-12 col-md-3 col-lg-3">
+      <!-- Offcanvas wrapper (Bootstrap) -->
+      <div class="offcanvas offcanvas-start d-md-none" tabindex="-1" id="adminSidebar" aria-labelledby="adminSidebarLabel">
+        <div class="offcanvas-header">
+          <h5 class="offcanvas-title" id="adminSidebarLabel">Admin Panel</h5>
+          <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body p-0">
+          {% include "dttdc_admin/components/sidebar_content.html" %}
+        </div>
+ 
+      </div>
+
+      <!-- Static sidebar for md+ -->
+      <div class="d-none d-md-block">
+        {% include "dttdc_admin/components/sidebar.html" %}
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="col-12 col-md-9 col-lg-9">
+      <!-- Put your banner and alerts here -->
+      <div class="d-flex flex-column align-items-center justify-content-center m-5">
+        <div class="banner2 w-100">
+          <img src="{% static 'dttdc_admin/images/about_delhi.jpg' %}" class="img-fluid header-img" alt="dttdc banner">
+        </div>
+        <div class="d-flex align-items-center justify-content-center py-2 mt-3 fs-4 text-center w-100">
+          Welcome To Tour Booking Panel
+        </div>
+      </div>
+
+      <!-- Alerts area -->
+      <div class="p-3 m-5">
+        <div class="fw-bold text-danger fs-6">Alerts &amp; Notifications :</div>
+
+        <div class="fw-bold text-primary mt-3">Booking Alerts</div>
+        <ul>
+          
+        </ul>
+
+        <div class="fw-bold text-primary mt-3">Cancellation Alerts</div>
+        <ul>
+         
+        </ul>
+      </div>
+    </main>
+
+  </div>
+</div>
+
 {% endblock %}
