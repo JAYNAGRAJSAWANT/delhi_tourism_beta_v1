@@ -116,6 +116,6 @@ def admin_home(request):
 
 
 def admin_logout(request):
-    response = redirect("dttdc_admin:admin_login")
+    response = redirect("admin_login")
     response.delete_cookie("admin_access_token")
     return response
