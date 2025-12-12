@@ -1,0 +1,51 @@
+{% load static %}
+
+<div class="container m-5">
+    <div class="SideTitle d-flex align-items-center text-white justify-content-center pb-2 h1">
+        Admin Hub
+    </div>
+
+    <div class="pl_left_arrow">
+        <ul class="list-unstyled">
+
+            <li class="mt-1">
+                <i class="fa fa-caret-right m-1"></i>
+                <a href="{% url 'admin_hub' %}" class="tg">Home</a>
+            </li>
+
+            <li class="mt-1">
+                <i class="fa fa-caret-right m-1"></i>
+                <a href="{% url 'add_tour_category' %}" class="tg">Add Tour Category</a>
+            </li>
+
+            <li class="mt-1">
+                <i class="fa fa-caret-right m-1"></i>
+                <a href="{% url 'edit_tour_category_select' %}" class="tg">Edit Tour Category</a>
+            </li>
+
+            <li class="mt-1">
+                <i class="fa fa-caret-right m-1"></i>
+                <a href="{% url 'admin_home' %}" class="tg">Back to Admin Panel</a>
+            </li>
+
+            <li class="mt-1">
+                <i class="fa fa-caret-right m-1"></i>
+                <a href="{% url 'admin_logout' %}" class="tg text-danger fw-bold">
+                    Logout
+                </a>
+            </li>
+
+            {% comment %} <div class="SideTitle pt-1 mt-2 text-white">For Future Use</div>
+
+            <li class="mt-1">
+                <i class="fa fa-caret-right m-1"></i>
+                <a href="#" class="tg">Booking Report</a>
+            </li> {% endcomment %}
+
+        </ul>
+
+        <div>
+            <img src="{% static 'dttdc_admin/images/8cities_banner.png' %}" class="img-fluid w-100" alt="banner">
+        </div>
+    </div>
+</div>

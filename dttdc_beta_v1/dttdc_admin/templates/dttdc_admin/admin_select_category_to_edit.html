@@ -1,0 +1,80 @@
+{% extends "dttdc_admin/admin_hub.html" %}
+{% load static %}
+
+{% block admin_select_edit_tour_category %}
+    <div class="container my-4">
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-8">
+
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0"  style="color:rgb(170, 22, 22);">Edit Tour Category</h5>
+        </div>
+
+        <div class="card-body">
+
+          <p class="mb-3 text-black">Select a category to edit. On selection you'll be taken to the edit page.</p>
+
+          <div class="mb-3">
+            <label for="categorySelect" class="form-label">Choose Category</label>
+
+            <select id="categorySelect" class="form-select">
+              <option value="" selected>-- Select category --</option>
+              {% for cat in categories %}
+                <option value="{% url 'edit_tour_category' pk=cat.pk %}">
+                  {{ cat.category_name }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="d-flex gap-2">
+            <button id="goBtn" class="btn btn-primary" disabled>Go to Edit</button>
+            <a href="{% url 'edit_tour_category_select' %}" class="btn btn-outline-secondary">Back to list</a>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const sel = document.getElementById("categorySelect");
+  const goBtn = document.getElementById("goBtn");
+
+  // When selection changes, enable button and optionally auto-navigate
+  sel.addEventListener("change", function () {
+    const url = this.value;
+    if (!url) {
+      goBtn.disabled = true;
+      return;
+    }
+    goBtn.disabled = false;
+
+    // AUTO-REDIRECT immediately on select (uncomment if you prefer):
+    // window.location.href = url;
+  });
+
+  // Click handler (fallback) - navigates to selected edit URL
+  goBtn.addEventListener("click", function () {
+    const url = sel.value;
+    if (url) {
+      window.location.href = url;
+    }
+  });
+
+  // Optional: make enter key trigger the Go button
+  sel.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if (!goBtn.disabled) goBtn.click();
+    }
+  });
+});
+</script>
+{% endblock %}

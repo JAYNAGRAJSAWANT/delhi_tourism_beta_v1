@@ -5,7 +5,11 @@ from django.db import models
 # =========================DTTDC Tour Category Model===========================
 class DTTDCTourCategory(models.Model):
     category_name = models.CharField(max_length=350, unique=True)
-    category_image = models.CharField(max_length=255, blank=True, null=True)
+    category_image = models.ImageField(
+        upload_to="tour_categories/%Y/%m/",
+        blank=False,
+        null=False,
+    )
     
     class Meta:
         db_table = "dttdc_tour_category"

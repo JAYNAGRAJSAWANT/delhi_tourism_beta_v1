@@ -1,0 +1,138 @@
+{% extends "dttdc_admin/admin_hub.html" %}
+{% load static %}
+
+{% block add_tour_category %}
+
+
+<div class="container my-4">
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-10">
+
+      <div class="card shadow-sm">
+        <div class="card-header">
+          <h5 class="mb-0" style="color:rgb(170, 22, 22);">Add Tour Category</h5>
+        </div>
+
+        <div class="card-body">
+          {# show non-field errors #}
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+              {{ form.non_field_errors }}
+            </div>
+          {% endif %}
+
+          <form method="post" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+
+            <!-- Category name -->
+            <div class="mb-3">
+              <label for="{{ form.category_name.id_for_label }}" class="form-label">Category name</label>
+              {{ form.category_name }}
+              {% if form.category_name.errors %}
+                <div class="invalid-feedback d-block">
+                  {{ form.category_name.errors|striptags }}
+                </div>
+              {% endif %}
+              <div class="form-text">Max 350 characters. Must be unique.</div>
+            </div>
+
+            <!-- Category image -->
+            <div class="mb-3">
+              <label for="{{ form.category_image.id_for_label }}" class="form-label">Category image</label>
+
+              {# Render the file input with Bootstrap classes manually #}
+              <input
+                type="file"
+                name="{{ form.category_image.name }}"
+                id="id_category_image"
+                accept="image/jpeg,image/png,image/webp"
+                class="form-control"
+              />
+
+              {% if form.category_image.errors %}
+                <div class="invalid-feedback d-block">
+                  {{ form.category_image.errors|striptags }}
+                </div>
+              {% endif %}
+
+              <div class="form-text">
+                Allowed types: jpeg, png, webp. Max size: 2 MB.
+              </div>
+
+              <!-- Preview area -->
+              <div class="mt-3">
+                <img id="categoryImagePreview" src="{% if form.instance.category_image %}{{ form.instance.category_image.url }}{% endif %}"
+                     alt="Preview" class="img-fluid rounded" style="max-height:220px; display: {% if form.instance.category_image %}block{% else %}none{% endif %};" />
+                <div id="previewInfo" class="small text-muted mt-1"></div>
+              </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-primary">Save Category</button>
+              {% comment %} <a href="{% url 'dttdc_admin:category_list' %}" class="btn btn-outline-secondary">Cancel</a> {% endcomment %}
+            </div>
+          </form>
+        </div> <!-- card-body -->
+      </div> <!-- card -->
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  const input = document.getElementById('id_category_image');
+  const preview = document.getElementById('categoryImagePreview');
+  const previewInfo = document.getElementById('previewInfo');
+
+  // client-side rules (mirror server)
+  const MAX_BYTES = 2 * 1024 * 1024; // 2MB
+  const ALLOWED = ['image/jpeg', 'image/png', 'image/webp'];
+
+  function resetPreview() {
+    preview.style.display = 'none';
+    preview.src = '';
+    previewInfo.textContent = '';
+  }
+
+  if (!input) return;
+
+  input.addEventListener('change', function (e) {
+    const file = this.files && this.files[0];
+    if (!file) {
+      resetPreview();
+      return;
+    }
+
+    // check type
+    if (!ALLOWED.includes(file.type)) {
+      alert('Unsupported File type. Allowed: jpeg, png, webp.');
+      this.value = '';
+      resetPreview();
+      return;
+    }
+
+    // check size
+    if (file.size > MAX_BYTES) {
+      alert('Image file too large (max 2 MB).');
+      this.value = '';
+      resetPreview();
+      return;
+    }
+
+    // show preview
+    const reader = new FileReader();
+    reader.onload = function (ev) {
+      preview.src = ev.target.result;
+      preview.style.display = 'block';
+      previewInfo.textContent = `${file.name} — ${(file.size/1024/1024).toFixed(2)} MB`;
+    };
+    reader.readAsDataURL(file);
+  });
+})();
+</script>
+
+{% endblock %}

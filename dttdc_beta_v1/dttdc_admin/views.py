@@ -3,11 +3,15 @@ from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.contrib.auth import authenticate, get_user_model
 from django.conf import settings
+from django.utils import timezone
 
 from .captcha_utility import generateCaptchaValueWithToken, validate_captcha
 from .jwt_utils import create_access_token
 from .decorators import admin_jwt_required
+from django.shortcuts import get_object_or_404, redirect, render
 
+from ebooking.forms import AddTourCategoryForm
+from ebooking.models import DTTDCTourCategory
 
 def admin_login(request):
     
@@ -119,3 +123,46 @@ def admin_logout(request):
     response = redirect("admin_login")
     response.delete_cookie("admin_access_token")
     return response
+
+@admin_jwt_required
+def admin_hub(request):
+    now = timezone.now()
+    context = {
+        "categories_count":DTTDCTourCategory.objects.count(),
+        "now":now,
+        "MEDIA_URL": settings.MEDIA_URL,
+        "show_dashboard": True,
+    }
+    return render(request,"dttdc_admin/admin_hub.html",context)
+
+@admin_jwt_required
+def admin_add_tour_category(request):
+    if request.method == "POST":
+        form = AddTourCategoryForm(request.POST,request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect("add_tour_category")
+    else:
+        form = AddTourCategoryForm()
+                
+    return render(request,"dttdc_admin/admin_add_tour_category.html",{"form":form})
+
+
+@admin_jwt_required
+def admin_edit_tour_category_select(request):
+    categories = DTTDCTourCategory.objects.order_by("category_name").all()
+    print("Categories : ", categories)
+    return render(request,"dttdc_admin/admin_select_category_to_edit.html",{"categories":categories})
+
+@admin_jwt_required
+def admin_edit_tour_category(request,pk):
+    category = get_object_or_404(DTTDCTourCategory,pk=pk)
+
+    if request.method == "POST":
+        form = AddTourCategoryForm(request.POST,request.FILES,instance=category)
+        if form.is_valid():
+            form.save()
+    else:
+        form = AddTourCategoryForm(instance=category)
+        
+    return render(request,"dttdc_admin/admin_edit_tour_category.html",{"form":form,"category":category})

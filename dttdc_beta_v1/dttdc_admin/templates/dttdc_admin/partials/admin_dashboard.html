@@ -1,0 +1,295 @@
+
+{% load static %}
+
+<!-- Admin Hub Dashboard -->
+<div class="container-fluid py-4">
+  <!-- Header -->
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+      <h3 class="mb-0">Admin Hub</h3>
+      <small class="text-muted">Overview & quick actions</small>
+    </div>
+
+    <div>
+      <div class="d-flex gap-2">
+        <a href="#" class="btn btn-outline-primary btn-sm">
+          <i class="fa fa-pencil"></i> Edit Category
+        </a>
+        <a href="#" class="btn btn-primary btn-sm">
+          <i class="fa fa-plus"></i> Add Category
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top stat cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="card h-100">
+        <div class="card-body d-flex align-items-center gap-3">
+          <div class="flex-shrink-0 display-6 text-primary">
+            <i class="fa fa-th-large fa-lg"></i>
+          </div>
+          <div>
+            <div class="text-muted small">Categories</div>
+            <div class="h5 mb-0">{{ categories_count|default:0 }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-3">
+      <div class="card h-100">
+        <div class="card-body d-flex align-items-center gap-3">
+          <div class="flex-shrink-0 display-6 text-success">
+            <i class="fa fa-route fa-lg"></i>
+          </div>
+          <div>
+            <div class="text-muted small">Tours</div>
+            <div class="h5 mb-0">{{ tours_count|default:0 }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-3">
+      <div class="card h-100">
+        <div class="card-body d-flex align-items-center gap-3">
+          <div class="flex-shrink-0 display-6 text-danger">
+            <i class="fa fa-ticket fa-lg"></i>
+          </div>
+          <div>
+            <div class="text-muted small">Bookings (last 7d)</div>
+            <div class="h5 mb-0">{{ bookings_count|default:0 }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-3">
+      <div class="card h-100">
+        <div class="card-body d-flex align-items-center gap-3">
+          <div class="flex-shrink-0 display-6 text-warning">
+            <i class="fa fa-users fa-lg"></i>
+          </div>
+          <div>
+            <div class="text-muted small">Users</div>
+            <div class="h5 mb-0">{{ users_count|default:0 }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Middle row: Recent categories + Bookings -->
+  <div class="row g-3 mb-4">
+    <!-- Recent categories -->
+    <div class="col-12 col-lg-6">
+      <div class="card h-100">
+        <div
+          class="card-header d-flex justify-content-between align-items-center"
+        >
+          <strong>Recent Categories</strong>
+          <a href="#" class="small">View all</a>
+        </div>
+        <div class="card-body">
+          <div class="row g-2">
+            {% if recent_categories %} {% for cat in
+            recent_categories|slice:":6" %}
+            <div class="col-6 col-md-4 mb-2">
+              <div class="card border-0 shadow-sm h-100">
+                {% if cat.category_image %}
+                <img
+                  src="{{ cat.category_image.url }}"
+                  class="card-img-top"
+                  style="height: 110px; object-fit: cover"
+                  alt="{{ cat.category_name }}"
+                />
+                {% else %}
+                <img
+                  src="{% static 'ebooking/images/no-image.png' %}"
+                  class="card-img-top"
+                  style="height: 110px; object-fit: cover"
+                  alt="no image"
+                />
+                {% endif %}
+                <div class="card-body p-2 text-center">
+                  <div
+                    class="small text-truncate"
+                    title="{{ cat.category_name }}"
+                  >
+                    {{ cat.category_name }}
+                  </div>
+                  <a
+                    href="{% url 'dttdc_admin:category_edit' pk=cat.pk %}"
+                    class="btn btn-sm btn-link p-0 mt-1"
+                    >Edit</a
+                  >
+                </div>
+              </div>
+            </div>
+            
+            {% else %}
+            <div class="col-12">
+              <p class="mb-0 text-muted">No categories to show.</p>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent bookings -->
+    <div class="col-12 col-lg-6">
+      <div class="card h-100">
+        <div
+          class="card-header d-flex justify-content-between align-items-center"
+        >
+          <strong>Recent Bookings</strong>
+          <a href="#" class="small">View all</a>
+        </div>
+
+        <div class="card-body p-0">
+          {% if recent_bookings %}
+          <div class="table-responsive">
+            <table class="table table-sm mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th class="py-2">PNR</th>
+                  <th class="py-2">Tour</th>
+                  <th class="py-2">Date</th>
+                  <th class="py-2">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for b in recent_bookings|slice:":8" %}
+                <tr>
+                  <td class="align-middle">
+                    <a href="#">{{ b.pnr_number|default:"-" }}</a>
+                  </td>
+                  <td class="align-middle">{{ b.tour_name|default:"-" }}</td>
+                  <td class="align-middle small text-muted">
+                    {{ b.booking_date|date:"d M Y, h:i A" }}
+                  </td>
+                  <td class="align-middle">
+                    {% if b.status %}
+                    <span class="badge bg-success">{{ b.status }}</span>
+                    {% else %}
+                    <span class="badge bg-secondary">Unknown</span>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <div class="p-3">
+            <p class="mb-0 text-muted">No recent bookings.</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom row: Quick actions & System info -->
+  <div class="row g-3">
+    <div class="col-12 col-lg-8">
+      <div class="card">
+        <div class="card-header"><strong>Quick Actions</strong></div>
+        <div class="card-body">
+          <div class="d-flex flex-wrap gap-2">
+            <a href="#" class="btn btn-outline-primary btn-sm">
+              <i class="fa fa-plus"></i> Add Category
+            </a>
+            <a href="#" class="btn btn-outline-secondary btn-sm">
+              <i class="fa fa-edit"></i> Edit Category
+            </a>
+            <a href="#" class="btn btn-outline-success btn-sm">
+              <i class="fa fa-route"></i> Add Tour
+            </a>
+            <a href="#" class="btn btn-outline-danger btn-sm">
+              <i class="fa fa-ticket"></i> View Bookings
+            </a>
+            <a href="#" class="btn btn-outline-warning btn-sm">
+              <i class="fa fa-sign-out"></i> Logout
+            </a>
+          </div>
+
+          <hr />
+
+          <!-- Small bookings trend (pure SVG sparkline) -->
+          <div class="d-flex align-items-center gap-3">
+            <div>
+              <div class="small text-muted">Bookings trend (last 7 days)</div>
+              <!-- simple inline sparkline — you can replace with chart.js if needed -->
+              <svg
+                width="200"
+                height="40"
+                viewBox="0 0 200 40"
+                preserveAspectRatio="none"
+              >
+                <polyline
+                  fill="none"
+                  stroke="#0d6efd"
+                  stroke-width="2"
+                  points="0,30 30,20 60,25 90,10 120,18 150,12 180,8 200,14"
+                />
+              </svg>
+            </div>
+            <div class="ms-auto small text-muted">
+              Total last 7 days: <strong>{{ bookings_count|default:0 }}</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-4">
+      <div class="card">
+        <div class="card-header"><strong>System Info</strong></div>
+        <div class="card-body small">
+          <dl class="row mb-0">
+            <dt class="col-6 text-muted">Server time</dt>
+            <dd class="col-6">{{ now|default:None }}</dd>
+
+            <dt class="col-6 text-muted">DEBUG</dt>
+            <dd class="col-6">{{ DEBUG|default:"?" }}</dd>
+
+            <dt class="col-6 text-muted">MEDIA_URL</dt>
+            <dd class="col-6 text-truncate">
+              {{ MEDIA_URL|default:"/media/" }}
+            </dd>
+
+            <dt class="col-6 text-muted">Django</dt>
+            <dd class="col-6 text-truncate">{{ django_version|default:"" }}</dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+{% block extra_js %}
+<!-- initialize bootstrap tooltips (BS5) -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+  tooltipTriggerList.forEach(function (el) { new bootstrap.Tooltip(el) });
+
+  // optional: ensure offcanvas closes on internal link click (mobile)
+  document.querySelectorAll('#adminSidebar a').forEach(function(a){
+    a.addEventListener('click', function(){ 
+      var off = document.getElementById('adminSidebar');
+      if (off && off.classList.contains('show')) {
+        var bsOff = bootstrap.Offcanvas.getInstance(off);
+        if (bsOff) bsOff.hide();
+      }
+    });
+  });
+});
+</script>
+{% endblock %}
