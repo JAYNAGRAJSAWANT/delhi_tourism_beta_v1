@@ -166,3 +166,16 @@ def admin_edit_tour_category(request,pk):
         form = AddTourCategoryForm(instance=category)
         
     return render(request,"dttdc_admin/admin_edit_tour_category.html",{"form":form,"category":category})
+
+
+@admin_jwt_required
+def admin_delete_tour_category(request,pk):
+    category = get_object_or_404(DTTDCTourCategory,pk=pk)
+    category.delete()
+    return render(request,"dttdc_admin/admin_edit_tour_category.html")
+
+@admin_jwt_required
+def admin_delete_tour_category_select(request):
+    return render(request,"dttdc_admin/admin_select_category_to_delete.html")
+    
+

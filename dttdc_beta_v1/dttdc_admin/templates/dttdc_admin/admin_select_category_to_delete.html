@@ -1,19 +1,19 @@
 {% extends "dttdc_admin/admin_hub.html" %}
 {% load static %}
 
-{% block admin_select_edit_tour_category %}
-  <div class="container my-4">
+{% block admin_select_delete_tour_category %}
+ <div class="container my-4">
   <div class="row justify-content-center">
     <div class="col-12 col-md-8">
 
       <div class="card">
         <div class="card-header">
-          <h5 class="mb-0"  style="color:rgb(170, 22, 22);">Edit Tour Category</h5>
+          <h5 class="mb-0"  style="color:rgb(170, 22, 22);">Delete Tour Category</h5>
         </div>
 
         <div class="card-body">
 
-          <p class="mb-3 text-black">Select a category to edit. On selection you'll be taken to the edit page.</p>
+          <p class="mb-3 text-black">Select a category to delete.</p>
 
           <div class="mb-3">
             <label for="categorySelect" class="form-label">Choose Category</label>
@@ -21,7 +21,7 @@
             <select id="categorySelect" class="form-select">
               <option value="" selected>-- Select category --</option>
               {% for cat in categories %}
-                <option value="{% url 'edit_tour_category' pk=cat.pk %}">
+                <option value="{% url 'delete_tour_category' pk=cat.pk %}">
                   {{ cat.category_name }}
                 </option>
               {% endfor %}
@@ -29,8 +29,8 @@
           </div>
 
           <div class="d-flex gap-2">
-            <button id="goBtn" class="btn btn-primary" disabled>Go to Edit</button>
-            <a href="{% url 'edit_tour_category_select' %}" class="btn btn-outline-secondary">Back to list</a>
+            <button id="goBtn" class="btn btn-primary" disabled>Delete</button>
+            <a href="{% url 'delete_tour_category_select' %}" class="btn btn-outline-secondary">Back to list</a>
           </div>
 
         </div>
