@@ -1,0 +1,175 @@
+{% extends "admin/admin_hub.html" %}
+{% load static %}
+
+{% block  edit_tour %}
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header text-center">
+            <h4>Edit Tour</h4>
+        </div>
+
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <!-- Select Category -->
+                <div class="row mb-3">
+                    <label class="col-md-3 col-form-label">
+                        Select Category <span class="text-danger">*</span>
+                    </label>
+                    <div class="col-md-9">
+                        {{ form.tour_category }}
+                        {{ form.tour_category.errors }}
+                    </div>
+                </div>
+
+                <!-- Select Tour (readonly / optional) -->
+                <div class="row mb-3">
+                    <label class="col-md-3 col-form-label">
+                        Select Tour <span class="text-danger">*</span>
+                    </label>
+                    <div class="col-md-9">
+                        <input type="text"
+                               class="form-control"
+                               value="{{ form.instance.tour_name }}"
+                               readonly>
+                    </div>
+                </div>
+
+                <!-- Schedule Days -->
+                <div class="row mb-3">
+                    <label class="col-md-3 col-form-label">
+                        Select Days To Schedule Trip
+                    </label>
+                    <div class="col-md-9">
+                        {% for day in "Monday Tuesday Wednesday Thursday Friday Saturday Sunday".split %}
+                            <label class="me-2">
+                                <input type="checkbox"
+                                       name="schedule_days"
+                                       value="{{ day }}"
+                                       {% if day in form.instance.schedule %}checked{% endif %}>
+                                {{ day }}
+                            </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Timing -->
+                <div class="row mb-3">
+                    <label class="col-md-3 col-form-label">Timing</label>
+                    <div class="col-md-4">
+                        <label class="small">From</label>
+                        <input type="time"
+                               class="form-control"
+                               value="{{ form.instance.timing|default:'' }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="small">To</label>
+                        <input type="time"
+                               class="form-control">
+                    </div>
+                </div>
+
+                <!-- Places Covered -->
+                <div class="row mb-3">
+                    <label class="col-md-3 col-form-label">
+                        Places Covered
+                    </label>
+                    <div class="col-md-9">
+                        {{ form.places_covered }}
+                    </div>
+                </div>
+
+                <!-- Fare Adult -->
+                <div class="row mb-3">
+                    <label class="col-md-3 col-form-label">
+                        Fare Adult <span class="text-danger">*</span>
+                    </label>
+                    <div class="col-md-9">
+                        {{ form.fare_adult }}
+                        {{ form.fare_adult.errors }}
+                    </div>
+                </div>
+
+                <!-- Fare Child -->
+                <div class="row mb-3">
+                    <label class="col-md-3 col-form-label">
+                        Fare Child <span class="text-danger">*</span>
+                    </label>
+                    <div class="col-md-9">
+                        {{ form.fare_child }}
+                        {{ form.fare_child.errors }}
+                    </div>
+                </div>
+
+                <!-- Tour Duration -->
+                <div class="row mb-3">
+                    <label class="col-md-3 col-form-label">
+                        Select Tour Duration
+                    </label>
+                    <div class="col-md-4">
+                        <label class="small">Days</label>
+                        <input type="number"
+                               class="form-control"
+                               value="{{ form.instance.total_days|default:0 }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="small">Nights</label>
+                        <input type="number"
+                               class="form-control"
+                               value="0">
+                    </div>
+                </div>
+
+                <!-- Total Days -->
+                <div class="row mb-3">
+                    <label class="col-md-3 col-form-label">
+                        Total Days
+                    </label>
+                    <div class="col-md-9">
+                        {{ form.total_days }}
+                    </div>
+                </div>
+
+                <!-- Departure Dates -->
+                <div class="row mb-3">
+                    <label class="col-md-3 col-form-label">
+                        Departure Dates
+                    </label>
+                    <div class="col-md-9">
+                        {{ form.departure_dated }}
+                    </div>
+                </div>
+
+                <!-- Tour Details -->
+                <div class="row mb-3">
+                    <label class="col-md-3 col-form-label">
+                        Tour Details
+                    </label>
+                    <div class="col-md-9">
+                        {{ form.tour_details }}
+                    </div>
+                </div>
+
+                <!-- Tour Status -->
+                <div class="row mb-4">
+                    <label class="col-md-3 col-form-label">
+                        Tour Status
+                    </label>
+                    <div class="col-md-9">
+                        {{ form.tour_status }}
+                    </div>
+                </div>
+
+                <!-- Submit -->
+                <div class="text-end">
+                    <button type="submit" class="btn btn-primary px-4">
+                        Update
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

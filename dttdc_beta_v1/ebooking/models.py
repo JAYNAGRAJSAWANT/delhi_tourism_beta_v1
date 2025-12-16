@@ -23,10 +23,14 @@ class DTTDCTourCategory(models.Model):
 # =========================DTTDC Tour Model===========================
 
 class DTTDCTour(models.Model):
+    STATUS_CHOICES = (
+        ("active", "Active"),
+        ("inactive", "Not Active"),
+    )
     tour_name = models.CharField(max_length=200)
     tour_category = models.ForeignKey(DTTDCTourCategory,on_delete=models.PROTECT,related_name="tours")
-    tour_image = models.TextField(blank=True,null=True)
-    schedule = models.TextField(blank=True,null=True)
+    tour_image = models.ImageField(upload_to="tours/%Y/%m/",blank=True,null=True)
+    schedule = models.TextField(null=True,blank=True)
     timing = models.CharField(max_length=445, blank=True, null=True)
     places_covered = models.TextField(blank=True,null=True)
     fare_adult = models.DecimalField(max_digits=10,decimal_places=2)
@@ -35,9 +39,14 @@ class DTTDCTour(models.Model):
     total_days = models.PositiveIntegerField(null=True, blank=True)
     departure_dated = models.TextField(blank=True,null=True)
     tour_details = models.TextField(blank=True,null=True)
+    tour_status = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default="active"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
-    tour_status = models.CharField(max_length=45,blank=True,null=True)
-    extra_details = models.TextField(blank=True, null=True)
+    # tour_status = models.CharField(max_length=45,blank=True,null=True)
+    extra_details = models.TextField(null=True,blank=True)
     
     class Meta:
         db_table = "dttdc_tour"

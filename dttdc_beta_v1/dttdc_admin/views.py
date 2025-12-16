@@ -4,13 +4,13 @@ from django.http import JsonResponse
 from django.contrib.auth import authenticate, get_user_model
 from django.conf import settings
 from django.utils import timezone
-
+from django.contrib import messages
 from .captcha_utility import generateCaptchaValueWithToken, validate_captcha
 from .jwt_utils import create_access_token
 from .decorators import admin_jwt_required
 from django.shortcuts import get_object_or_404, redirect, render
 
-from ebooking.forms import AddTourCategoryForm
+from ebooking.forms import AddTourCategoryForm,AddTourForm
 from ebooking.models import DTTDCTourCategory
 
 def admin_login(request):
@@ -135,6 +135,7 @@ def admin_hub(request):
     }
     return render(request,"dttdc_admin/admin_hub.html",context)
 
+
 @admin_jwt_required
 def admin_add_tour_category(request):
     if request.method == "POST":
@@ -172,10 +173,74 @@ def admin_edit_tour_category(request,pk):
 def admin_delete_tour_category(request,pk):
     category = get_object_or_404(DTTDCTourCategory,pk=pk)
     category.delete()
-    return render(request,"dttdc_admin/admin_edit_tour_category.html")
+    return render(request,"dttdc_admin/admin_home.html")
 
 @admin_jwt_required
 def admin_delete_tour_category_select(request):
-    return render(request,"dttdc_admin/admin_select_category_to_delete.html")
+    categories= DTTDCTourCategory.objects.all()
+    return render(request,"dttdc_admin/admin_select_category_to_delete.html",{"categories":categories})
+
+
+#---------------------- Added By Jay Start --------------------------------
+
+@admin_jwt_required
+def admin_add_tour(request):
+    days = [
+        "Monday", "Tuesday", "Wednesday",
+        "Thursday", "Friday", "Saturday", "Sunday"
+    ]
+
+    if request.method == "POST":
+        form = AddTourForm(request.POST, request.FILES)
+        if form.is_valid():
+            tour = form.save(commit=False)
+
+            # ✅ GET MULTIPLE CHECKBOX VALUES
+            schedule_days = request.POST.getlist("schedule")
+            tour.schedule = ",".join(schedule_days) if schedule_days else ""
+
+            tour.save()
+            messages.success(request, "Tour added successfully.")
+            return redirect("add_tour")
+    else:
+        form = AddTourForm()
+
+    context = {
+        "form": form,
+        "days": days,
+        "range_0_31": range(0, 32),  # 🔥 REQUIRED for dropdowns
+    }
+
+    return render(request, "dttdc_admin/admin_add_tour.html", context)
+
+
+
+
+
+@admin_jwt_required
+def admin_edit_tour(request):
+    if request.method == "POST":
+        form = AddTourCategoryForm(request.POST,request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect("add_tour_category")
+    else:
+        form = AddTourCategoryForm()
+                
+    return render(request,"dttdc_admin/admin_edit_tour.html",{"form":form})
+
+@admin_jwt_required
+def admin_delete_tour(request):
+    if request.method == "POST":
+        form = AddTourCategoryForm(request.POST,request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect("add_tour_category")
+    else:
+        form = AddTourCategoryForm()
+                
+    return render(request,"dttdc_admin/admin_delete_tour.html",{"form":form})
+
+# Added By Jay End
     
 

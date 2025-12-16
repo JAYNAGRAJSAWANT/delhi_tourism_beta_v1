@@ -1,95 +1,80 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
 
-    <link rel="icon" href="{% static 'dttdc_admin/favicon.ico' %}" />
+<head>
+  <meta charset="utf-8" />
 
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="{% static 'dttdc_admin/favicon.ico' %}" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#000000" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <link rel="apple-touch-icon" href="{% static 'dttdc_admin/logo192.png' %}" />
-    <link rel="manifest" href="{% static 'dttdc_admin/manifest.json' %}" />
+  <link rel="apple-touch-icon" href="{% static 'dttdc_admin/logo192.png' %}" />
+  <link rel="manifest" href="{% static 'dttdc_admin/manifest.json' %}" />
 
-    <!-- Font Awesome (local version) -->
-    <link
-      rel="stylesheet"
-      href="{% static 'dttdc_admin/css/all.css' %}"
-      crossorigin="anonymous"
-    />
-    <link rel="stylesheet" href="{% static 'dttdc_admin/css/sidebar.css' %}">
+  <!-- Font Awesome (local version) -->
+  <link rel="stylesheet" href="{% static 'dttdc_admin/css/all.css' %}" crossorigin="anonymous" />
+  <link rel="stylesheet" href="{% static 'dttdc_admin/css/sidebar.css' %}">
 
-    <!-- Bootstrap -->
-    <link
-      rel="stylesheet"
-      href="{% static 'dttdc_admin/css/bootstrap.min.css' %}"
-      crossorigin="anonymous"
-    />
+  <!-- Bootstrap -->
+  <link rel="stylesheet" href="{% static 'dttdc_admin/css/bootstrap.min.css' %}" crossorigin="anonymous" />
 
-    <!-- Google Fonts -->
-    <link
-      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;1,100&display=swap"
-      rel="stylesheet"
-    />
+  <!-- Google Fonts -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;1,100&display=swap"
+    rel="stylesheet" />
 
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
-    />
-    
-    <!-- Bootstrap Icons -->
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.5.0/font/bootstrap-icons.min.css"
-    />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
 
-    <!-- Datatables Responsive -->
-    <link
-      rel="stylesheet"
-      href="https://cdn.datatables.net/responsive/3.0.2/css/responsive.bootstrap.css"
-    />
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.5.0/font/bootstrap-icons.min.css" />
 
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="{% static 'dttdc_admin/css/custom.css' %}" />
+  <!-- Datatables Responsive -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/responsive/3.0.2/css/responsive.bootstrap.css" />
 
-    <title>Delhi Tourism</title>
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{% static 'dttdc_admin/css/custom.css' %}" />
 
-    {% block extra_css %}{% endblock %}
-  </head>
+  <title>Delhi Tourism</title>
 
-  <body>
-    {% include 'dttdc_admin/components/header.html' %}
-    {% include 'dttdc_admin/components/menu.html' %}
-    <div id="root">
-      {% block content %}
-      {% endblock %}
-    </div>
-    {% include 'dttdc_admin/components/footer.html' %}
-    <!-- Bootstrap JS -->
-    <script
-      src="{% static 'dttdc_admin/js/bootstrap.bundle.min.js' %}"
-      crossorigin="anonymous"
-    ></script>
+  {% block extra_css %}{% endblock %}
+</head>
 
-    <!-- Datatables -->
-    <script src="https://cdn.datatables.net/responsive/3.0.2/js/dataTables.responsive.js"></script>
+<body>
+  {% include 'dttdc_admin/components/header.html' %}
+  {% include 'dttdc_admin/components/menu.html' %}
+  <div id="root">
+    {% block content %}
+    {% endblock %}
+  </div>
+  {% include 'dttdc_admin/components/footer.html' %}
+  <!-- Bootstrap JS -->
+  <script src="{% static 'dttdc_admin/js/bootstrap.bundle.min.js' %}" crossorigin="anonymous"></script>
 
-    <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        const tables = document.querySelectorAll("table");
-        tables.forEach((tbl) => {
-          if ($.fn.DataTable) {
-            $(tbl).DataTable();
-          }
-        });
+  <!-- Datatables -->
+  <script src="https://cdn.datatables.net/responsive/3.0.2/js/dataTables.responsive.js"></script>
+
+
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const tables = document.querySelectorAll("table");
+      tables.forEach((tbl) => {
+        if ($.fn.DataTable) {
+          $(tbl).DataTable();
+        }
       });
-    </script>
+    });
+  </script>
 
-    <!-- Google Translate -->
-    <script src="{% static 'dttdc_admin/js/googleTranslate.js' %}"></script>
+  <!-- Google Translate -->
+  <script src="{% static 'dttdc_admin/js/googleTranslate.js' %}"></script>
 
-    {% block extra_js %}{% endblock %}
-  </body>
+  {% block extra_js %}{% endblock %}
+</body>
+
 </html>
