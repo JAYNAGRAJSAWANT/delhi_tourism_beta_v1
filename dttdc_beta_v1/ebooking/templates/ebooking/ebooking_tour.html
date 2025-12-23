@@ -1,0 +1,113 @@
+{% extends "ebooking/base_ebooking.html" %}
+{% load static %}
+
+{% block tours %}
+<div class="container">
+  <div class="row mt-2">
+
+    <!-- Sidebar -->
+    <aside class="col-12 col-md-3">
+      {% include "ebooking/components/tour_booking_sidebar.html" %}
+    </aside>
+
+    <!-- Main Section -->
+    <section class="col-12 col-md-9">
+      <div class="content-wrapper mt-3">
+
+        <!-- OUTER BORDER -->
+        <div class="border">
+
+          <!-- HEADER -->
+          <div class="p-3 border-bottom">
+            <h5 class="fw-bold text-primary mb-2">
+              {{ tour.tour_name }}
+            </h5>
+
+
+
+
+            <div class="d-flex justify-content-center align-items-center">
+  {% if tour.tour_image %}
+    <img src="{{ tour.tour_image.url }}"
+         class="img-fluid border p-1"
+         style="max-height:140px; object-fit:contain;"
+         alt="{{ tour.tour_name }}">
+  {% endif %}
+</div>
+
+
+          </div>
+        </div>
+
+        <!-- DURATION / SCHEDULE / TIMING -->
+        <div class="p-3 border-bottom" style="background:#fbf7ec;">
+          {% if tour.tour_duration %}
+          <p class="mb-1"><strong>Duration:</strong></p>
+          {% endif %}
+
+          {% if tour.schedule %}
+          <p class="mb-1"><strong>Schedule:</strong><br>
+            {{ tour.schedule|linebreaks }}
+          </p>
+          {% endif %}
+
+          {% if tour.timing %}
+          <p class="mb-0"><strong>Timing:</strong><br>
+            {{ tour.timing|linebreaks }}
+          </p>
+          {% endif %}
+        </div>
+
+        <!-- PLACES COVERED -->
+        {% if tour.places_covered %}
+        <div class="p-3 border-bottom">
+          <strong>Places Covered:</strong>
+          <p class="mb-0">
+            {{ tour.places_covered|linebreaks }}
+          </p>
+        </div>
+        {% endif %}
+
+        <!-- TICKET SECTION -->
+        <div class="p-3" style="background:#fbf7ec;">
+          <strong>Ticket:</strong>
+
+          <p class="mb-1">
+            The tariff of each walk is Rs. {{ tour.fare_adult }} /- + 5% GST
+          </p>
+
+          <p class="mb-1">SGST (2.5%): Rs. {{ tour.fare_adult|floatformat:2 }}</p>
+          <p class="mb-1">CGST (2.5%): Rs. {{ tour.fare_child|floatformat:2 }}</p>
+
+          <p class="fw-bold">
+            Total: Rs. {{ tour.fare_adult|add:tour.fare_child }}
+          </p>
+
+          {% if tour.extra_details %}
+          <p class="text-danger mb-1">
+            <strong>*Note :</strong><br>
+            {{ tour.extra_details|linebreaks }}
+          </p>
+          {% endif %}
+
+          <button class="btn btn-warning btn-sm mt-2">
+            Book
+          </button>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="text-end text-danger small p-2">
+          T & C Applied
+        </div>
+
+      </div>
+
+  </div>
+  </section>
+
+</div>
+</div>
+
+
+
+{% endblock %}

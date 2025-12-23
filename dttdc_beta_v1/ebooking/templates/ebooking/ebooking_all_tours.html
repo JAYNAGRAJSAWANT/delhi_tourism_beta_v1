@@ -1,0 +1,40 @@
+{% extends "ebooking/base_ebooking.html" %}
+{% load static %}
+
+{% block alltours %}
+<div class="container">
+  <div class="row mt-2">
+
+    <!-- Sidebar -->
+    <aside class="col-12 col-md-3">
+      {% include "ebooking/components/tour_booking_sidebar.html" %}
+    </aside>
+
+    <!-- Main Section (fitted content) -->
+    <section class="col-12 col-md-9">
+      <div class="content-wrapper mt-3">
+
+        <div class="mt-1 px-4 h4"><div class="mb-4"><h1 class="text-dark fw-bold text-center border-bottom pb-2" style="font-size: 1.3rem;">{{ category.category_name }}</h1></div></div>
+
+            <div class="row">
+            {% for t in tours %}
+                <div class="col-lg-3 col-md-6 col-sm-12 mb-4">
+                  <a href="{% url 'tour' t.id %}" class="text-decoration-none text-dark">
+                <div class="img-thumbnail">
+                    <img src="{{ t.tour_image.url }}" class="card-img-top" style="max-height:180px; object-fit:cover;"  alt="{{ t.tour_name }}">
+                    <div class="text-center mt-2">
+                    <b class="tour-name">{{ t.tour_name }}</b>
+                    </div>
+                </div></a>
+                </div>
+            {% endfor %}
+            </div>
+
+      </div>
+    </section>
+
+  </div>
+</div>
+{% endblock %}
+
+

@@ -1,27 +1,18 @@
 {% extends "dttdc_admin/admin_hub.html" %}
-{% block admin_delete_tour %}
-
+{% block edit_tour_select %}
 
 <div class="container my-4">
-  {% if messages %}
-  {% for message in messages %}
-    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-      {{ message }}
-      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-  {% endfor %}
-{% endif %}
   <div class="row justify-content-center">
     <div class="col-12 col-md-8 col-lg-8">
 
       <div class="card shadow-sm">
         <div class="card-header text-center">
-          <h5 class="text-danger mb-0">Delete Tour</h5>
+          <h5 class="text-danger mb-0">Edit Tour</h5>
         </div>
 
         <div class="card-body">
           <p class="mb-3 text-black">
-            Select a category and respective tour to delete.
+            Select a category and tour to edit. On selection you'll be taken to the edit page.
           </p>
 
           <form method="post">
@@ -55,8 +46,8 @@
     </select>
   </div>
 
-  <button type="submit" name="delete" class="btn btn-danger">
-    Delete Tour
+  <button type="submit" name="go_to_edit" class="btn btn-primary">
+    Go to Edit
   </button>
   
   {% endif %}

@@ -9,12 +9,16 @@ urlpatterns = [
     path("admin_hub",views.admin_hub,name="admin_hub"),
 
     path("add_tour",views.admin_add_tour,name="add_tour"),
-    path("edit_tour",views.admin_edit_tour,name="edit_tour"),
+    path("edit_tour_select",views.admin_edit_tour_select,name="edit_tour_select"),
+    path("edit_tour/<int:pk>",views.admin_edit_tour,name="edit_tour"),
+   
     path("delete_tour",views.admin_delete_tour,name="delete_tour"),
 
     path("add_tour_category",views.admin_add_tour_category,name="add_tour_category"),
+
     path("edit_tour_category_select",views.admin_edit_tour_category_select,name="edit_tour_category_select"),
     path("edit_tour_category/<int:pk>",views.admin_edit_tour_category,name="edit_tour_category"),
+    
     path("delete_tour_category/<int:pk>",views.admin_delete_tour_category,name="delete_tour_category"),
     path("delete_tour_category_select",views.admin_delete_tour_category_select,name="delete_tour_category_select"),
 ]

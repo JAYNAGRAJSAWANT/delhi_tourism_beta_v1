@@ -58,7 +58,12 @@
   <body>
     {% include 'ebooking/components/header.html' %}
     {% include 'ebooking/components/menu.html' %}
-    <div id="root">{% block content %}{% endblock %}</div>
+    <div id="root">
+      {% block content %}{% endblock %}
+      {% block alltours %}{% endblock %}
+      {% block tours %}{% endblock %}
+    
+    </div>
     {% include 'ebooking/components/footer.html' %}
     <!-- Bootstrap JS -->
     <script
