@@ -142,9 +142,9 @@ class AddTourForm(forms.ModelForm):
 # ---------------------------------------------------------------------
     def clean_total_days(self):
         days = self.cleaned_data.get("total_days")
-        print("DEBUG total_days:", days)
+
         if days is None:
-         raise ValidationError("Total days is required.")
+            raise ValidationError("Total days is required.")
 
         # if days < 1:
         #  raise ValidationError("Total days must be at least 1.")
@@ -214,8 +214,6 @@ class AddTourForm(forms.ModelForm):
      else:
         cleaned_data["tour_duration"] = None
 
-     if total_days:
-        cleaned_data["total_days"] = int(total_days)   
      print("DEBUG cleaned_data AFTER:", cleaned_data)
      return cleaned_data
 
@@ -236,3 +234,38 @@ class AddTourForm(forms.ModelForm):
 
         for field in required_fields:
             self.fields[field].required = True
+
+
+# forms.py
+from django import forms
+from .models import DTTDCUserDetails
+
+class UserDetailsForm(forms.ModelForm):
+
+    class Meta:
+        model = DTTDCUserDetails
+        fields = [
+            "tour_journey_date",
+            "name",
+            "email",
+            "phone_number",
+            "address",
+            "city",
+            "state",
+            "country",
+            "pincode",
+            "passport",
+            "number_of_adults",
+            "number_of_child",
+        ]
+
+        widgets = {
+            "tour_journey_date": forms.DateInput(attrs={"type": "date"}),
+            "address": forms.Textarea(attrs={"rows": 3}),
+        }
+
+    def clean(self):
+        data = super().clean()
+        if data.get("number_of_adults", 0) < 1:
+            raise forms.ValidationError("At least 1 adult is required")
+        return data

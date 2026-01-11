@@ -159,6 +159,7 @@ def admin_edit_tour_category_select(request):
 @admin_jwt_required
 def admin_edit_tour_category(request,pk):
     category = get_object_or_404(DTTDCTourCategory,pk=pk)
+    print("Tour Category : ", category)
 
     if request.method == "POST":
         form = AddTourCategoryForm(request.POST,request.FILES,instance=category)
@@ -194,10 +195,10 @@ def admin_add_tour(request):
     ]
 
     if request.method == "POST":
-        form = AddTourForm(request.POST, request.FILES)
-        print("arrived here 1",form)
-        if form.is_valid():
-            tour = form.save(commit=False)
+        tour_form = AddTourForm(request.POST, request.FILES)
+        
+        if tour_form.is_valid():
+            tour = tour_form.save(commit=False)
             print("arrived here 2",tour)
 
             # ✅ GET MULTIPLE CHECKBOX VALUES
@@ -205,17 +206,17 @@ def admin_add_tour(request):
             tour.schedule = ",".join(schedule_days) if schedule_days else ""
 
             tour.save()
-            print("jay checking",tour)
             messages.success(request, "Tour added successfully.")
             return redirect("add_tour")
+        else:
+            # form = AddTourForm()
+            print("FORM ERRORS:", tour_form.errors)
+            print("NON FIELD ERRORS:", tour_form.non_field_errors())
     else:
+        tour_form = AddTourForm()
         
-        form = AddTourForm()
-        print(form.errors)
-        print(form.non_field_errors())
-
     context = {
-        "form": form,
+        "form": tour_form,
         "days": days,
         "range_0_31": range(0, 32),  # 🔥 REQUIRED for dropdowns
     }

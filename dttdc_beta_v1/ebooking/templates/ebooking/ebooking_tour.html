@@ -90,9 +90,11 @@
           </p>
           {% endif %}
 
-          <button class="btn btn-warning btn-sm mt-2">
-            Book
-          </button>
+          <a href="{% url 'start_booking' tour.id %}">
+            <button class="btn btn-warning btn-sm mt-2">
+              Book
+            </button>
+          </a>
         </div>
 
         <!-- FOOTER -->
