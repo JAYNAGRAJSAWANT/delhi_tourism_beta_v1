@@ -262,3 +262,38 @@ class AddTourForm(forms.ModelForm):
 
         for field in required_fields:
             self.fields[field].required = True
+
+
+# forms.py
+from django import forms
+from .models import DTTDCUserDetails
+
+class UserDetailsForm(forms.ModelForm):
+
+    class Meta:
+        model = DTTDCUserDetails
+        fields = [
+            "tour_journey_date",
+            "name",
+            "email",
+            "phone_number",
+            "address",
+            "city",
+            "state",
+            "country",
+            "pincode",
+            "passport",
+            "number_of_adults",
+            "number_of_child",
+        ]
+
+        widgets = {
+            "tour_journey_date": forms.DateInput(attrs={"type": "date"}),
+            "address": forms.Textarea(attrs={"rows": 3}),
+        }
+
+    def clean(self):
+        data = super().clean()
+        if data.get("number_of_adults", 0) < 1:
+            raise forms.ValidationError("At least 1 adult is required")
+        return data
