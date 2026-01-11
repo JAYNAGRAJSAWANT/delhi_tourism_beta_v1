@@ -12,6 +12,7 @@ def ebooking_all_tour_categories(request):
     context = {
         "categories":all_categories,
     }
+    print("context",context)
     return render(request,"ebooking/ebooking_all_categories.html",context)
 
 
