@@ -142,6 +142,7 @@ def admin_add_tour_category(request):
         form = AddTourCategoryForm(request.POST,request.FILES)
         if form.is_valid():
             form.save()
+            messages.success(request, "Category added successfully.")
             return redirect("add_tour_category")
     else:
         form = AddTourCategoryForm()
@@ -163,6 +164,7 @@ def admin_edit_tour_category(request,pk):
         form = AddTourCategoryForm(request.POST,request.FILES,instance=category)
         if form.is_valid():
             form.save()
+            messages.success(request, "Category updated successfully.")
     else:
         form = AddTourCategoryForm(instance=category)
         
@@ -173,7 +175,8 @@ def admin_edit_tour_category(request,pk):
 def admin_delete_tour_category(request,pk):
     category = get_object_or_404(DTTDCTourCategory,pk=pk)
     category.delete()
-    return render(request,"dttdc_admin/admin_home.html")
+    messages.success(request, "Category deleted successfully.")
+    return render(request,"dttdc_admin/admin_select_category_to_delete.html")
 
 @admin_jwt_required
 def admin_delete_tour_category_select(request):

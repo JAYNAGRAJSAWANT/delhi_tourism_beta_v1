@@ -114,19 +114,17 @@ class AddTourForm(forms.ModelForm):
             "tour_status": forms.RadioSelect(),
             "extra_details": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
         }
-
+# ---------------------------------------------------------------------
     def clean_tour_name(self):
-        name = self.cleaned_data.get("tour_name", "").strip()
-        print("DEBUG tour_name:", name)
-
-        if not name:
+        print("______________ale ahe re____________")
+        name = self.cleaned_data.get("tour_name", "")
+        print("DEBUG tour_name:", repr(name), len(name))
+        if not name.strip():
             raise ValidationError("Tour name is required.")
-
-        if len(name) > 200:
-            raise ValidationError("Tour name is too long.")
-
-        return name
-
+        if len(name.strip()) > 200:
+            raise ValidationError(f"Tour name is too long: {len(name.strip())} chars")
+        return name.strip()
+# ---------------------------------------------------------------------
     def clean_fare_adult(self):
         fare = self.cleaned_data.get("fare_adult")
         print("DEBUG fare_adult:", fare)
@@ -134,25 +132,25 @@ class AddTourForm(forms.ModelForm):
         if fare is not None and fare < 0:
             raise ValidationError("Adult fare cannot be negative.")
         return fare
-
+# ---------------------------------------------------------------------
     def clean_fare_child(self):
         fare = self.cleaned_data.get("fare_child")
         print("DEBUG fare_child:", fare)
         if fare is not None and fare < 0:
             raise ValidationError("Child fare cannot be negative.")
         return fare
-
+# ---------------------------------------------------------------------
     def clean_total_days(self):
         days = self.cleaned_data.get("total_days")
         print("DEBUG total_days:", days)
         if days is None:
          raise ValidationError("Total days is required.")
 
-        if days < 1:
-         raise ValidationError("Total days must be at least 1.")
+        # if days < 1:
+        #  raise ValidationError("Total days must be at least 1.")
 
         return days
-
+# ------------------------------------------------
     def clean_tour_image(self):
         image = self.cleaned_data.get("tour_image")
 
@@ -170,7 +168,7 @@ class AddTourForm(forms.ModelForm):
         #     raise ValidationError("Unsupported image type.")
 
         return image
-
+# ------------------------------------------------
     def clean_departure_dated(self):
         value = self.cleaned_data.get("departure_dated", "").strip()
         print("DEBUG departure_dated RAW:", value)
@@ -184,11 +182,11 @@ class AddTourForm(forms.ModelForm):
             try:
                 datetime.strptime(d.strip(), "%Y-%m-%d")
             except ValueError:
-                print("❌ INVALID DATE:", d)
+                print("INVALID DATE:", d)
                 raise ValidationError("Invalid date format detected.")
         
         return ",".join(sorted(set(dates)))
-    
+# ------------------------------------------------    
     def clean(self):
      cleaned_data = super().clean()
      print("DEBUG cleaned_data BEFORE:", cleaned_data)
@@ -203,7 +201,7 @@ class AddTourForm(forms.ModelForm):
         raise ValidationError("Both From and To timings are required.")
      else:
         cleaned_data["timing"] = None
-
+# ------------------------------------------------   
      # ---- TOUR DURATION ----
      days = self.data.get("tour_days")
      nights = self.data.get("tour_nights")
