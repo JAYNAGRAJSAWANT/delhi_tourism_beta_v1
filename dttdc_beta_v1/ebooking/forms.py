@@ -114,6 +114,32 @@ class AddTourForm(forms.ModelForm):
             "tour_status": forms.RadioSelect(),
             "extra_details": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
         }
+        
+    def clean(self):
+        cleaned_data = super().clean()
+
+        # ---------- TIMING ----------
+        from_time = self.data.get("timing_from")
+        to_time = self.data.get("timing_to")
+
+        if from_time and to_time:
+            cleaned_data["timing"] = f"{from_time} - {to_time}"
+        elif from_time or to_time:
+            self.add_error(None, "Both From and To timings are required.")
+        else:
+            cleaned_data["timing"] = None
+
+            
+        # ---------- TOUR DURATION ----------
+        days = self.data.get("tour_days")
+        nights = self.data.get("tour_nights")
+
+        if days == 0 and nights == 0:
+            self.add_error(None, "Tour duration cannot be 0 Days & 0 Nights.")
+        else:
+            cleaned_data["tour_duration"] = f"{days} Days & {nights} Nights"
+
+        return cleaned_data
 
     def clean_tour_name(self):
         name = self.cleaned_data.get("tour_name", "").strip()
@@ -144,12 +170,12 @@ class AddTourForm(forms.ModelForm):
 
     def clean_total_days(self):
         days = self.cleaned_data.get("total_days")
-        print("DEBUG total_days:", days)
+
         if days is None:
-         raise ValidationError("Total days is required.")
+            raise ValidationError("Total days is required.")
 
         if days < 1:
-         raise ValidationError("Total days must be at least 1.")
+            raise ValidationError("Total days must be at least 1.")
 
         return days
 
@@ -216,8 +242,6 @@ class AddTourForm(forms.ModelForm):
      else:
         cleaned_data["tour_duration"] = None
 
-     if total_days:
-        cleaned_data["total_days"] = int(total_days)   
      print("DEBUG cleaned_data AFTER:", cleaned_data)
      return cleaned_data
 
