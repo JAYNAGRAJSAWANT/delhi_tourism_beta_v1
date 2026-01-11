@@ -158,6 +158,7 @@ def admin_edit_tour_category_select(request):
 @admin_jwt_required
 def admin_edit_tour_category(request,pk):
     category = get_object_or_404(DTTDCTourCategory,pk=pk)
+    print("Tour Category : ", category)
 
     if request.method == "POST":
         form = AddTourCategoryForm(request.POST,request.FILES,instance=category)
@@ -204,11 +205,13 @@ def admin_add_tour(request):
             tour.save()
             messages.success(request, "Tour added successfully.")
             return redirect("add_tour")
+        else:
+            # form = AddTourForm()
+            print("FORM ERRORS:", tour_form.errors)
+            print("NON FIELD ERRORS:", tour_form.non_field_errors())
     else:
-        # form = AddTourForm()
-        print("FORM ERRORS:", tour_form.errors)
-        print("NON FIELD ERRORS:", tour_form.non_field_errors())
-
+        tour_form = AddTourForm()
+        
     context = {
         "form": tour_form,
         "days": days,
