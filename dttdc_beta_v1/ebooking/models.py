@@ -91,7 +91,7 @@ class DTTDCUserDetails(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
 
-# =========================DTTDC User Details Model===========================
+# =========================DTTDC Tour Booking Model===========================
 
     
 class DTTDCTourBooking(models.Model):
@@ -248,3 +248,19 @@ class DTTDCTourPaymentDetails(models.Model):
 
     def __str__(self):
         return self.txnid
+
+# =========================DTTDC Feedback Model===========================
+
+class Feedback(models.Model):
+    name = models.CharField(max_length=40)
+    email = models.EmailField(max_length=40)
+    phone = models.CharField(max_length=20)
+    feedback_date = models.DateTimeField(auto_now_add=True)
+    comment = models.CharField(max_length=2000)
+
+    class Meta:
+        db_table = 'feedback'   
+        ordering = ['-feedback_date']
+
+    def __str__(self):
+        return self.name

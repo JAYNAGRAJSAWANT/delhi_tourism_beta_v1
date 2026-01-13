@@ -30,3 +30,7 @@ class DTTDC_Captcha(models.Model):
 
     def __str__(self):
         return f"{self.captcha_token} ({self.validate_status})"
+
+
+
+   

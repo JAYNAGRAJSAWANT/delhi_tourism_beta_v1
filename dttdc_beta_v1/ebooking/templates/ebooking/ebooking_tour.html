@@ -90,12 +90,21 @@
           </p>
           {% endif %}
 
+          <div class="p-3 border-bottom" style="background:#fbf7ec;">
+           {{ tour.tour_details|safe }}
+          
+    
+        </div>
+
           <a href="{% url 'start_booking' tour.id %}">
             <button class="btn btn-warning btn-sm mt-2">
               Book
             </button>
           </a>
         </div>
+
+        
+
 
         <!-- FOOTER -->
         <div class="text-end text-danger small p-2">

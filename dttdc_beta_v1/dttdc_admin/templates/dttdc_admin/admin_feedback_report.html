@@ -1,0 +1,202 @@
+{% extends "dttdc_admin/base_admin.html" %}
+{% load static %}
+
+{% block feedback_report %}
+
+<!-- Page Title & Actions -->
+<div class="container-fluid mt-3">
+
+  <div class="position-relative mb-3">
+
+    <!-- Back Button -->
+    <a href="{% url 'admin_home' %}" class="btn btn-danger position-absolute start-0 top-50 translate-middle-y">
+      ← Back
+    </a>
+
+    <!-- Centered Title -->
+    <h4 class="fw-bold text-center mb-0">
+      Feedback Report
+    </h4>
+  </div>
+
+<form method="get">
+
+  <div class="row mb-3">
+    <div class="col-12">
+      <div class="card p-3">
+
+        <div class="row align-items-end g-3">
+
+          <!-- Label -->
+          <div class="col-lg-2 col-md-12 fw-semibold">
+            Enter Date:
+          </div>
+
+          <!-- From -->
+          <div class="col-lg-4 col-md-6 col-12">
+            <label class="form-label mb-0 small">From</label>
+            <input type="date" name="start_date" class="form-control w-100" value="{{ start_date }}">
+          </div>
+
+          <!-- To -->
+          <div class="col-lg-4 col-md-6 col-12">
+            <label class="form-label mb-0 small">To</label>
+            <input type="date" name="end_date" class="form-control w-100" value="{{ end_date }}">
+          </div>
+
+          <!-- Button -->
+          <div class="col-lg-2 col-md-12 col-12 d-flex">
+            <button type="submit" class="btn btn-primary w-100">
+              Generate Report
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+</form>
+  <!-- Feedback Table -->
+  <div class="card shadow-sm">
+    <div class="card-body">
+
+
+      <table id="feedbackTable" class="table table-bordered table-hover align-middle w-100">
+
+        <thead class="table-primary text-center align-middle">
+          <tr>
+            <th style="width:5%;">S No.</th>
+            <th style="width:14%;">Name</th>
+            <th style="width:16%;">Email</th>
+            <th style="width:7%;">Contact</th>
+            <th style="width:11%;">Date</th>
+            <th style="width:21%;">Comment</th>
+
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for fb in feedback_list %}
+          <tr>
+            <td class="text-center fw-semibold">
+              {{ forloop.counter }}
+            </td>
+            <td>{{ fb.name }}</td>
+            <td class="text-break">{{ fb.email }}</td>
+            <td>{{ fb.phone }}</td>
+            <td class="text-nowrap">
+              {{ fb.feedback_date|date:"d/m/Y h:i A" }}
+            </td>
+            <td>
+              <span class="comment-text">
+                {{ fb.comment|truncatechars:120 }}
+              </span>
+              {% if fb.comment|length > 120 %}
+              <a href="#" class="read-more ms-1" data-bs-toggle="modal"
+                data-bs-target="#commentModal{{ forloop.counter }}">
+                Read More
+              </a>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+        
+
+
+      </table>
+      {% for fb in feedback_list %}
+        <div class="modal fade" id="commentModal{{ forloop.counter }}" tabindex="-1">
+          <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">Full Feedback</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+              <div class="modal-body text-break">
+                {{ fb.comment }}
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+
+
+      <div class="mt-3 d-flex justify-content-end">
+        <div class="px-3 py-2 border rounded fw-semibold" style="background-color: rgb(186, 216, 117);">
+          Total Feedback Received: {{ feedback_list|length }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    @media (max-width: 576px) {
+
+      #feedbackTable th,
+      #feedbackTable td {
+        word-wrap: break-word;
+        word-break: break-word;
+        white-space: normal;
+      }
+    }
+
+    #feedbackTable {
+      table-layout: fixed;
+      width: 100%;
+    }
+
+    #feedbackTable td.text-break {
+      white-space: normal;
+      word-break: break-word;
+    }
+  </style>
+
+  <script>
+$(document).ready(function () {
+  if (!$.fn.DataTable.isDataTable('#feedbackTable')) {
+
+    let table = $('#feedbackTable').DataTable({
+      dom:
+        "<'row mb-2'<'col-md-6 d-flex align-items-center'l><'col-md-6 d-flex justify-content-end'fB>>" +
+        "<'row'<'col-12'tr>>" +
+        "<'row mt-2'<'col-md-5'i><'col-md-7'p>>",
+
+      buttons: [
+        {
+          extend: 'excelHtml5',
+          text: 'Download Report',
+          className: 'btn btn-success btn-sm ms-2',
+          title: 'Feedback_Report_' + new Date().toISOString().slice(0, 10),
+          exportOptions: {
+            columns: [0, 1, 2, 3, 4, 5]
+          }
+        }
+      ],
+
+      // 🔴 FORCE THESE
+      paging: true,
+      info: true,
+      lengthChange: true,
+
+      pageLength: 10,
+      lengthMenu: [10, 25, 50, 100],
+
+      // 🔴 IMPORTANT: disable responsive (it breaks paging calc here)
+      responsive: false,
+
+      deferRender: true
+    });
+
+    // 🔥 ONE FINAL RECALC AFTER PAINT
+    requestAnimationFrame(() => {
+      table.draw(false);
+    });
+  }
+});
+
+
+</script>
+
+  {% endblock %}

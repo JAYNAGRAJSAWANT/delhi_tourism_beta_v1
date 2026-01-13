@@ -8,4 +8,11 @@ urlpatterns = [
     path("tour/<int:tour_id>/",views.ebooking_tour_details,name="tour"),
     path("tour/<int:tour_id>/book/", views.start_booking,name="start_booking"),
     path("<str:pnr>/user-details/", views.booking_user_details, name="booking_user_details"),
+
+    # -------------------------------------------------------Feedback Form----------------------------------------------------------
+     path("captcha",views.captcha,name="captcha"),
+    path("feedback_form",views.ebooking_feedback_form,name="feedback_form"),
+
+    # -----------------------------------------------------------------------------------------------------------------
+  
 ]

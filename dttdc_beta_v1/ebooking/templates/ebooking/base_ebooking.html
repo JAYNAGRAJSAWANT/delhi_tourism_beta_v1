@@ -63,6 +63,8 @@
       {% block alltours %}{% endblock %}
       {% block tours %}{% endblock %}
       {% block user_details %}{% endblock %}
+      {% block feedback %}{% endblock %}
+
     </div>
     {% include 'ebooking/components/footer.html' %}
     <!-- Bootstrap JS -->
@@ -79,7 +81,14 @@
         const tables = document.querySelectorAll("table");
         tables.forEach((tbl) => {
           if ($.fn.DataTable) {
-            $(tbl).DataTable();
+            $(tbl).DataTable({
+  scrollX: false,
+  autoWidth: false,
+  responsive: true,
+  columnDefs: [
+    { targets: [5], orderable: false }
+  ]
+});
           }
         });
       });
