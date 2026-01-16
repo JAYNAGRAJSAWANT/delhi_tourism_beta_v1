@@ -152,14 +152,20 @@ def ebooking_feedback_form(request):
     })
 def load_states(request):
     country_id = request.GET.get('country')
-    print("AJAX: country_id received =", country_id)
     states = Region.objects.filter(country_id=country_id).order_by('name')
-    print("States queryset count:", states.count())
-    return render(request, 'ebooking/partials/state_dropdown_list_options.html', {'states': states})
+
+    html = '<option value="">Select State</option>'
+    for state in states:
+        html += f'<option value="{state.id}">{state.name}</option>'
+
+    return HttpResponse(html)
 
 def load_cities(request):
     state_id = request.GET.get('state')
-    print("AJAX: state_id received =", state_id)
     cities = City.objects.filter(region_id=state_id).order_by('name')
-    print("Cities queryset count:", cities.count())
-    return render(request, 'ebooking/partials/city_dropdown_list_options.html', {'cities': cities})
+
+    html = '<option value="">Select City</option>'
+    for city in cities:
+        html += f'<option value="{city.id}">{city.name}</option>'
+
+    return HttpResponse(html)

@@ -3,7 +3,7 @@ from .models import DTTDCTourCategory, DTTDCTour
 from django.core.exceptions import ValidationError
 from django.core.files.images import get_image_dimensions
 import imghdr
-from datetime import datetime
+from datetime import date, datetime
 from cities_light.models import Country, Region, City
 MAX_IMAGE_SIZE = 2 * 1024 * 1024  # 2MB
 
@@ -241,6 +241,22 @@ from django import forms
 from .models import DTTDCUserDetails
 
 class UserDetailsForm(forms.ModelForm):
+
+    country = forms.ModelChoiceField(
+        queryset=Country.objects.all().order_by('name'),
+        empty_label="Select Country"
+    )
+
+    state = forms.ModelChoiceField(
+        queryset=Region.objects.none(),
+        empty_label="Select State"
+    )
+
+    city = forms.ModelChoiceField(
+        queryset=City.objects.none(),
+        empty_label="Select City"
+    )
+
     class Meta:
         model = DTTDCUserDetails
         fields = [
@@ -249,9 +265,9 @@ class UserDetailsForm(forms.ModelForm):
             "email",
             "phone_number",
             "address",
-            "city",
-            "state",
             "country",
+            "state",
+            "city",
             "pincode",
             "passport",
             "number_of_adults",
@@ -260,10 +276,7 @@ class UserDetailsForm(forms.ModelForm):
 
         widgets = {
             "tour_journey_date": forms.DateInput(
-                attrs={
-                    "type": "date",
-                    "class": "form-control"
-                }
+                attrs={"type": "date", "class": "form-control"}
             ),
             "address": forms.Textarea(
                 attrs={
@@ -277,54 +290,47 @@ class UserDetailsForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        # Reset querysets
         self.fields['state'].queryset = Region.objects.none()
         self.fields['city'].queryset = City.objects.none()
 
+        # Load states
         if 'country' in self.data:
             try:
                 country_id = int(self.data.get('country'))
-                self.fields['state'].queryset = Region.objects.filter(country_id=country_id).order_by('name')
+                self.fields['state'].queryset = Region.objects.filter(
+                    country_id=country_id
+                ).order_by('name')
             except (ValueError, TypeError):
                 pass
         elif self.instance.pk and self.instance.country:
-            self.fields['state'].queryset = Region.objects.filter(country=self.instance.country).order_by('name')
+            self.fields['state'].queryset = Region.objects.filter(
+                country=self.instance.country
+            ).order_by('name')
 
+        # Load cities
         if 'state' in self.data:
             try:
                 state_id = int(self.data.get('state'))
-                self.fields['city'].queryset = City.objects.filter(region_id=state_id).order_by('name')
+                self.fields['city'].queryset = City.objects.filter(
+                    region_id=state_id
+                ).order_by('name')
             except (ValueError, TypeError):
                 pass
         elif self.instance.pk and self.instance.state:
-            self.fields['city'].queryset = City.objects.filter(region=self.instance.state).order_by('name')
+            self.fields['city'].queryset = City.objects.filter(
+                region=self.instance.state
+            ).order_by('name')
 
-        placeholders = {
-            "name": "Full Name",
-            "email": "Email Address",
-            "phone_number": "Mobile Number",
-            "city": "City",
-            "state": "State",
-            "country": "Country",
-            "pincode": "Pincode",
-            "passport": "Passport Number",
-            "number_of_adults": "Number of Adults",
-            "number_of_child": "Number of Children",
-        }
-        
-
-        for field_name, field in self.fields.items():
-            # Add Bootstrap class to all inputs
+        # Add bootstrap class to all fields
+        for field in self.fields.values():
             field.widget.attrs.setdefault("class", "form-control")
 
-            # Add placeholders
-            if field_name in placeholders:
-                field.widget.attrs["placeholder"] = placeholders[field_name]
-    
     def clean_tour_journey_date(self):
-         journey_date = self.cleaned_data["tour_journey_date"]
-         if journey_date < date.today():
-             raise forms.ValidationError("Journey date cannot be in the past")
-         return journey_date
+        journey_date = self.cleaned_data["tour_journey_date"]
+        if journey_date < date.today():
+            raise forms.ValidationError("Journey date cannot be in the past")
+        return journey_date
 
     def clean(self):
         data = super().clean()
