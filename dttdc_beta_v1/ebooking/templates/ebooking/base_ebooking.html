@@ -96,6 +96,49 @@
 
     <!-- Google Translate -->
     <script src="{% static 'ebooking/js/googleTranslate.js' %}"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+    // When country changes  
+$(document).ready(function () {
+    console.log("JS LOADED AND DOM READY");
+
+    $("#id_country").on("change", function () {
+        let countryId = $(this).val();
+        console.log("Country changed:", countryId);
+
+        $.ajax({
+            url: "{% url 'ajax_load_states' %}",
+            data: { country: countryId },
+            success: function (data) {
+                console.log("States received");
+                $("#id_state").html(data);
+                $("#id_city").html('<option value="">---------</option>');
+            },
+            error: function (xhr) {
+                console.error("State AJAX error", xhr.responseText);
+            }
+        });
+    });
+
+    $("#id_state").on("change", function () {
+        let stateId = $(this).val();
+        console.log("State changed:", stateId);
+
+        $.ajax({
+            url: "{% url 'ajax_load_cities' %}",
+            data: { state: stateId },
+            success: function (data) {
+                console.log("Cities received");
+                $("#id_city").html(data);
+            },
+            error: function (xhr) {
+                console.error("City AJAX error", xhr.responseText);
+            }
+        });
+    });
+});
+</script>
 
     {% block extra_js %}{% endblock %}
   </body>

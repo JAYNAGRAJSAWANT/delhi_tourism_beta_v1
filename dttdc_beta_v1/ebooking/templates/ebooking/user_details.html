@@ -6,139 +6,287 @@
 <div class="container">
   <div class="row m-3">
 
-    <div class="col-lg-3">
-      <div>
-        <div class="SideTitle text-white">Online Booking</div>
-      </div>
-    </div>
+    <aside class="col-12 col-md-3">
+      {% include "ebooking/components/tour_booking_sidebar.html" %}
+    </aside>
 
     <div class="col-lg-9">
-      <div class="card mt-4 shadow-lg">
+      <div class="card mt-4 shadow-sm">
 
-        <div class="card-header text-center fs-3">
-          <h5 class="text-dark h4">Online Tour Booking Form</h5>
+        <div class="card-header text-center bg-light py-4"
+          style="border-bottom: 3px solid #b8440e; border-radius: .5rem .5rem 0 0;">
+          <h5 class=" fw-bold mb-1" style="font-size: 1.5rem; letter-spacing: 0.5px;">
+            Online Tour Booking Form
+          </h5>
         </div>
+
 
         <div class="SideTitle p-2 text-center bg-light my-2 text-white">
           {{ booking.dttdc_tour.tour_name }}
         </div>
 
-        <div class="card-body">
+        <div class="ticket-wrapper">
 
-          <p class="text-center">
-            PNR: <strong>{{ booking.pnr_number }}</strong>
-          </p>
+          <div class="ticket-wrapper">
 
-          <form method="post">
-            {% csrf_token %}
+            <div class="ticket-card">
 
-            <div class="form-group row">
-              <label class="col-sm-2 col-form-label required">Date of Journey</label>
-              <div class="col-sm-10">
-                {{ form.tour_journey_date }}
+              <!-- TICKET HEADER -->
+              <div class="ticket-header d-flex justify-content-between align-items-center">
+                <!-- LEFT: Shrink to content -->
+                <div class="d-flex flex-column">
+                  <h6 class="mb-0 text-uppercase fw-semibold">Tour Booking Ticket</h6>
+                </div>
+
+                <!-- RIGHT: PNR aligned to right -->
+                <div>
+                  <span class="pnr-badge">
+                    PNR : <strong>{{ booking.pnr_number }}</strong>
+                  </span>
+                </div>
               </div>
+
+
+              <form method="post">
+                {% csrf_token %}
+
+                <!-- CONTACT DETAILS -->
+                <div class="ticket-section">
+                  <div class="section-label">Contact Information</div>
+
+                  <div class="row mb-3 align-items-center">
+                    <label class="col-md-3 col-form-label fw-semibold">Date of Journey <span
+                        class="text-danger">*</span></label>
+                    <div class="col-md-9">
+                      {{ form.tour_journey_date }}
+                    </div>
+                  </div>
+
+                  <div class="row mb-3 align-items-center">
+                    <label class="col-md-3 col-form-label fw-semibold">Full Name <span
+                        class="text-danger">*</span></label>
+                    <div class="col-md-9">
+                      {{ form.name }}
+                    </div>
+                  </div>
+
+                  <div class="row mb-3 align-items-center">
+                    <label class="col-md-3 col-form-label fw-semibold">
+                      Mobile Number <span class="text-danger">*</span>
+                    </label>
+
+                    <div class="col-md-9">
+                      <div class="input-group">
+                        <span class="input-group-text">+91</span>
+                        {{ form.phone_number }}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row mb-3 align-items-center">
+                    <label class="col-md-3 col-form-label fw-semibold">Email <span class="text-danger">*</span></label>
+                    <div class="col-md-9">
+                      {{ form.email }}
+                    </div>
+                  </div>
+
+
+                </div>
+
+                <!-- ADDRESS DETAILS -->
+                <div class="ticket-section border-top pt-3">
+                  <div class="section-label">Address Details</div>
+
+                  <div class="row mb-3 align-items-center">
+                    <label class="col-md-3 col-form-label fw-semibold">Complete Address <span
+                        class="text-danger">*</span></label>
+                    <div class="col-md-9">
+                      {{ form.address }}
+                    </div>
+                  </div>
+
+                  <div class="row mb-3 align-items-center">
+                    <label class="col-md-3 col-form-label fw-semibold">Country <span
+                        class="text-danger">*</span></label>
+                    <div class="col-md-3">{{ form.country }}</div>
+
+                    <label class="col-md-3 col-form-label fw-semibold">State <span class="text-danger">*</span></label>
+                    <div class="col-md-3">{{ form.state }}</div>
+                  </div>
+
+                  <div class="row mb-3 align-items-center">
+                    <label class="col-md-3 col-form-label fw-semibold">City <span class="text-danger">*</span></label>
+                    <div class="col-md-3">{{ form.city }}</div>
+
+                    <label class="col-md-3 col-form-label fw-semibold">PIN / ZIP Code <span
+                        class="text-danger">*</span></label>
+                    <div class="col-md-3">{{ form.pincode }}</div>
+                  </div>
+
+                 {% if booking.user_details and booking.user_details.country.code != "IN" %}
+
+                  <div class="row mb-3 align-items-center">
+                    <label class="col-md-3 col-form-label fw-semibold">Passport Number</label>
+                    <div class="col-md-9">{{ form.passport }}</div>
+                  </div>
+                  {% endif %}
+                </div>
+
+                <!-- PASSENGER DETAILS -->
+                <div class="ticket-section border-top pt-3">
+                  <div class="section-label">Passenger Details</div>
+
+                  <div class="row mb-3 align-items-center">
+                    <label class="col-md-3 col-form-label fw-semibold">Adults <small class="text-danger">(Age above
+                        10)</small></label>
+                    <div class="col-md-3">{{ form.number_of_adults }}</div>
+
+                    <label class="col-md-3 col-form-label fw-semibold">Children <small class="text-danger">(Age
+                        5-10)</small></label>
+                    <div class="col-md-3">{{ form.number_of_child }}</div>
+                  </div>
+                </div>
+
+                <!-- FOOTER -->
+                <div class="ticket-footer border-top d-flex justify-content-between align-items-center">
+                  <div class="small text-muted text-start">
+                    <strong>Note:</strong><br>
+                    1. Age below 5 years have no travel cost.
+                  </div>
+                  <div>
+                    <button type="submit" class="btn btn-primary px-4">
+                      Save & Continue
+                    </button>
+                  </div>
+                </div>
+
+              </form>
+
+
+
+
             </div>
 
-            <div class="form-group row mt-2">
-              <label class="col-sm-2 col-form-label required">Email</label>
-              <div class="col-sm-10">
-                {{ form.email }}
-              </div>
-            </div>
+          </div>
 
-            <div class="form-group row mt-2">
-              <label class="col-sm-2 col-form-label required">Full Name</label>
-              <div class="col-sm-10">
-                {{ form.name }}
-              </div>
-            </div>
 
-            <div class="form-group row mt-2">
-              <label class="col-sm-2 col-form-label required">Address</label>
-              <div class="col-sm-10">
-                {{ form.address }}
-              </div>
-            </div>
 
-            <div class="form-group row mt-2">
-              <label class="col-sm-2 col-form-label required">Country</label>
-              <div class="col-sm-10">
-                {{ form.country }}
-              </div>
-            </div>
 
-            <div class="form-group row mt-2">
-              <label class="col-sm-2 col-form-label required">State</label>
-              <div class="col-sm-10">
-                {{ form.state }}
-              </div>
-            </div>
-
-            <div class="form-group row mt-2">
-              <label class="col-sm-2 col-form-label required">City</label>
-              <div class="col-sm-10">
-                {{ form.city }}
-              </div>
-            </div>
-
-            <div class="form-group row mt-2">
-              <label class="col-sm-2 col-form-label required">Phone</label>
-              <div class="col-sm-10">
-                {{ form.phone_number }}
-              </div>
-            </div>
-
-            {% if booking.user_details.country != "IN" %}
-            <div class="form-group row mt-2">
-              <label class="col-sm-2 col-form-label required">Passport</label>
-              <div class="col-sm-10">
-                {{ form.passport }}
-              </div>
-            </div>
-            {% endif %}
-
-            <div class="form-group row mt-2">
-              <label class="col-sm-2 col-form-label required">Pin / Zip</label>
-              <div class="col-sm-10">
-                {{ form.pincode }}
-              </div>
-            </div>
-
-            <div class="form-group row mt-2">
-              <label class="col-sm-2 col-form-label required">
-                Number of Passengers
-              </label>
-              <div class="col-sm-4">
-                <label>Adult</label>
-                {{ form.number_of_adults }}
-              </div>
-              <div class="col-sm-4">
-                <label>Child</label>
-                {{ form.number_of_child }}
-              </div>
-            </div>
-
-            <div class="text-end mt-4">
-              <button type="submit" class="btn btn-warning">
-                Save And Next
-              </button>
-            </div>
-
-          </form>
         </div>
-
-        <div class="ps-3">
-          <br />
-          NOTE :-
-          <br />
-          1. Age below 5 years have no travel cost.
-        </div>
-
       </div>
+
     </div>
-
   </div>
-</div>
+
+  <style>
+    .ticket-section {
+      background: #ffffff;
+      padding: 25px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #495057;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      border-bottom: 1px dashed #dee2e6;
+      padding-bottom: 8px;
+      margin-bottom: 15px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 5px;
+    }
+
+    .ticket-footer {
+      padding: 15px 0;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #e75a1e, #77340b, #e75a1e);
+      border: none;
+      font-weight: 600;
+    }
+
+    .fw-semibold {
+      font-weight: 600 !important;
+    }
+
+    .pnr-badge {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .ticket-wrapper {
+      background: #f3f4f6;
+      padding: 6px;
+      padding-top: 0px;
+      border-radius: 10px;
+    }
+
+    .ticket-card {
+      background: #ffffff;
+      border-radius: 8px;
+      border: 1px solid #dee2e6;
+    }
+
+    .ticket-header {
+      background: linear-gradient(135deg, #e75a1e, #d8844f, #e75a1e);
+      color: #fff;
+      padding: 16px 20px;
+    }
+
+    .ticket-header h6 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin: 0;
+      color: whitesmoke;
+    }
+
+    .pnr-badge {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 0.85rem;
+    }
+
+    .ticket-section {
+      padding: 20px;
+    }
+
+    .section-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      color: #6c757d;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+    }
+
+    .form-label-col {
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: #495057;
+      padding-top: 6px;
+    }
+
+    .ticket-footer {
+      background: #f8f9fa;
+      padding: 15px 20px;
+      border-top: 1px solid #dee2e6;
+    }
+  </style>
 
 
+  
 {% endblock %}

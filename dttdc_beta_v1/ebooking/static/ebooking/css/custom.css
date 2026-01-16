@@ -184,7 +184,7 @@ ul.list-unstyled li a.text-danger:hover {
 .SideTitle {
   padding: 1rem !important;
   margin-top: 1rem;
-  background: linear-gradient(135deg, #e75a1e, #77340b, #e75a1e) !important;
+  background: linear-gradient(135deg, #e75a1e, #ac4708, #e75a1e) !important;
   font-size: 1.2rem !important; /* Increased font size */
   font-weight: bold;
   color: #555; /* Preferred title color */

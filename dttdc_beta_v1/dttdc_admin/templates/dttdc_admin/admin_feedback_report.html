@@ -19,10 +19,19 @@
     </h4>
   </div>
 
-<form method="get">
+<form method="get" id="feedbackForm">
 
   <div class="row mb-3">
     <div class="col-12">
+      {% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+      {{ message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  {% endfor %}
+{% endif %}
+
       <div class="card p-3">
 
         <div class="row align-items-end g-3">
@@ -198,5 +207,24 @@ $(document).ready(function () {
 
 
 </script>
+
+<script>
+document.getElementById('feedbackForm').addEventListener('submit', function (e) {
+  const startDate = document.querySelector('input[name="start_date"]').value;
+  const endDate = document.querySelector('input[name="end_date"]').value;
+
+  if (!startDate || !endDate) {
+    e.preventDefault(); // stop form submit
+    alert('Please select both From and To dates to generate the report.');
+  }
+});
+</script>
+<script>
+window.addEventListener('pageshow', function () {
+  document.querySelector('input[name="start_date"]').value = '';
+  document.querySelector('input[name="end_date"]').value = '';
+});
+</script>
+
 
   {% endblock %}

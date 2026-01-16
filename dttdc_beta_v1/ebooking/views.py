@@ -9,7 +9,7 @@ from django.contrib import messages
 import re
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
-
+from cities_light.models import Region, City
 
 def home(request):
     return render(request,"ebooking/base_ebooking.html")
@@ -150,3 +150,16 @@ def ebooking_feedback_form(request):
         "captcha_token": captcha_data["captchaToken"],
         "form_data": request.POST if errors else {},
     })
+def load_states(request):
+    country_id = request.GET.get('country')
+    print("AJAX: country_id received =", country_id)
+    states = Region.objects.filter(country_id=country_id).order_by('name')
+    print("States queryset count:", states.count())
+    return render(request, 'ebooking/partials/state_dropdown_list_options.html', {'states': states})
+
+def load_cities(request):
+    state_id = request.GET.get('state')
+    print("AJAX: state_id received =", state_id)
+    cities = City.objects.filter(region_id=state_id).order_by('name')
+    print("Cities queryset count:", cities.count())
+    return render(request, 'ebooking/partials/city_dropdown_list_options.html', {'cities': cities})
