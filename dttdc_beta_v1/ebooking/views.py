@@ -9,7 +9,7 @@ from django.contrib import messages
 import re
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
-from cities_light.models import Region, City
+
 
 def home(request):
     return render(request,"ebooking/base_ebooking.html")
@@ -138,7 +138,7 @@ def ebooking_feedback_form(request):
                 phone=phone,
                 comment=comment
             )
-            messages.success(request, "Thank you for your valuable feedback!")
+            messages.success(request, "We have received your feedback succesfully!")
             return redirect("feedback_form")  # SAME PAGE
 
         # ❌ ERRORS → regenerate captcha
@@ -150,22 +150,3 @@ def ebooking_feedback_form(request):
         "captcha_token": captcha_data["captchaToken"],
         "form_data": request.POST if errors else {},
     })
-def load_states(request):
-    country_id = request.GET.get('country')
-    states = Region.objects.filter(country_id=country_id).order_by('name')
-
-    html = '<option value="">Select State</option>'
-    for state in states:
-        html += f'<option value="{state.id}">{state.name}</option>'
-
-    return HttpResponse(html)
-
-def load_cities(request):
-    state_id = request.GET.get('state')
-    cities = City.objects.filter(region_id=state_id).order_by('name')
-
-    html = '<option value="">Select City</option>'
-    for city in cities:
-        html += f'<option value="{city.id}">{city.name}</option>'
-
-    return HttpResponse(html)

@@ -1,5 +1,5 @@
 from django.db import models
-from cities_light.models import Country, Region, City
+
 # --- Core Models --- 
 
 # =========================DTTDC Tour Category Model===========================
@@ -59,7 +59,6 @@ class DTTDCTour(models.Model):
         return self.tour_name
 
 # =========================DTTDC User Details Model===========================
-
 class DTTDCUserDetails(models.Model):
 
     booking = models.OneToOneField(
@@ -77,9 +76,9 @@ class DTTDCUserDetails(models.Model):
     phone_number = models.CharField(max_length=20)
 
     address = models.TextField()
-    country = models.ForeignKey(Country, on_delete=models.SET_NULL, null=True, blank=True)
-    state = models.ForeignKey(Region, on_delete=models.SET_NULL, null=True, blank=True)
-    city = models.ForeignKey(City, on_delete=models.SET_NULL, null=True, blank=True)
+    city = models.CharField(max_length=100)
+    state = models.CharField(max_length=100)
+    country = models.CharField(max_length=100)
     pincode = models.CharField(max_length=15)
 
     passport = models.CharField(max_length=20, blank=True, null=True)
