@@ -98,48 +98,7 @@
     <script src="{% static 'ebooking/js/googleTranslate.js' %}"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-    <script>
-    // When country changes  
-$(document).ready(function () {
-    console.log("JS LOADED AND DOM READY");
-
-    $("#id_country").change(function () {
-    const countryId = $(this).val();
-    console.log("Country changed:", countryId);
-
-    $("#id_state").html('<option value="">Select State</option>');
-    $("#id_city").html('<option value="">Select City</option>');
-
-    if (!countryId) return;
-
-    $.ajax({
-        url: "{% url 'ajax_load_states' %}",
-        data: { country: countryId },
-        success: function (data) {
-            $("#id_state").html(data);
-        }
-    });
-});
-
-$("#id_state").change(function () {
-    const stateId = $(this).val();
-    console.log("State changed:", stateId);
-
-    $("#id_city").html('<option value="">Select City</option>');
-
-    if (!stateId) return;
-
-    $.ajax({
-        url: "{% url 'ajax_load_cities' %}",
-        data: { state: stateId },
-        success: function (data) {
-            $("#id_city").html(data);
-        }
-    });
-});
-
-});
-</script>
+    
 
     {% block extra_js %}{% endblock %}
   </body>
