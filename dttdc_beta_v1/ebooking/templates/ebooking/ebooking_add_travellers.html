@@ -1,0 +1,305 @@
+{% extends "ebooking/base_ebooking.html" %}
+{% load static %}
+
+{% block add_travellers %}
+
+<div class="container">
+  <div class="row m-3">
+
+    <aside class="col-12 col-md-3">
+      {% include "ebooking/components/tour_booking_sidebar.html" %}
+    </aside>
+
+    <div class="col-lg-9">
+      <div class="card mt-4 shadow-sm">
+
+        <div class="card-header text-center bg-light py-3">
+          <h5 class="fw-bold mb-1" style="font-size: 1.5rem; letter-spacing: 0.5px;">
+            Enter Passenger Details
+          </h5>
+        </div>
+
+        <div class="ticket-wrapper">
+          <div class="ticket-card">
+
+            <!-- TICKET HEADER -->
+            <div class="ticket-header d-flex justify-content-between align-items-center">
+              <div class="d-flex flex-column">
+                <h6 class="mb-0 text-uppercase fw-semibold">Passenger Details</h6>
+              </div>
+              <div>
+                <span class="pnr-badge">
+                  PNR : <strong>{{ booking.pnr_number }}</strong>
+                </span>
+              </div>
+            </div>
+
+            <form method="post" id="passengerForm">
+              {% csrf_token %}
+
+              <div class="ticket-section">
+
+                <!-- Passenger Count -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <div class="section-label mb-0">
+                    Selected Passengers:
+                    <span class="passenger-count ms-3">
+                      <span class="count-item">Adults: <strong>{{ adults }}</strong></span>
+                      <span class="count-item ms-3">Children: <strong>{{ children }}</strong></span>
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Passenger Rows Container -->
+                <div id="passengerContainer"></div>
+
+                <!-- Add Passenger Button (Below rows) -->
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                  <div class="text-muted small">
+                    <strong>Note :</strong>
+                    Adult (Age above 10), Child (Age between 5 to 10)
+                  </div>
+
+                  <div>
+                    <button type="button" id="addPassengerBtn" class="btn btn-danger btn-sm">
+                      + Add Passenger
+                    </button>
+                  </div>
+                </div>
+
+
+              </div>
+
+
+
+              <!-- FOOTER -->
+              <div class="ticket-footer d-flex justify-content-between align-items-center mb-3 px-3">
+                <div>
+                  <a href="{% url 'booking_user_details' booking.pnr_number %}" class="btn btn-primary px-4">
+                    Previous
+                  </a>
+                </div>
+
+                <div>
+                  <button type="submit" class="btn btn-primary px-4">
+                    Save & Next
+                  </button>
+                </div>
+              </div>
+
+
+            </form>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<style>
+  .text-muted.small {
+  opacity: 0.85;
+}
+
+  .passenger-count {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #495057;
+  }
+
+  .count-item {
+    background: #f1f3f5;
+    border: 1px solid #dee2e6;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+  }
+
+  .ticket-section {
+    background: #ffffff;
+    padding: 25px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+  }
+
+  .section-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #495057;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-bottom: 1px dashed #dee2e6;
+    padding-bottom: 8px;
+    margin-bottom: 15px;
+  }
+
+  .count-box {
+    background: #f7f7f7;
+    border: 1px solid #e3e3e3;
+    font-weight: 500;
+  }
+
+  .btn-danger {
+    background: #d32f2f;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+  }
+
+  .btn-outline-warning {
+    border-radius: 6px;
+    font-weight: 600;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #e75a1e, #77340b, #e75a1e);
+    border: none;
+    font-weight: 600;
+  }
+
+  .ticket-wrapper {
+    background: #f3f4f6;
+    padding: 0px;
+    padding-top: 0px;
+    border-radius: 0px;
+  }
+
+  .ticket-card {
+    background: #ffffff;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+  }
+
+  .ticket-header {
+    background: linear-gradient(135deg, #e75a1e, #d8844f, #e75a1e);
+    color: #fff;
+    padding: 16px 20px;
+  }
+
+  .ticket-header h6 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 0;
+    color: whitesmoke;
+  }
+
+  .pnr-badge {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .passenger-row {
+    border: 1px solid #e3e3e3;
+    padding: 16px;
+    margin-bottom: 14px;
+    border-radius: 8px;
+    background: #fbfbfb;
+    position: relative;
+  }
+
+  .passenger-row .form-label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #444;
+  }
+
+  .passenger-row input,
+  .passenger-row select {
+    border-radius: 6px;
+    border: 1px solid #d7d7d7;
+    background: #fff;
+  }
+
+  .delete-btn {
+    position: absolute;
+    right: 14px;
+    top: 14px;
+    background: #fff;
+    border: 1px solid #e3e3e3;
+    color: #d32f2f;
+    border-radius: 50%;
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .delete-btn:hover {
+    background: #ffe6e6;
+  }
+
+  .delete-btn i {
+    font-size: 18px;
+  }
+</style>
+
+
+<script>
+  function passengerRow(index, showDelete = true) {
+    return `
+      <div class="passenger-row" data-index="${index}">
+        <div class="row">
+          <div class="col-md-4">
+            <label class="form-label">Full Name</label>
+            <input type="text" name="passenger_${index}_name" class="form-control" required>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Age</label>
+            <input type="number" name="passenger_${index}_age" class="form-control" required>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Gender</label>
+            <select name="passenger_${index}_gender" class="form-control" required>
+              <option value="">Select</option>
+              <option>Male</option>
+              <option>Female</option>
+              <option>Other</option>
+            </select>
+          </div>
+
+          ${showDelete ? `
+          <div class="col-md-1 d-flex align-items-center">
+            <button type="button" class="delete-btn" onclick="removePassenger(${index})">
+              <i class="fa fa-trash"></i>
+            </button>
+          </div>` : ``}
+        </div>
+      </div>
+    `;
+  }
+
+  let passengerIndex = 0;
+
+  // ✅ Default passenger (NO delete button)
+  document.addEventListener('DOMContentLoaded', () => {
+    passengerIndex = 1;
+    document
+      .getElementById('passengerContainer')
+      .insertAdjacentHTML('beforeend', passengerRow(1, false));
+  });
+
+  // ➕ Add passenger (with delete button)
+  document.getElementById('addPassengerBtn').addEventListener('click', () => {
+    passengerIndex++;
+    document
+      .getElementById('passengerContainer')
+      .insertAdjacentHTML('beforeend', passengerRow(passengerIndex, true));
+  });
+
+  function removePassenger(index) {
+    const row = document.querySelector(`.passenger-row[data-index="${index}"]`);
+    if (row) row.remove();
+  }
+</script>
+
+
+{% endblock %}

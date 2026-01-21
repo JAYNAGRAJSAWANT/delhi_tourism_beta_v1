@@ -354,7 +354,27 @@ def admin_feedback_report(request):
 
     return render(request, "dttdc_admin/admin_feedback_report.html", context)
 
+# -----------------------------------Update Tour Availability--------------------------------------
 
+@admin_jwt_required
+def admin_update_tour_availability(request):
+    feedback_list = Feedback.objects.all().order_by('-feedback_date')
+
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+
+    if start_date and end_date:
+        feedback_list = feedback_list.filter(
+            feedback_date__date__range=[start_date, end_date]
+        )
+
+    context = {
+        'feedback_list': feedback_list,
+        'start_date': start_date,
+        'end_date': end_date,
+    }
+
+    return render(request, "dttdc_admin/admin_update_tour_availability.html", context)
 
 # Added By Jay End
     

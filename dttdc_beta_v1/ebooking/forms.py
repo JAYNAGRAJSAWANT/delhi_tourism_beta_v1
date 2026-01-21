@@ -1,5 +1,6 @@
+import re
 from django import forms
-from .models import DTTDCTourCategory, DTTDCTour
+from .models import DTTDCTourCategory, DTTDCTour,DTTDCUserDetails
 from django.core.exceptions import ValidationError
 from django.core.files.images import get_image_dimensions
 import imghdr
@@ -236,12 +237,27 @@ class AddTourForm(forms.ModelForm):
             self.fields[field].required = True
 
 
-# forms.py
-from django import forms
-from .models import DTTDCUserDetails
-
 class UserDetailsForm(forms.ModelForm):
     
+    ADULT_CHILD_CHOICES = [(i, str(i)) for i in range(0, 7)]
+    number_of_adults = forms.ChoiceField(
+        choices=ADULT_CHILD_CHOICES,
+        widget=forms.Select(attrs={"class": "form-control"}),
+        initial=1
+    )
+
+    number_of_child = forms.ChoiceField(
+        choices=ADULT_CHILD_CHOICES,
+        widget=forms.Select(attrs={"class": "form-control"}),
+        initial=0
+    )
+
+    email = forms.EmailField(
+        widget=forms.EmailInput(attrs={"class": "form-control"}),
+        error_messages={"required": "Email address is required.",
+                        "invalid": "Enter a valid email address."}
+    )
+
 
     class Meta:
         model = DTTDCUserDetails
@@ -251,9 +267,9 @@ class UserDetailsForm(forms.ModelForm):
             "email",
             "phone_number",
             "address",
-            "city",
-            "state",
             "country",
+            "state",
+            "city",
             "pincode",
             "passport",
             "number_of_adults",
@@ -264,49 +280,158 @@ class UserDetailsForm(forms.ModelForm):
             "tour_journey_date": forms.DateInput(
                 attrs={
                     "type": "date",
-                    "class": "form-control"
+                    "class": "form-control",
                 }
             ),
             "address": forms.Textarea(
                 attrs={
                     "rows": 3,
                     "class": "form-control",
-                    "placeholder": "Enter full address"
+                    "placeholder": "Enter full address",
                 }
             ),
-        }
+             "number_of_adults": forms.Select(
+                attrs={"class": "form-control"}
+            ),
+            "number_of_child": forms.Select(
+                attrs={"class": "form-control"}
+            ),
 
+            "country": forms.Select(
+                attrs={"class": "form-control", "id": "country","data-selected": "",}
+            ),
+            "state": forms.Select(
+                attrs={"class": "form-control", "id": "state","data-selected": "",}
+            ),
+            "city": forms.Select(
+                attrs={"class": "form-control", "id": "city","data-selected": "",}
+            ),
+
+        }
+     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        # Make all fields required by default
+        for field in self.fields.values():
+            field.required = True
+
+        # Passport is optional
+        self.fields["passport"].required = False
+
+
+
+        self.fields["country"].choices = [
+            ("", "Select Country"),
+            ("__other__", "Other (Enter manually)"),
+        ]
+        self.fields["state"].choices = [
+            ("", "Select State"),
+            ("__other__", "Other (Enter manually)"),
+        ]
+        self.fields["city"].choices = [
+            ("", "Select City"),
+            ("__other__", "Other (Enter manually)"),
+        ]
+        self.fields["number_of_adults"].choices = self.ADULT_CHILD_CHOICES
+        self.fields["number_of_child"].choices = self.ADULT_CHILD_CHOICES
+
+      
         placeholders = {
             "name": "Full Name",
             "email": "Email Address",
             "phone_number": "Mobile Number",
-            "city": "City",
-            "state": "State",
-            "country": "Country",
             "pincode": "Pincode",
             "passport": "Passport Number",
             "number_of_adults": "Number of Adults",
             "number_of_child": "Number of Children",
         }
-        def clean_tour_journey_date(self):
-         journey_date = self.cleaned_data["tour_journey_date"]
-         if journey_date < date.today():
-             raise forms.ValidationError("Journey date cannot be in the past")
-         return journey_date
 
         for field_name, field in self.fields.items():
-            # Add Bootstrap class to all inputs
+            # Ensure Bootstrap class everywhere
             field.widget.attrs.setdefault("class", "form-control")
 
-            # Add placeholders
+            # Apply placeholders where valid
             if field_name in placeholders:
                 field.widget.attrs["placeholder"] = placeholders[field_name]
 
-        def clean(self):
-         data = super().clean()
-         if data.get("number_of_adults", 0) < 1:
-            raise forms.ValidationError("At least 1 adult is required")
-         return data
+   
+    def clean_tour_journey_date(self):
+        journey_date = self.cleaned_data.get("tour_journey_date")
+        if journey_date and journey_date < date.today():
+            raise forms.ValidationError("Journey date cannot be in the past")
+        return journey_date
+    
+    def clean_number_of_adults(self):
+        adults = int(self.cleaned_data.get("number_of_adults", 0))
+        if adults < 1:
+            raise ValidationError("At least 1 adult is required.")
+        return adults
+
+    def clean_phone_number(self):
+        phone = self.cleaned_data.get("phone_number")
+
+        if not phone:
+            raise ValidationError("Mobile number is required.")
+
+        if not re.fullmatch(r"\+\d{10,15}", phone):
+            raise ValidationError(
+                "Enter a valid mobile number with country code."
+            )
+
+        return phone
+
+    def clean_passport(self):
+        passport = self.cleaned_data.get("passport", "").strip().upper()
+
+        if passport:
+            if not re.fullmatch(r"[A-Z0-9]{6,12}", passport):
+                raise ValidationError(
+                    "Enter a valid passport number (6-12 alphanumeric)."
+                )
+
+        return passport
+    
+    def clean_pincode(self):
+        pincode = self.cleaned_data.get("pincode")
+
+        if pincode:
+            if not re.fullmatch(r"\d{6}", pincode):
+                raise ValidationError("Enter a valid 6-digit PIN code.")
+        return pincode
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        adults = int(cleaned_data.get("number_of_adults", 0))
+        children = int(cleaned_data.get("number_of_child", 0))
+        country = cleaned_data.get("country")
+        state = cleaned_data.get("state")
+        city = cleaned_data.get("city")
+        passport = cleaned_data.get("passport")
+
+        total = adults + children
+
+        # ----------------------------
+        # Passenger limit validation
+        # ----------------------------
+        if total > 6:
+            self.add_error(
+                "number_of_adults",
+                "Maximum 6 passengers allowed (Adults + Children)."
+            )
+
+
+        # ----------------------------
+        # Passport validation
+        # ----------------------------
+        if country and country != "India":
+            if not passport:
+                self.add_error(
+                    "passport",
+                    "Passport number is required for international travelers."
+                )
+
+
+        return cleaned_data
+

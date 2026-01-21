@@ -36,8 +36,13 @@ urlpatterns = [
     path("delete_tour_category/<int:pk>",views.admin_delete_tour_category,name="delete_tour_category"),
     path("delete_tour_category_select",views.admin_delete_tour_category_select,name="delete_tour_category_select"),
 
+    # ------------------------------------------------Update Tour Availability-----------------------------------
+ 
+    path("update_tour_availability",views.admin_update_tour_availability,name="update_tour_availability"),
+
 # -------------------------------------------------------Feedback Report----------------------------------------------------------
   
     path("feedback_report",views.admin_feedback_report,name="feedback_report"),
+
 
 ]

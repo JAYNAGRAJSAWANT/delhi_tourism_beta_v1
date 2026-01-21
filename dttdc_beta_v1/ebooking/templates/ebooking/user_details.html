@@ -47,11 +47,19 @@
               </div>
 
 
-              <form method="post">
+              <form method="post" novalidate>
                 {% csrf_token %}
 
                 <!-- CONTACT DETAILS -->
                 <div class="ticket-section">
+                  {% if form.non_field_errors %}
+                  <div class="alert alert-danger">
+                    {% for error in form.non_field_errors %}
+                    {{ error }}
+                    {% endfor %}
+                  </div>
+                  {% endif %}
+
                   <div class="section-label">Contact Information</div>
 
                   <div class="row mb-3 align-items-center">
@@ -59,6 +67,13 @@
                         class="text-danger">*</span></label>
                     <div class="col-md-9">
                       {{ form.tour_journey_date }}
+                      {% if form.tour_journey_date.errors %}
+                      <div class="text-danger small mt-1">
+                        {{ form.tour_journey_date.errors.0 }}
+                      </div>
+                      {% endif %}
+
+
                     </div>
                   </div>
 
@@ -67,6 +82,11 @@
                         class="text-danger">*</span></label>
                     <div class="col-md-9">
                       {{ form.name }}
+                      {% if form.name.errors %}
+                      <div class="text-danger small mt-1">
+                        {{ form.name.errors.0 }}
+                      </div>
+                      {% endif %}
                     </div>
                   </div>
 
@@ -77,9 +97,18 @@
 
                     <div class="col-md-9">
                       <div class="input-group">
-                        <span class="input-group-text">+91</span>
+                        <!-- Phone country code selector -->
+                        <select id="phone_country_code" name="phone_country_code" class="form-select"
+                          style="max-width: 180px;">
+                          <option value="">Code</option>
+                        </select>
                         {{ form.phone_number }}
                       </div>
+                      {% if form.phone_number.errors %}
+                      <div class="text-danger small mt-1">
+                        {{ form.phone_number.errors.0 }}
+                      </div>
+                      {% endif %}
                     </div>
                   </div>
 
@@ -87,6 +116,11 @@
                     <label class="col-md-3 col-form-label fw-semibold">Email <span class="text-danger">*</span></label>
                     <div class="col-md-9">
                       {{ form.email }}
+                      {% if form.email.errors %}
+                      <div class="text-danger small mt-1">
+                        {{ form.email.errors.0 }}
+                      </div>
+                      {% endif %}
                     </div>
                   </div>
 
@@ -102,48 +136,102 @@
                         class="text-danger">*</span></label>
                     <div class="col-md-9">
                       {{ form.address }}
+                      {% if form.address.errors %}
+                      <div class="text-danger small mt-1">
+                        {{ form.address.errors.0 }}
+                      </div>
+                      {% endif %}
                     </div>
                   </div>
 
                   <div class="row mb-3 align-items-center">
                     <label class="col-md-3 col-form-label fw-semibold">Country <span
                         class="text-danger">*</span></label>
-                    <div class="col-md-3">{{ form.country }}</div>
+                    <div class="col-md-3">{{ form.country }}{% if form.country.errors %}
+                      <div class="text-danger small mt-1">
+                        {{ form.country.errors.0 }}
+                      </div>
+                      {% endif %} <input type="text" id="country_other" class="form-control mt-2 d-none"
+                        placeholder="Enter Country manually">
+                    </div>
 
                     <label class="col-md-3 col-form-label fw-semibold">State <span class="text-danger">*</span></label>
-                    <div class="col-md-3">{{ form.state }}</div>
+                    <div class="col-md-3">{{ form.state }}{% if form.state.errors %}
+                      <div class="text-danger small mt-1">
+                        {{ form.state.errors.0 }}
+                      </div>
+                      {% endif %}<input type="text" id="state_other" class="form-control mt-2 d-none"
+                        placeholder="Enter State manually">
+                    </div>
                   </div>
 
                   <div class="row mb-3 align-items-center">
                     <label class="col-md-3 col-form-label fw-semibold">City <span class="text-danger">*</span></label>
-                    <div class="col-md-3">{{ form.city }}</div>
+                    <div class="col-md-3">{{ form.city }}{% if form.city.errors %}
+                      <div class="text-danger small mt-1">
+                        {{ form.city.errors.0 }}
+                      </div>
+                      {% endif %}<input type="text" id="city_other" class="form-control mt-2 d-none"
+                        placeholder="Enter City manually">
+                    </div>
 
                     <label class="col-md-3 col-form-label fw-semibold">PIN / ZIP Code <span
                         class="text-danger">*</span></label>
-                    <div class="col-md-3">{{ form.pincode }}</div>
+                    <div class="col-md-3">{{ form.pincode }}{% if form.pincode.errors %}
+                      <div class="text-danger small mt-1">
+                        {{ form.pincode.errors.0 }}
+                      </div>
+                      {% endif %}
+                    </div>
                   </div>
 
-                 {% if booking.user_details and booking.user_details.country.code != "IN" %}
 
-                  <div class="row mb-3 align-items-center">
-                    <label class="col-md-3 col-form-label fw-semibold">Passport Number</label>
-                    <div class="col-md-9">{{ form.passport }}</div>
+                  <div class="row mb-3 align-items-center" id="passport_row" style="display:none;">
+
+                    <label class="col-md-3 col-form-label fw-semibold">Passport Number <span
+                        class="text-danger">*</span></label>
+                    <div class="col-md-9">{{ form.passport }}{% if form.passport.errors %}
+                      <div class="text-danger small mt-1">
+                        {{ form.passport.errors.0 }}
+                      </div>
+                      {% endif %}
+                    </div>
                   </div>
-                  {% endif %}
+
                 </div>
 
                 <!-- PASSENGER DETAILS -->
                 <div class="ticket-section border-top pt-3">
-                  <div class="section-label">Passenger Details</div>
+                  <div class="section-label">Passenger Details </div>
+                  {% if form.number_of_adults.errors or form.number_of_child.errors %}
+                  <div class="text-danger small mb-3">
+                    {% if form.number_of_adults.errors %}
+                    {% for err in form.number_of_adults.errors %}
+                    {% if forloop.first %}
+                    {{ err }}
+                    {% endif %}
+                    {% endfor %}
+                    {% else %}
+                    {% for err in form.number_of_child.errors %}
+                    {% if forloop.first %}
+                    {{ err }}
+                    {% endif %}
+                    {% endfor %}
+                    {% endif %}
+                  </div>
+                  {% endif %}
+
 
                   <div class="row mb-3 align-items-center">
                     <label class="col-md-3 col-form-label fw-semibold">Adults <small class="text-danger">(Age above
-                        10)</small></label>
-                    <div class="col-md-3">{{ form.number_of_adults }}</div>
+                        10)</small><span class="text-danger">*</span></label>
+                    <div class="col-md-3">{{ form.number_of_adults }}
+                    </div>
 
                     <label class="col-md-3 col-form-label fw-semibold">Children <small class="text-danger">(Age
-                        5-10)</small></label>
-                    <div class="col-md-3">{{ form.number_of_child }}</div>
+                        5-10)</small><span class="text-danger">*</span></label>
+                    <div class="col-md-3">{{ form.number_of_child }}
+                    </div>
                   </div>
                 </div>
 
@@ -286,5 +374,11 @@
       border-top: 1px solid #dee2e6;
     }
   </style>
+  <script>
+    document.getElementById("country").dataset.selected = "{{ form.instance.country|default:'' }}";
+    document.getElementById("state").dataset.selected = "{{ form.instance.state|default:'' }}";
+    document.getElementById("city").dataset.selected = "{{ form.instance.city|default:'' }}";
+  </script>
 
+  <script src="{% static 'ebooking/js/location.js' %}"></script>
   {% endblock %}

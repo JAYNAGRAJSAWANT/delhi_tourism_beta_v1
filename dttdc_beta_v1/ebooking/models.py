@@ -263,3 +263,26 @@ class Feedback(models.Model):
 
     def __str__(self):
         return self.name
+    
+
+#===============================DTTDC Tour Availability Model=====================================
+
+class DTTDCTourAvailability(models.Model):
+    tour = models.ForeignKey(
+        DTTDCTour,
+        on_delete=models.CASCADE,
+        related_name="availabilities"
+    )
+
+    available_date = models.DateField()
+
+    total_seats = models.PositiveIntegerField()
+    available_seats = models.PositiveIntegerField()
+
+    class Meta:
+        db_table = "dttdc_tour_availability"
+        unique_together = ("tour", "available_date")
+        ordering = ["available_date"]
+
+    def __str__(self):
+        return f"{self.tour.tour_name} | {self.available_date} | {self.available_seats}/{self.total_seats}"

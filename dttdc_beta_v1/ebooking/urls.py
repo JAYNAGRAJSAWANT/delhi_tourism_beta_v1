@@ -8,7 +8,7 @@ urlpatterns = [
     path("tour/<int:tour_id>/",views.ebooking_tour_details,name="tour"),
     path("tour/<int:tour_id>/book/", views.start_booking,name="start_booking"),
     path("<str:pnr>/user-details/", views.booking_user_details, name="booking_user_details"),
-    
+    path("add-travellers/<str:pnr>/",views.ebooking_add_travellers,name="add_travellers"),
 
     # -------------------------------------------------------Feedback Form----------------------------------------------------------
      path("captcha",views.captcha,name="captcha"),

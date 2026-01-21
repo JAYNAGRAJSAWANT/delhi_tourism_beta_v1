@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     'core',
     'ebooking',
     'dttdc_admin',
-    'cities_light',
 ]
 
 MIDDLEWARE = [
@@ -148,12 +147,3 @@ MEDIA_ROOT = BASE_DIR / "media"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-
-CITIES_LIGHT_TRANSLATION_LANGUAGES = ['en']
-# CITIES_LIGHT_INCLUDE_COUNTRIES = ['IN']
-CITIES_LIGHT_INCLUDE_CITY_TYPES = ['PPL', 'PPLA', 'PPLC','PPLA2','PPLA3']
-
-
-# Windows stability settings
-CITIES_LIGHT_USE_MULTIPROCESSING = False

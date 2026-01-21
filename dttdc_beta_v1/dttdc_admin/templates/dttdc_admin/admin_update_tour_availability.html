@@ -1,0 +1,22 @@
+{% extends "dttdc_admin/admin_hub.html" %}
+{% load static %}
+
+{% block admin_update_tour_availability %}
+<div class="container mt-4 mb-4">
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <div class="card shadow-sm">
+    <div class="card-header text-center">
+      <h5 class="mb-0" style="color:rgb(170, 22, 22);">Update Tour Availability</h5>
+    </div>
+
+    <div class="card-body"></div>
+      
+{% endblock %}
