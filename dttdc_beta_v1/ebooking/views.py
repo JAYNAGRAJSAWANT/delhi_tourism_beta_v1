@@ -3,6 +3,7 @@ from django.http import HttpResponse, JsonResponse
 
 from dttdc_admin.captcha_utility import generateCaptchaValueWithToken, validate_captcha
 from .models import (
+    DTTDCTourAvailability,
     DTTDCTourCategory,
     DTTDCTour,
     DTTDCTourBooking,
@@ -185,3 +186,35 @@ def ebooking_add_travellers(request, pnr):
             "children": children,
         },
     )
+
+def check_tour_availability(request):
+    
+    tour_id = request.GET.get("tour_id")
+    journey_date = request.GET.get("journey_date")
+    print("AJAX HIT:", request.GET)
+
+    if not tour_id or not journey_date:
+        return JsonResponse({"available": False})
+
+    try:
+        availability = DTTDCTourAvailability.objects.get(
+            tour_id=tour_id,
+            available_date=journey_date
+        )
+
+        if availability.available_seats > 0:
+            return JsonResponse({
+                "available": True,
+                "seats": availability.available_seats
+            })
+        else:
+            return JsonResponse({
+                "available": False,
+                "message": "Tour is fully booked"
+            })
+
+    except DTTDCTourAvailability.DoesNotExist:
+        return JsonResponse({
+            "available": False,
+            "message": "Tour is not available for the selected date"
+        })

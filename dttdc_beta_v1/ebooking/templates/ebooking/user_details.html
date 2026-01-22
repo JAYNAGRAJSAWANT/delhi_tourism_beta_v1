@@ -63,19 +63,26 @@
                   <div class="section-label">Contact Information</div>
 
                   <div class="row mb-3 align-items-center">
-                    <label class="col-md-3 col-form-label fw-semibold">Date of Journey <span
-                        class="text-danger">*</span></label>
-                    <div class="col-md-9">
+                    <label class="col-md-3 col-form-label fw-semibold">
+                      Date of Journey <span class="text-danger">*</span>
+                    </label>
+
+                    <div class="col-md-4">
                       {{ form.tour_journey_date }}
+
                       {% if form.tour_journey_date.errors %}
                       <div class="text-danger small mt-1">
                         {{ form.tour_journey_date.errors.0 }}
                       </div>
                       {% endif %}
+                    </div>
 
-
+                    <!-- Inline Availability Message -->
+                    <div class="col-md-5">
+                      <span id="availabilityMessage" class="small fw-semibold"></span>
                     </div>
                   </div>
+
 
                   <div class="row mb-3 align-items-center">
                     <label class="col-md-3 col-form-label fw-semibold">Full Name <span
@@ -381,4 +388,67 @@
   </script>
 
   <script src="{% static 'ebooking/js/location.js' %}"></script>
+
+  <script>
+    const journeyDateInput = document.getElementById("id_tour_journey_date");
+    const availabilityBox = document.getElementById("availabilityMessage");
+    const submitBtn = document.querySelector("button[type='submit']");
+
+    const TOUR_ID = "{{ booking.dttdc_tour.id }}";
+    const CHECK_URL = "{% url 'check_tour_availability' %}";
+
+    journeyDateInput.addEventListener("change", function () {
+      const date = this.value;
+
+      availabilityBox.innerHTML = "";
+      submitBtn.disabled = true;
+
+      if (!date) return;
+
+      fetch(`${CHECK_URL}?tour_id=${TOUR_ID}&journey_date=${date}`)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error("Network response was not OK");
+          }
+          return response.json();
+        })
+        .then(data => {
+          if (data.available) {
+            availabilityBox.innerHTML = `Available Seats: ${data.seats}`;
+            availabilityBox.className = "text-success small fw-semibold";
+            submitBtn.disabled = false;
+          } else {
+            availabilityBox.innerHTML = data.message || "Tour not available";
+            availabilityBox.className = "text-danger small fw-semibold";
+            submitBtn.disabled = true;
+          }
+
+        })
+        .catch(error => {
+          console.error("Availability check failed:", error);
+          availabilityBox.innerHTML = `
+          <div class="alert alert-danger py-2 mb-0">
+            Unable to check availability. Try again.
+          </div>
+        `;
+        });
+    });
+  </script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const dateInput = document.getElementById("id_tour_journey_date");
+  if (!dateInput) return;
+
+  const minDate = new Date();
+  minDate.setDate(minDate.getDate() + 2);
+
+  const yyyy = minDate.getFullYear();
+  const mm = String(minDate.getMonth() + 1).padStart(2, "0");
+  const dd = String(minDate.getDate()).padStart(2, "0");
+
+  dateInput.min = `${yyyy}-${mm}-${dd}`;
+});
+</script>
+
   {% endblock %}

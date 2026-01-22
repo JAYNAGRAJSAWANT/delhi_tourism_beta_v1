@@ -4,7 +4,7 @@ from .models import DTTDCTourCategory, DTTDCTour,DTTDCUserDetails
 from django.core.exceptions import ValidationError
 from django.core.files.images import get_image_dimensions
 import imghdr
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 MAX_IMAGE_SIZE = 2 * 1024 * 1024  # 2MB
 
@@ -236,6 +236,7 @@ class AddTourForm(forms.ModelForm):
         for field in required_fields:
             self.fields[field].required = True
 
+# -----------------------------------User Details Form-------------------------
 
 class UserDetailsForm(forms.ModelForm):
     
@@ -355,12 +356,6 @@ class UserDetailsForm(forms.ModelForm):
             if field_name in placeholders:
                 field.widget.attrs["placeholder"] = placeholders[field_name]
 
-   
-    def clean_tour_journey_date(self):
-        journey_date = self.cleaned_data.get("tour_journey_date")
-        if journey_date and journey_date < date.today():
-            raise forms.ValidationError("Journey date cannot be in the past")
-        return journey_date
     
     def clean_number_of_adults(self):
         adults = int(self.cleaned_data.get("number_of_adults", 0))
@@ -399,6 +394,17 @@ class UserDetailsForm(forms.ModelForm):
             if not re.fullmatch(r"\d{6}", pincode):
                 raise ValidationError("Enter a valid 6-digit PIN code.")
         return pincode
+    
+    def clean_tour_journey_date(self):
+        journey_date = self.cleaned_data.get("tour_journey_date")
+        min_date = date.today() + timedelta(days=2)
+
+        if journey_date < min_date:
+            raise forms.ValidationError(
+                "Journey date must be at least 2 days from today."
+            )
+
+        return journey_date
 
     def clean(self):
         cleaned_data = super().clean()
@@ -435,3 +441,51 @@ class UserDetailsForm(forms.ModelForm):
 
         return cleaned_data
 
+# ----------------------------------Tour Availability Form---------------------------------------
+
+class TourAvailabilityForm(forms.Form):
+    tour = forms.ModelChoiceField(
+        queryset=DTTDCTour.objects.filter(tour_status="active"),
+        required=True
+    )
+
+    from_date = forms.DateField(
+        widget=forms.DateInput(attrs={
+            "type": "date",
+            "class": "form-control",
+        })
+    )
+
+    to_date = forms.DateField(
+        widget=forms.DateInput(attrs={
+            "type": "date",
+            "class": "form-control",
+        })
+    )
+
+    total_seats = forms.IntegerField(
+        min_value=1,
+        widget=forms.NumberInput(attrs={"class": "form-control"})
+    )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        from_date = cleaned_data.get("from_date")
+        to_date = cleaned_data.get("to_date")
+
+        min_allowed_date = date.today() + timedelta(days=2)
+
+        if from_date and from_date < min_allowed_date:
+            raise forms.ValidationError(
+                "From date must be day after tomorrow or later."
+            )
+
+        if to_date and to_date < min_allowed_date:
+            raise forms.ValidationError(
+                "To date must be day after tomorrow or later."
+            )
+
+        if from_date and to_date and from_date > to_date:
+            raise forms.ValidationError("From date cannot be after To date.")
+
+        return cleaned_data

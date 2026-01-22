@@ -14,6 +14,7 @@ urlpatterns = [
      path("captcha",views.captcha,name="captcha"),
     path("feedback_form",views.ebooking_feedback_form,name="feedback_form"),
 
-    # -----------------------------------------------------------------------------------------------------------------
-  
+    # ------------------------------------------------------------Checking availability-----------------------------------------------------
+    path("ajax/check-tour-availability/", views.check_tour_availability,name="check_tour_availability"),
+    
 ]

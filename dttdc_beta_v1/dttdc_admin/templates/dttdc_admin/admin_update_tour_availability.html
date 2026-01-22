@@ -3,20 +3,143 @@
 
 {% block admin_update_tour_availability %}
 <div class="container mt-4 mb-4">
+
   {% if messages %}
-    {% for message in messages %}
-      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-        {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-      </div>
-    {% endfor %}
+  {% for message in messages %}
+  <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+    {{ message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+  {% endfor %}
   {% endif %}
 
-  <div class="card shadow-sm">
-    <div class="card-header text-center">
-      <h5 class="mb-0" style="color:rgb(170, 22, 22);">Update Tour Availability</h5>
+  <div class="card shadow border-0">
+    <div class="card-header text-center bg-light">
+      <h5 class="mb-0 fw-bold" style="color:rgb(170,22,22)">
+        Update Tour Availability
+      </h5>
     </div>
 
-    <div class="card-body"></div>
-      
+    <div class="card-body px-4 py-4">
+      <form method="post">
+        {% csrf_token %}
+
+        <!-- Tour & Schedule Row -->
+        <!-- Tour & Schedule -->
+        <div class="row mb-4">
+
+          <!-- Select Tour -->
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">
+              Select Tour To Update Availability
+            </label>
+
+            <select name="tour" id="tourSelect" class="form-select" required>
+              <option value="" disabled selected>Select Tour</option>
+
+              {% for tour in form.tour.field.queryset %}
+              <option value="{{ tour.id }}" data-schedule="{{ tour.schedule|default:'' }}">
+                {{ tour.tour_name }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Tour Schedule (Read Only Field) -->
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">
+              Tour Schedule
+            </label>
+
+            <div id="scheduleBox" class="form-control d-flex align-items-center flex-wrap gap-2"
+              style="background-color:#f8f9fa; min-height: 38px;">
+              <span class="text-muted small" id="schedulePlaceholder">
+                Select a tour to view schedule
+              </span>
+            </div>
+          </div>
+
+        </div>
+
+
+
+
+
+        <!-- Date Range -->
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label fw-semibold">From Date</label>
+            {{ form.from_date }}
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label fw-semibold">To Date</label>
+            {{ form.to_date }}
+          </div>
+        </div>
+
+        <!-- Fixed Seat Availability -->
+        <div class="mb-4">
+          <label class="form-label fw-semibold">
+            Total Seats
+          </label>
+
+          <!-- Visible Readonly -->
+          <input type="number" class="form-control" value="25" readonly>
+
+          <!-- Hidden Actual Submission -->
+          <input type="hidden" name="total_seats" value="25">
+        </div>
+
+        <!-- Submit -->
+        <div class="text-center mt-4">
+          <button class="btn btn-danger px-5">
+            Update Seat Availability
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Date Restriction Script -->
+<script>
+  const minDate = new Date();
+  minDate.setDate(minDate.getDate() + 2);
+  const formattedMin = minDate.toISOString().split("T")[0];
+
+  document.getElementById("id_from_date").setAttribute("min", formattedMin);
+  document.getElementById("id_to_date").setAttribute("min", formattedMin);
+</script>
+
+
+<script>
+  const tourSelect = document.getElementById("tourSelect");
+  const scheduleBox = document.getElementById("scheduleBox");
+
+  tourSelect.addEventListener("change", function () {
+    const selectedOption = this.options[this.selectedIndex];
+    const schedule = selectedOption.getAttribute("data-schedule");
+
+    scheduleBox.innerHTML = "";
+
+    if (!schedule) {
+      scheduleBox.innerHTML =
+        '<span class="text-muted small">Schedule not defined</span>';
+      return;
+    }
+
+    schedule.split(",").forEach(day => {
+      const badge = document.createElement("span");
+      badge.className = "badge rounded-pill bg-info text-dark px-3 py-2";
+      badge.textContent = day.trim();
+      scheduleBox.appendChild(badge);
+    });
+  });
+</script>
+
+
+
+
 {% endblock %}

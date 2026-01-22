@@ -1,4 +1,5 @@
 # views.py
+from datetime import timedelta
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.contrib.auth import authenticate, get_user_model
@@ -10,8 +11,8 @@ from .jwt_utils import create_access_token
 from .decorators import admin_jwt_required
 from django.shortcuts import get_object_or_404, redirect, render
 
-from ebooking.forms import AddTourCategoryForm,AddTourForm
-from ebooking.models import DTTDCTourCategory,DTTDCTour
+from ebooking.forms import AddTourCategoryForm,AddTourForm, TourAvailabilityForm
+from ebooking.models import DTTDCTourAvailability, DTTDCTourCategory,DTTDCTour
 from ebooking.models import Feedback
 
 def admin_login(request):
@@ -356,25 +357,68 @@ def admin_feedback_report(request):
 
 # -----------------------------------Update Tour Availability--------------------------------------
 
+WEEKDAY_MAP = {
+    "Monday": 0,
+    "Tuesday": 1,
+    "Wednesday": 2,
+    "Thursday": 3,
+    "Friday": 4,
+    "Saturday": 5,
+    "Sunday": 6,
+}
+
 @admin_jwt_required
 def admin_update_tour_availability(request):
-    feedback_list = Feedback.objects.all().order_by('-feedback_date')
+    form = TourAvailabilityForm(request.POST or None)
 
-    start_date = request.GET.get('start_date')
-    end_date = request.GET.get('end_date')
+    if request.method == "POST" and form.is_valid():
+        tour = form.cleaned_data["tour"]
+        from_date = form.cleaned_data["from_date"]
+        to_date = form.cleaned_data["to_date"]
+        total_seats = 25  # fixed seats
 
-    if start_date and end_date:
-        feedback_list = feedback_list.filter(
-            feedback_date__date__range=[start_date, end_date]
+        # Parse schedule from DB
+        schedule_days_raw = tour.schedule or ""
+        schedule_days = [
+            WEEKDAY_MAP[day.strip()]
+            for day in schedule_days_raw.split(",")
+            if day.strip() in WEEKDAY_MAP
+        ]
+
+        if not schedule_days:
+            messages.error(request, "Tour schedule is not defined.")
+            return redirect("admin_update_tour_availability")
+
+        created_count = 0
+        current_date = from_date
+
+        while current_date <= to_date:
+            # Only create availability if weekday matches schedule
+            if current_date.weekday() in schedule_days:
+                obj, created = DTTDCTourAvailability.objects.get_or_create(
+                    tour=tour,
+                    available_date=current_date,
+                    defaults={
+                        "total_seats": total_seats,
+                        "available_seats": total_seats,
+                    }
+                )
+                if created:
+                    created_count += 1
+
+            current_date += timedelta(days=1)
+
+        messages.success(
+            request,
+            f"Availability created for {created_count} scheduled days."
         )
+        return redirect("update_tour_availability")
 
-    context = {
-        'feedback_list': feedback_list,
-        'start_date': start_date,
-        'end_date': end_date,
-    }
-
-    return render(request, "dttdc_admin/admin_update_tour_availability.html", context)
+    return render(
+        request,
+        "dttdc_admin/admin_update_tour_availability.html",
+        {"form": form}
+    )
 
 # Added By Jay End
     
