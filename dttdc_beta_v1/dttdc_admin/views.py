@@ -366,7 +366,6 @@ WEEKDAY_MAP = {
     "Saturday": 5,
     "Sunday": 6,
 }
-
 @admin_jwt_required
 def admin_update_tour_availability(request):
     form = TourAvailabilityForm(request.POST or None)
@@ -419,7 +418,6 @@ def admin_update_tour_availability(request):
         "dttdc_admin/admin_update_tour_availability.html",
         {"form": form}
     )
-
 # Added By Jay End
     
 
