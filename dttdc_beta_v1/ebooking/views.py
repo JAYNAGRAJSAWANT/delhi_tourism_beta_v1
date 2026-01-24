@@ -7,11 +7,12 @@ from .models import (
     DTTDCTourCategory,
     DTTDCTour,
     DTTDCTourBooking,
+    DTTDCTraveller,
     DTTDCUserDetails,
     Feedback,
 )
 import uuid
-from .forms import UserDetailsForm
+from .forms import TravellerForm, UserDetailsForm
 from django.contrib import messages
 import re
 from django.core.validators import validate_email
@@ -173,9 +174,48 @@ def ebooking_feedback_form(request):
 
 def ebooking_add_travellers(request, pnr):
     booking = get_object_or_404(DTTDCTourBooking, pnr_number=pnr)
-    user_details = DTTDCUserDetails.objects.filter(booking=booking).first()
-    adults = user_details.number_of_adults if user_details else 0
-    children = user_details.number_of_child if user_details else 0
+    user_details = get_object_or_404(DTTDCUserDetails, booking=booking)
+
+    adults = user_details.number_of_adults
+    children = user_details.number_of_child
+    max_passengers = adults + children
+
+    if request.method == "POST":
+        travellers = []
+        errors = []
+
+        # Loop over submitted passengers
+        for key in request.POST:
+            if key.startswith("passenger_") and key.endswith("_name"):
+                index = key.split("_")[1]
+
+                form = TravellerForm({
+                    "name": request.POST.get(f"passenger_{index}_name"),
+                    "age": request.POST.get(f"passenger_{index}_age"),
+                    "gender": request.POST.get(f"passenger_{index}_gender"),
+                    "passport": request.POST.get(f"passenger_{index}_passport"),
+                })
+
+                if form.is_valid():
+                    travellers.append(form.cleaned_data)
+                else:
+                    errors.append(form.errors)
+
+        if errors:
+            messages.error(request, "Please correct passenger details.")
+        else:
+            # Save to DB
+            for t in travellers:
+                DTTDCTraveller.objects.create(
+                    user=user_details,
+                    name=t["name"],
+                    age=t["age"],
+                    gender=t["gender"],
+                    passport=t["passport"],
+                )
+
+            return redirect("ebooking_ticket_preview", pnr=pnr)
+
     return render(
         request,
         "ebooking/ebooking_add_travellers.html",
@@ -218,3 +258,21 @@ def check_tour_availability(request):
             "available": False,
             "message": "Tour is not available for the selected date"
         })
+    
+def ebooking_ticket_preview(request, pnr):
+    booking = get_object_or_404(DTTDCTourBooking, pnr_number=pnr)
+    user = get_object_or_404(DTTDCUserDetails, booking=booking)
+    passengers = DTTDCTraveller.objects.filter(user=user)
+
+    context = {
+        "booking": booking,
+        "user": user,
+        "passengers": passengers,
+        
+    }
+
+    return render(
+        request,
+        "ebooking/ebooking_ticket_preview.html",
+        context,
+    )   

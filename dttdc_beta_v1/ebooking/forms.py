@@ -10,7 +10,7 @@ MAX_IMAGE_SIZE = 2 * 1024 * 1024  # 2MB
 
 ALLOWED_IMAGE_TYPES = {"jpeg", "png", "webp"}
 
-
+# ==================================================================================================
 class AddTourCategoryForm(forms.ModelForm):
     class Meta:
         model = DTTDCTourCategory
@@ -46,7 +46,7 @@ class AddTourCategoryForm(forms.ModelForm):
             raise ValidationError("Unsupported File type.")
 
         return image
-
+# ==================================================================================================
 
 class AddTourForm(forms.ModelForm):
     class Meta:
@@ -236,7 +236,9 @@ class AddTourForm(forms.ModelForm):
         for field in required_fields:
             self.fields[field].required = True
 
+# ==================================================================================================
 # -----------------------------------User Details Form-------------------------
+# ==================================================================================================
 
 class UserDetailsForm(forms.ModelForm):
     
@@ -377,7 +379,8 @@ class UserDetailsForm(forms.ModelForm):
         return phone
 
     def clean_passport(self):
-        passport = self.cleaned_data.get("passport", "").strip().upper()
+        passport = (self.cleaned_data.get("passport") or "").strip().upper()
+
 
         if passport:
             if not re.fullmatch(r"[A-Z0-9]{6,12}", passport):
@@ -440,9 +443,82 @@ class UserDetailsForm(forms.ModelForm):
 
 
         return cleaned_data
+# ==================================================================================================
+# ----------------------------------Traveller Form---------------------------------------
+# ==================================================================================================
 
+class TravellerForm(forms.Form):
+    name = forms.CharField(
+        max_length=150,
+        required=True,
+        widget=forms.TextInput(
+            attrs={
+                "class": "form-control",
+                "placeholder": "Enter full name",
+            }
+        ),
+    )
+
+    age = forms.IntegerField(
+        required=True,
+        min_value=1,
+        max_value=120,
+        widget=forms.NumberInput(
+            attrs={
+                "class": "form-control",
+                "placeholder": "Age",
+            }
+        ),
+    )
+
+    gender = forms.ChoiceField(
+        required=True,
+        choices=[
+            ("", "Select gender"),
+            ("Male", "Male"),
+            ("Female", "Female"),
+            ("Other", "Other"),
+        ],
+        widget=forms.Select(
+            attrs={
+                "class": "form-control",
+            }
+        ),
+    )
+
+    passport = forms.CharField(
+        required=False,
+        max_length=20,
+        widget=forms.TextInput(
+            attrs={
+                "class": "form-control",
+                "placeholder": "Passport number (optional)",
+            }
+        ),
+    )
+
+    def clean_passport(self):
+        passport = (self.cleaned_data.get("passport") or "").strip().upper()
+        return passport or None
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ==================================================================================================
 # ----------------------------------Tour Availability Form---------------------------------------
-
+# ==================================================================================================
 class TourAvailabilityForm(forms.Form):
     tour = forms.ModelChoiceField(
         queryset=DTTDCTour.objects.filter(tour_status="active"),

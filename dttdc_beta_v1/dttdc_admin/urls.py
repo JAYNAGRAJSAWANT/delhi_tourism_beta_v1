@@ -45,4 +45,12 @@ urlpatterns = [
     path("feedback_report",views.admin_feedback_report,name="feedback_report"),
 
 
+# -------------------------------------------------------Get last available date for showing to the admin----------------------------------------------------------
+    path("get-last-available-date/",views.get_last_available_date,name="get_last_available_date"),
+
+# -------------------------------------------------------check availability status for tour----------------------------------------------------------    
+    path("check-tour-availability/",views.check_tour_availability_status,name="check_tour_availability_status"
+),
+
+
 ]

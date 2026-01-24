@@ -115,6 +115,7 @@ class DTTDCTourBooking(models.Model):
     total_fare = models.DecimalField(max_digits=10, decimal_places=2)
     number_of_passengers = models.PositiveSmallIntegerField()
 
+# ======================================Travellers Model=======================================
 
 class DTTDCTraveller(models.Model):
 
@@ -124,7 +125,7 @@ class DTTDCTraveller(models.Model):
         related_name="travellers"
     )
 
-    passenger_id = models.CharField(max_length=20, unique=True)
+    # passenger_id = models.CharField(max_length=20, unique=True)
     name = models.CharField(max_length=150)
     age = models.PositiveSmallIntegerField()
     gender = models.CharField(max_length=10)

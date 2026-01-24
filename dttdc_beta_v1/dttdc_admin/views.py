@@ -390,6 +390,22 @@ def admin_update_tour_availability(request):
 
         created_count = 0
         current_date = from_date
+        existing_dates = DTTDCTourAvailability.objects.filter(
+            tour=tour,
+            available_date__range=(from_date, to_date)
+        )
+
+        if existing_dates.exists():
+            last_date = existing_dates.order_by("-available_date").first().available_date
+
+            messages.warning(
+                request,
+                f"Availability already exists between "
+                f"{from_date.strftime('%d %b %Y')} and "
+                f"{last_date.strftime('%d %b %Y')}. "
+                f"Please select dates after {last_date.strftime('%d %b %Y')}."
+            )
+            return redirect("update_tour_availability")
 
         while current_date <= to_date:
             # Only create availability if weekday matches schedule
@@ -407,16 +423,73 @@ def admin_update_tour_availability(request):
 
             current_date += timedelta(days=1)
 
-        messages.success(
-            request,
-            f"Availability created for {created_count} scheduled days."
-        )
+        if created_count > 0:
+            messages.success(
+                request,
+                f"Availability successfully created for {created_count} scheduled days."
+            )
+        else:
+            messages.info(
+                request,
+                "No new availability was created. "
+                "Selected dates may already be fully configured."
+            )
+
         return redirect("update_tour_availability")
 
     return render(
         request,
         "dttdc_admin/admin_update_tour_availability.html",
         {"form": form}
+    )
+
+@admin_jwt_required
+def get_last_available_date(request):
+    tour_id = request.GET.get("tour_id")
+
+    if not tour_id:
+        return JsonResponse({"last_date": None})
+
+    last_obj = (
+        DTTDCTourAvailability.objects
+        .filter(tour_id=tour_id)
+        .order_by("-available_date")
+        .first()
+    )
+
+    if last_obj:
+        return JsonResponse({
+            "last_date": last_obj.available_date.strftime("%Y-%m-%d")
+        })
+
+    return JsonResponse({"last_date": None})
+
+
+
+@admin_jwt_required
+def check_tour_availability_status(request):
+    tour_id = request.GET.get("tour")
+    selected_tour = None
+    available_dates = []
+
+    if tour_id:
+        selected_tour = DTTDCTour.objects.filter(id=tour_id).first()
+
+        if selected_tour:
+            available_dates = list(
+                DTTDCTourAvailability.objects.filter(
+                    tour=selected_tour
+                ).values_list("available_date", flat=True)
+            )
+
+    return render(
+        request,
+        "dttdc_admin/admin_check_availability_status.html",
+        {
+            "tours": DTTDCTour.objects.filter(tour_status="active"),
+            "selected_tour": selected_tour,
+            "available_dates": [d.strftime("%Y-%m-%d") for d in available_dates],
+        }
     )
 # Added By Jay End
     
