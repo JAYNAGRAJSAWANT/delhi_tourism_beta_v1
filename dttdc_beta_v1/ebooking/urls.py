@@ -10,6 +10,7 @@ urlpatterns = [
     path("<str:pnr>/user-details/", views.booking_user_details, name="booking_user_details"),
     path("add-travellers/<str:pnr>/",views.ebooking_add_travellers,name="add_travellers"),
     path("ebooking_ticket_preview/<str:pnr>/",views.ebooking_ticket_preview,name="ebooking_ticket_preview"),
+    path("ebooking_termsandconditions/",views.ebooking_termsandconditions,name="ebooking_termsandconditions"),
     # -------------------------------------------------------Feedback Form----------------------------------------------------------
      path("captcha",views.captcha,name="captcha"),
     path("feedback_form",views.ebooking_feedback_form,name="feedback_form"),

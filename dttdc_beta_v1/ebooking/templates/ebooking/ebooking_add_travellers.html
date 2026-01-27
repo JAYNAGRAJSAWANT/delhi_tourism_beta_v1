@@ -51,7 +51,39 @@
                 </div>
 
                 <!-- Passenger Rows Container -->
-                <div id="passengerContainer"></div>
+                <div id="passengerContainer">
+                  {% for traveller in existing_travellers %}
+                  <div class="passenger-row" data-index="{{ forloop.counter }}">
+                    <div class="row">
+                      <div class="col-md-4">
+                        <label class="form-label">Full Name <span class="text-danger">*</span></label>
+                        <input type="text" name="passenger_{{ forloop.counter }}_name" class="form-control"
+                          value="{{ traveller.name }}" required>
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label">Age <span class="text-danger">*</span></label>
+                        <input type="number" name="passenger_{{ forloop.counter }}_age" class="form-control"
+                          value="{{ traveller.age }}" required>
+                      </div>
+                      <div class="col-md-3">
+                        <label class="form-label">Gender <span class="text-danger">*</span></label>
+                        <select name="passenger_{{ forloop.counter }}_gender" class="form-control" required>
+                          <option value="">Select gender</option>
+                          <option value="Male" {% if traveller.gender == "Male" %}selected{% endif %}>Male</option>
+                          <option value="Female" {% if traveller.gender == "Female" %}selected{% endif %}>Female</option>
+                          <option value="Other" {% if traveller.gender == "Other" %}selected{% endif %}>Other</option>
+                        </select>
+                      </div>
+                      <div class="col-md-4 mt-3">
+                        <label class="form-label">Passport</label>
+                        <input type="text" name="passenger_{{ forloop.counter }}_passport" class="form-control"
+                          value="{{ traveller.passport }}">
+                      </div>
+                    </div>
+                  </div>
+                  {% endfor %}
+                </div>
+
 
                 <!-- Add Passenger Button (Below rows) -->
                 <div class="d-flex justify-content-between align-items-center mt-3">
@@ -245,10 +277,12 @@
 
 <script>
   const MAX_PASSENGERS = {{ adults|add:children }};
+  const EXISTING_PASSENGERS = {{ existing_passengers|default:0 }};
+
   let passengerIndex = 0;
 
- function passengerRow(index, showDelete = true) {
-  return `
+  function passengerRow(index, showDelete = true) {
+    return `
     <div class="passenger-row" data-index="${index}">
       <div class="row">
         <div class="col-md-4">
@@ -308,7 +342,7 @@
       </div>
     </div>
   `;
-}
+  }
 
 
   function currentPassengerCount() {
@@ -317,10 +351,17 @@
 
   // ✅ Load default passenger (no delete)
   document.addEventListener('DOMContentLoaded', () => {
-    passengerIndex = 1;
-    document
-      .getElementById('passengerContainer')
-      .insertAdjacentHTML('beforeend', passengerRow(1, false));
+     // If existing passengers already rendered, don't add a new row
+  if (EXISTING_PASSENGERS > 0) {
+    passengerIndex = EXISTING_PASSENGERS;
+    return;
+  }
+
+  // No existing passengers, add one empty row
+  passengerIndex = 1;
+  document
+    .getElementById('passengerContainer')
+    .insertAdjacentHTML('beforeend', passengerRow(1, false));
   });
 
   // ➕ Add passenger

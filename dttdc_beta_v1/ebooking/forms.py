@@ -1,6 +1,6 @@
 import re
 from django import forms
-from .models import DTTDCTourCategory, DTTDCTour,DTTDCUserDetails
+from .models import DTTDCTourCategory, DTTDCTour, DTTDCTraveller,DTTDCUserDetails
 from django.core.exceptions import ValidationError
 from django.core.files.images import get_image_dimensions
 import imghdr
@@ -447,72 +447,40 @@ class UserDetailsForm(forms.ModelForm):
 # ----------------------------------Traveller Form---------------------------------------
 # ==================================================================================================
 
-class TravellerForm(forms.Form):
-    name = forms.CharField(
-        max_length=150,
-        required=True,
-        widget=forms.TextInput(
-            attrs={
-                "class": "form-control",
-                "placeholder": "Enter full name",
-            }
-        ),
-    )
+class TravellerForm(forms.ModelForm):
+    class Meta:
+        model = DTTDCTraveller
+        fields = ["name", "age", "gender", "passport"]
 
-    age = forms.IntegerField(
-        required=True,
-        min_value=1,
-        max_value=120,
-        widget=forms.NumberInput(
-            attrs={
-                "class": "form-control",
-                "placeholder": "Age",
-            }
-        ),
-    )
-
-    gender = forms.ChoiceField(
-        required=True,
-        choices=[
-            ("", "Select gender"),
-            ("Male", "Male"),
-            ("Female", "Female"),
-            ("Other", "Other"),
-        ],
-        widget=forms.Select(
-            attrs={
-                "class": "form-control",
-            }
-        ),
-    )
-
-    passport = forms.CharField(
-        required=False,
-        max_length=20,
-        widget=forms.TextInput(
-            attrs={
-                "class": "form-control",
-                "placeholder": "Passport number (optional)",
-            }
-        ),
-    )
+        widgets = {
+            "name": forms.TextInput(
+                attrs={"class": "form-control", "placeholder": "Enter full name"}
+            ),
+            "age": forms.NumberInput(
+                attrs={"class": "form-control", "placeholder": "Age"}
+            ),
+            "gender": forms.Select(
+                attrs={"class": "form-control"}
+            ),
+            "passport": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "Passport number (optional)",
+                }
+            ),
+        }
 
     def clean_passport(self):
         passport = (self.cleaned_data.get("passport") or "").strip().upper()
         return passport or None
 
 
-
-
-
-
-
-
-
-
-
-
-
+TravellerFormSet = forms.modelformset_factory(
+    DTTDCTraveller,
+    form=TravellerForm,
+    extra=0,
+    can_delete=True
+)
 
 
 
