@@ -147,3 +147,10 @@ MEDIA_ROOT = BASE_DIR / "media"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# # -------------------------------PaY U money creds-------------------------------
+
+# PAYU_MERCHANT_KEY = "YOUR_MERCHANT_KEY"
+# PAYU_MERCHANT_SALT = "YOUR_MERCHANT_SALT"
+
+# PAYU_BASE_URL = "https://sandboxsecure.payu.in/_payment"

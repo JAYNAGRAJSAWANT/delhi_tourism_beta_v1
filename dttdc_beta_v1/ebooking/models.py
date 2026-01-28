@@ -131,7 +131,7 @@ class DTTDCTraveller(models.Model):
     gender = models.CharField(max_length=10)
     passport = models.CharField(max_length=20, blank=True, null=True)
 
-
+# ======================================Travellers -Booking Map=======================================
 class DTTDCTravellerBookingMap(models.Model):
 
     PASSENGER_STATUS = [
@@ -154,12 +154,12 @@ class DTTDCTravellerBookingMap(models.Model):
         related_name="bookings"
     )
 
-    booking_status = models.CharField(max_length=20, choices=PASSENGER_STATUS)
+    booking_status = models.CharField(max_length=20, choices=PASSENGER_STATUS, blank=True,null=True)
 
     class Meta:
         unique_together = ("booking", "traveller")
 
-
+# ======================================Tour Payment Details=======================================
 
 class DTTDCTourPaymentDetails(models.Model):
 

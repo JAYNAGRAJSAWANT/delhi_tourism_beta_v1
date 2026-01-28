@@ -2,7 +2,7 @@ from decimal import Decimal
 from email import errors
 from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponse, JsonResponse
-
+from django.db import transaction
 from dttdc_admin.captcha_utility import generateCaptchaValueWithToken, validate_captcha
 from .models import (
     DTTDCTourAvailability,
@@ -10,6 +10,7 @@ from .models import (
     DTTDCTour,
     DTTDCTourBooking,
     DTTDCTraveller,
+    DTTDCTravellerBookingMap,
     DTTDCUserDetails,
     Feedback,
 )
@@ -212,13 +213,14 @@ def ebooking_add_travellers(request, pnr):
     booking = get_object_or_404(DTTDCTourBooking, pnr_number=pnr)
     user_details = get_object_or_404(DTTDCUserDetails, booking=booking)
     existing_travellers = DTTDCTraveller.objects.filter(user=user_details)
+
     adults = user_details.number_of_adults
     children = user_details.number_of_child
     max_passengers = adults + children
 
     if request.method == "POST":
 
-        # Get passenger count from POST
+        # Count passengers
         passenger_count = 0
         for key in request.POST:
             if key.startswith("passenger_") and key.endswith("_name"):
@@ -239,19 +241,17 @@ def ebooking_add_travellers(request, pnr):
         travellers = []
         errors = []
 
-        # validate each passenger form
+        # Validate passengers
         for key in request.POST:
             if key.startswith("passenger_") and key.endswith("_name"):
                 index = key.split("_")[1]
 
-                form = TravellerForm(
-                    {
-                        "name": request.POST.get(f"passenger_{index}_name"),
-                        "age": request.POST.get(f"passenger_{index}_age"),
-                        "gender": request.POST.get(f"passenger_{index}_gender"),
-                        "passport": request.POST.get(f"passenger_{index}_passport"),
-                    }
-                )
+                form = TravellerForm({
+                    "name": request.POST.get(f"passenger_{index}_name"),
+                    "age": request.POST.get(f"passenger_{index}_age"),
+                    "gender": request.POST.get(f"passenger_{index}_gender"),
+                    "passport": request.POST.get(f"passenger_{index}_passport"),
+                })
 
                 if form.is_valid():
                     travellers.append(form.cleaned_data)
@@ -270,18 +270,27 @@ def ebooking_add_travellers(request, pnr):
                 },
             )
 
-        # delete previous entries if exists
-        DTTDCTraveller.objects.filter(user=user_details).delete()
+        # 🔐 ATOMIC TRANSACTION (delete + create together)
+        with transaction.atomic():
 
-        # Save new data
-        for t in travellers:
-            DTTDCTraveller.objects.create(
-                user=user_details,
-                name=t["name"],
-                age=t["age"],
-                gender=t["gender"],
-                passport=t["passport"],
-            )
+            DTTDCTraveller.objects.filter(user=user_details).delete()
+            DTTDCTravellerBookingMap.objects.filter(booking=booking).delete()
+
+            for t in travellers:
+                traveller_obj = DTTDCTraveller.objects.create(
+                    user=user_details,
+                    name=t["name"],
+                    age=t["age"],
+                    gender=t["gender"],
+                    passport=t["passport"],
+                )
+
+                # Map traveller with booking
+                DTTDCTravellerBookingMap.objects.create(
+                    booking=booking,
+                    traveller=traveller_obj,
+                    
+                )
 
         return redirect("ebooking_ticket_preview", pnr=pnr)
 
@@ -297,8 +306,6 @@ def ebooking_add_travellers(request, pnr):
                 "existing_travellers": existing_travellers,
             },
         )
-
-
 # --------------------------------------Check Tour Availability View---------------------------
 def check_tour_availability(request):
 
@@ -338,7 +345,7 @@ def ebooking_ticket_preview(request, pnr):
     user = get_object_or_404(DTTDCUserDetails, booking=booking)
     passengers = DTTDCTraveller.objects.filter(user=user)
 
-    errors = {}   # ✅ MUST exist
+    errors = {}  # ✅ MUST exist
 
     # Default captcha values
     captcha_token = None
@@ -381,7 +388,6 @@ def ebooking_ticket_preview(request, pnr):
 
     return render(request, "ebooking/ebooking_ticket_preview.html", context)
 
-    
 
 # -----------------------------------Terms and conditions View------------------------
 
