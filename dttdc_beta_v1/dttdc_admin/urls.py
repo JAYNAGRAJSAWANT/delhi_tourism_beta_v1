@@ -49,8 +49,9 @@ urlpatterns = [
     path("get-last-available-date/",views.get_last_available_date,name="get_last_available_date"),
 
 # -------------------------------------------------------check availability status for tour----------------------------------------------------------    
-    path("check-tour-availability/",views.check_tour_availability_status,name="check_tour_availability_status"
-),
+    path("check-tour-availability/",views.check_tour_availability_status,name="check_tour_availability_status"),
 
+# -------------------------------------------------------Admin Tour Booking Report----------------------------------------------------------    
+    path("admin_tour_booking_report/",views.admin_tour_booking_report,name="admin_tour_booking_report"),
 
 ]

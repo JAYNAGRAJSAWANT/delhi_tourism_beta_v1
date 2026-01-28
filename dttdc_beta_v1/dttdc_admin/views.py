@@ -1,5 +1,5 @@
 # views.py
-from datetime import timedelta
+from datetime import datetime, timedelta
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.contrib.auth import authenticate, get_user_model
@@ -10,17 +10,18 @@ from .captcha_utility import generateCaptchaValueWithToken, validate_captcha
 from .jwt_utils import create_access_token
 from .decorators import admin_jwt_required
 from django.shortcuts import get_object_or_404, redirect, render
-
-from ebooking.forms import AddTourCategoryForm,AddTourForm, TourAvailabilityForm
-from ebooking.models import DTTDCTourAvailability, DTTDCTourCategory,DTTDCTour
+from django.utils.timezone import make_aware
+from ebooking.forms import AddTourCategoryForm, AddTourForm, TourAvailabilityForm
+from ebooking.models import DTTDCTourAvailability, DTTDCTourBooking, DTTDCTourCategory, DTTDCTour
 from ebooking.models import Feedback
 
+
 def admin_login(request):
-    
+
     token = request.COOKIES.get("admin_access_token")
     if token:
-        return redirect('admin_home')
-    
+        return redirect("admin_home")
+
     print("Access Token : ", token)
     if request.method == "GET":
         data = generateCaptchaValueWithToken()
@@ -39,7 +40,7 @@ def admin_login(request):
     password = request.POST.get("password")
     user_captcha_input = request.POST.get("user_captcha_input")
     captcha_token = request.POST.get("captchaToken")
-    
+
     # 1. Validate captcha
     captcha_result = validate_captcha(user_captcha_input, captcha_token)
 
@@ -58,19 +59,19 @@ def admin_login(request):
 
     # 2. Validate user credentials
     # If your User model uses email as USERNAME_FIELD, this works.
-    
+
     User = get_user_model()
-    
+
     user = authenticate(request, username=email, password=password)
     if not user:
         try:
             user_obj = User.objects.get(email__iexact=email)
-            user = authenticate(request,username=user_obj.username,password=password)
+            user = authenticate(request, username=user_obj.username, password=password)
         except User.DoesNotExist:
             user = None
-            
+
     print("Check valid user status : ", user)
-    
+
     if not user or not user.is_staff:
         data = generateCaptchaValueWithToken()
         return render(
@@ -126,82 +127,103 @@ def admin_logout(request):
     response.delete_cookie("admin_access_token")
     return response
 
+
 @admin_jwt_required
 def admin_hub(request):
     now = timezone.now()
     context = {
-        "categories_count":DTTDCTourCategory.objects.count(),
-        "now":now,
+        "categories_count": DTTDCTourCategory.objects.count(),
+        "now": now,
         "MEDIA_URL": settings.MEDIA_URL,
         "show_dashboard": True,
     }
-    return render(request,"dttdc_admin/admin_hub.html",context)
+    return render(request, "dttdc_admin/admin_hub.html", context)
 
 
 @admin_jwt_required
 def admin_add_tour_category(request):
     if request.method == "POST":
-        form = AddTourCategoryForm(request.POST,request.FILES)
+        form = AddTourCategoryForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
             messages.success(request, "Category added successfully.")
             return redirect("add_tour_category")
     else:
         form = AddTourCategoryForm()
-                
-    return render(request,"dttdc_admin/admin_add_tour_category.html",{"form":form})
+
+    return render(request, "dttdc_admin/admin_add_tour_category.html", {"form": form})
 
 
 @admin_jwt_required
 def admin_edit_tour_category_select(request):
     categories = DTTDCTourCategory.objects.order_by("category_name").all()
     print("Categories : ", categories)
-    return render(request,"dttdc_admin/admin_select_category_to_edit.html",{"categories":categories})
+    return render(
+        request,
+        "dttdc_admin/admin_select_category_to_edit.html",
+        {"categories": categories},
+    )
+
 
 @admin_jwt_required
-def admin_edit_tour_category(request,pk):
-    category = get_object_or_404(DTTDCTourCategory,pk=pk)
+def admin_edit_tour_category(request, pk):
+    category = get_object_or_404(DTTDCTourCategory, pk=pk)
     print("Tour Category : ", category)
 
     if request.method == "POST":
-        form = AddTourCategoryForm(request.POST,request.FILES,instance=category)
+        form = AddTourCategoryForm(request.POST, request.FILES, instance=category)
         if form.is_valid():
             form.save()
             messages.success(request, "Category updated successfully.")
     else:
         form = AddTourCategoryForm(instance=category)
-        
-    return render(request,"dttdc_admin/admin_edit_tour_category.html",{"form":form,"category":category})
+
+    return render(
+        request,
+        "dttdc_admin/admin_edit_tour_category.html",
+        {"form": form, "category": category},
+    )
 
 
 @admin_jwt_required
-def admin_delete_tour_category(request,pk):
-    category = get_object_or_404(DTTDCTourCategory,pk=pk)
+def admin_delete_tour_category(request, pk):
+    category = get_object_or_404(DTTDCTourCategory, pk=pk)
     category.delete()
     messages.success(request, "Category deleted successfully.")
-    return render(request,"dttdc_admin/admin_select_category_to_delete.html")
+    return render(request, "dttdc_admin/admin_select_category_to_delete.html")
+
 
 @admin_jwt_required
 def admin_delete_tour_category_select(request):
-    categories= DTTDCTourCategory.objects.all()
-    return render(request,"dttdc_admin/admin_select_category_to_delete.html",{"categories":categories})
+    categories = DTTDCTourCategory.objects.all()
+    return render(
+        request,
+        "dttdc_admin/admin_select_category_to_delete.html",
+        {"categories": categories},
+    )
 
 
-#---------------------- Added By Jay Start --------------------------------
+# ---------------------- Added By Jay Start --------------------------------
+
 
 @admin_jwt_required
 def admin_add_tour(request):
     days = [
-        "Monday", "Tuesday", "Wednesday",
-        "Thursday", "Friday", "Saturday", "Sunday"
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday",
     ]
 
     if request.method == "POST":
         tour_form = AddTourForm(request.POST, request.FILES)
-        
+
         if tour_form.is_valid():
             tour = tour_form.save(commit=False)
-            print("arrived here 2",tour)
+            print("arrived here 2", tour)
 
             # ✅ GET MULTIPLE CHECKBOX VALUES
             schedule_days = request.POST.getlist("schedule")
@@ -216,7 +238,7 @@ def admin_add_tour(request):
             print("NON FIELD ERRORS:", tour_form.non_field_errors())
     else:
         tour_form = AddTourForm()
-        
+
     context = {
         "form": tour_form,
         "days": days,
@@ -240,17 +262,13 @@ def admin_edit_tour_select(request):
 
         # ALWAYS load tours when category is selected
         if category_id:
-            selected_category = get_object_or_404(
-                DTTDCTourCategory, pk=category_id
-            )
-            tours = DTTDCTour.objects.filter(
-                tour_category=selected_category
-            )
+            selected_category = get_object_or_404(DTTDCTourCategory, pk=category_id)
+            tours = DTTDCTour.objects.filter(tour_category=selected_category)
 
         # ONLY redirect when button is clicked
         if "go_to_edit" in request.POST and tour_id:
-         print("came here", tour_id)
-         return redirect("edit_tour", pk=tour_id)
+            print("came here", tour_id)
+            return redirect("edit_tour", pk=tour_id)
 
     return render(
         request,
@@ -259,14 +277,22 @@ def admin_edit_tour_select(request):
             "categories": categories,
             "tours": tours,
             "selected_category": selected_category,
-        }
+        },
     )
 
 
 @admin_jwt_required
-def admin_edit_tour(request,pk):
+def admin_edit_tour(request, pk):
     tour = get_object_or_404(DTTDCTour, pk=pk)
-    days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    days = [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday",
+    ]
 
     if request.method == "POST":
         form = AddTourForm(request.POST, request.FILES, instance=tour)
@@ -294,8 +320,6 @@ def admin_edit_tour(request,pk):
         "range_0_31": range(0, 32),
     }
     return render(request, "dttdc_admin/admin_edit_tour.html", context)
-    
-
 
 
 @admin_jwt_required
@@ -310,12 +334,8 @@ def admin_delete_tour(request):
 
         # Always load tours when category selected
         if category_id:
-            selected_category = get_object_or_404(
-                DTTDCTourCategory, pk=category_id
-            )
-            tours = DTTDCTour.objects.filter(
-                tour_category=selected_category
-            )
+            selected_category = get_object_or_404(DTTDCTourCategory, pk=category_id)
+            tours = DTTDCTour.objects.filter(tour_category=selected_category)
 
         # Delete tour ONLY when delete button clicked
         if "delete" in request.POST and tour_id:
@@ -331,16 +351,17 @@ def admin_delete_tour(request):
             "categories": categories,
             "tours": tours,
             "selected_category": selected_category,
-        }
+        },
     )
+
 
 # -----------------------------------Feedback Report--------------------------------------
 @admin_jwt_required
 def admin_feedback_report(request):
-    feedback_list = Feedback.objects.all().order_by('-feedback_date')
+    feedback_list = Feedback.objects.all().order_by("-feedback_date")
 
-    start_date = request.GET.get('start_date')
-    end_date = request.GET.get('end_date')
+    start_date = request.GET.get("start_date")
+    end_date = request.GET.get("end_date")
 
     if start_date and end_date:
         feedback_list = feedback_list.filter(
@@ -348,12 +369,13 @@ def admin_feedback_report(request):
         )
 
     context = {
-        'feedback_list': feedback_list,
-        'start_date': start_date,
-        'end_date': end_date,
+        "feedback_list": feedback_list,
+        "start_date": start_date,
+        "end_date": end_date,
     }
 
     return render(request, "dttdc_admin/admin_feedback_report.html", context)
+
 
 # -----------------------------------Update Tour Availability--------------------------------------
 
@@ -366,6 +388,8 @@ WEEKDAY_MAP = {
     "Saturday": 5,
     "Sunday": 6,
 }
+
+
 @admin_jwt_required
 def admin_update_tour_availability(request):
     form = TourAvailabilityForm(request.POST or None)
@@ -391,19 +415,20 @@ def admin_update_tour_availability(request):
         created_count = 0
         current_date = from_date
         existing_dates = DTTDCTourAvailability.objects.filter(
-            tour=tour,
-            available_date__range=(from_date, to_date)
+            tour=tour, available_date__range=(from_date, to_date)
         )
 
         if existing_dates.exists():
-            last_date = existing_dates.order_by("-available_date").first().available_date
+            last_date = (
+                existing_dates.order_by("-available_date").first().available_date
+            )
 
             messages.warning(
                 request,
                 f"Availability already exists between "
                 f"{from_date.strftime('%d %b %Y')} and "
                 f"{last_date.strftime('%d %b %Y')}. "
-                f"Please select dates after {last_date.strftime('%d %b %Y')}."
+                f"Please select dates after {last_date.strftime('%d %b %Y')}.",
             )
             return redirect("update_tour_availability")
 
@@ -416,7 +441,7 @@ def admin_update_tour_availability(request):
                     defaults={
                         "total_seats": total_seats,
                         "available_seats": total_seats,
-                    }
+                    },
                 )
                 if created:
                     created_count += 1
@@ -426,22 +451,21 @@ def admin_update_tour_availability(request):
         if created_count > 0:
             messages.success(
                 request,
-                f"Availability successfully created for {created_count} scheduled days."
+                f"Availability successfully created for {created_count} scheduled days.",
             )
         else:
             messages.info(
                 request,
                 "No new availability was created. "
-                "Selected dates may already be fully configured."
+                "Selected dates may already be fully configured.",
             )
 
         return redirect("update_tour_availability")
 
     return render(
-        request,
-        "dttdc_admin/admin_update_tour_availability.html",
-        {"form": form}
+        request, "dttdc_admin/admin_update_tour_availability.html", {"form": form}
     )
+
 
 @admin_jwt_required
 def get_last_available_date(request):
@@ -451,19 +475,15 @@ def get_last_available_date(request):
         return JsonResponse({"last_date": None})
 
     last_obj = (
-        DTTDCTourAvailability.objects
-        .filter(tour_id=tour_id)
+        DTTDCTourAvailability.objects.filter(tour_id=tour_id)
         .order_by("-available_date")
         .first()
     )
 
     if last_obj:
-        return JsonResponse({
-            "last_date": last_obj.available_date.strftime("%Y-%m-%d")
-        })
+        return JsonResponse({"last_date": last_obj.available_date.strftime("%Y-%m-%d")})
 
     return JsonResponse({"last_date": None})
-
 
 
 @admin_jwt_required
@@ -477,9 +497,9 @@ def check_tour_availability_status(request):
 
         if selected_tour:
             available_dates = list(
-                DTTDCTourAvailability.objects.filter(
-                    tour=selected_tour
-                ).values_list("available_date", flat=True)
+                DTTDCTourAvailability.objects.filter(tour=selected_tour).values_list(
+                    "available_date", flat=True
+                )
             )
 
     return render(
@@ -489,8 +509,57 @@ def check_tour_availability_status(request):
             "tours": DTTDCTour.objects.filter(tour_status="active"),
             "selected_tour": selected_tour,
             "available_dates": [d.strftime("%Y-%m-%d") for d in available_dates],
-        }
+        },
     )
-# Added By Jay End
-    
 
+
+# Added By Jay End
+
+
+# ---------------------------------Tour Booking Report----------------------------------------
+
+
+@admin_jwt_required
+def admin_tour_booking_report(request):
+
+    start_date = request.GET.get("start_date")
+    end_date = request.GET.get("end_date")
+
+    bookings = (
+        DTTDCTourBooking.objects
+        .select_related(
+            "dttdc_tour",
+            "user_details",
+            "payment"
+        )
+        .prefetch_related(
+            "passenger_map__traveller"
+        )
+        .order_by("-booking_date")
+    )
+
+    # 🔹 Date filter
+    if start_date and end_date:
+        try:
+            start_dt = make_aware(datetime.strptime(start_date, "%Y-%m-%d"))
+            end_dt = make_aware(
+                datetime.strptime(end_date, "%Y-%m-%d")
+            ).replace(hour=23, minute=59, second=59)
+
+            bookings = bookings.filter(
+                booking_date__range=(start_dt, end_dt)
+            )
+        except ValueError:
+            messages.error(request, "Invalid date format")
+
+    context = {
+        "booking_list": bookings,
+        "start_date": start_date,
+        "end_date": end_date,
+    }
+
+    return render(
+        request,
+        "dttdc_admin/admin_tour_booking_report.html",
+        context
+    )

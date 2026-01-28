@@ -57,10 +57,9 @@
   {% include 'dttdc_admin/components/header.html' %}
   {% include 'dttdc_admin/components/menu.html' %}
   <div id="root">
-    {% block content %}
-    {% endblock %}
-    {% block feedback_report %}
-    {% endblock %}
+    {% block content %}{% endblock %}
+    {% block feedback_report %}{% endblock %}
+    {% block tour_booking_report %}{% endblock %}
   </div>
   {% include 'dttdc_admin/components/footer.html' %}
   <!-- Bootstrap JS -->
