@@ -42,6 +42,8 @@ INSTALLED_APPS = [
     'core',
     'ebooking',
     'dttdc_admin',
+    'phonenumber_field',
+
 ]
 
 MIDDLEWARE = [

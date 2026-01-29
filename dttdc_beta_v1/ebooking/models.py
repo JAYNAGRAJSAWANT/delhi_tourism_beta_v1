@@ -1,5 +1,14 @@
 from django.db import models
 
+from phonenumber_field.modelfields import PhoneNumberField
+
+from .validators import (
+    phone_validator,
+    passport_validator,
+    pincode_validator,
+    journey_date_validator,
+)
+
 # --- Core Models --- 
 
 # =========================DTTDC Tour Category Model===========================
@@ -69,19 +78,19 @@ class DTTDCUserDetails(models.Model):
         blank=True
     )
 
-    tour_journey_date = models.DateField()
+    tour_journey_date = models.DateField(validators=[journey_date_validator])
 
     name = models.CharField(max_length=150)
     email = models.EmailField(max_length=254)
-    phone_number = models.CharField(max_length=20)
+    phone_number = PhoneNumberField()
 
     address = models.TextField()
     city = models.CharField(max_length=100)
     state = models.CharField(max_length=100)
     country = models.CharField(max_length=100)
-    pincode = models.CharField(max_length=15)
+    pincode = models.CharField(max_length=15,validators=[pincode_validator])
 
-    passport = models.CharField(max_length=20, blank=True, null=True)
+    passport = models.CharField(max_length=20, blank=True, null=True,validators=[passport_validator])
 
     number_of_adults = models.PositiveSmallIntegerField(default=1)
     number_of_child = models.PositiveSmallIntegerField(default=0)

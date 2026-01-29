@@ -103,20 +103,21 @@
                     </label>
 
                     <div class="col-md-9">
-                      <div class="input-group">
-                        <!-- Phone country code selector -->
-                        <select id="phone_country_code" name="phone_country_code" class="form-select"
-                          style="max-width: 180px;">
-                          <option value="">Code</option>
-                        </select>
-                        {{ form.phone_number }}
-                      </div>
+
+                      {{ form.phone_number }}
+
+                      <!-- JS validation error -->
+                      <div id="phone-error" class="invalid-feedback d-none"></div>
+
                       {% if form.phone_number.errors %}
-                      <div class="text-danger small mt-1">
+                      <div class="invalid-feedback d-block">
                         {{ form.phone_number.errors.0 }}
                       </div>
                       {% endif %}
+
                     </div>
+
+
                   </div>
 
                   <div class="row mb-3 align-items-center">
@@ -435,20 +436,137 @@
     });
   </script>
 
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-  const dateInput = document.getElementById("id_tour_journey_date");
-  if (!dateInput) return;
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const dateInput = document.getElementById("id_tour_journey_date");
+      if (!dateInput) return;
 
-  const minDate = new Date();
-  minDate.setDate(minDate.getDate() + 2);
+      const minDate = new Date();
+      minDate.setDate(minDate.getDate() + 2);
 
-  const yyyy = minDate.getFullYear();
-  const mm = String(minDate.getMonth() + 1).padStart(2, "0");
-  const dd = String(minDate.getDate()).padStart(2, "0");
+      const yyyy = minDate.getFullYear();
+      const mm = String(minDate.getMonth() + 1).padStart(2, "0");
+      const dd = String(minDate.getDate()).padStart(2, "0");
 
-  dateInput.min = `${yyyy}-${mm}-${dd}`;
-});
-</script>
+      dateInput.min = `${yyyy}-${mm}-${dd}`;
+    });
+  </script>
+
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+      const input = document.getElementById("id_phone_number");
+      const form = input.closest("form");
+      const errorBox = document.getElementById("phone-error");
+
+      const iti = window.intlTelInput(input, {
+        initialCountry: "in",
+        separateDialCode: true,
+        nationalMode: false,
+        utilsScript:
+          "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js",
+      });
+
+      function showError(message) {
+        input.classList.add("is-invalid");
+        errorBox.textContent = message;
+        errorBox.classList.remove("d-none");
+        input.scrollIntoView({ behavior: "smooth", block: "center" });
+        input.focus();
+      }
+
+      function clearError() {
+        input.classList.remove("is-invalid");
+        errorBox.textContent = "";
+        errorBox.classList.add("d-none");
+      }
+
+      // 🔒 BLOCK ALPHABETS
+      input.addEventListener("keypress", function (e) {
+        const char = String.fromCharCode(e.which);
+        if (!/[0-9]/.test(char)) {
+          e.preventDefault();
+        }
+      });
+
+      input.addEventListener("paste", function (e) {
+        const pasted = (e.clipboardData || window.clipboardData).getData("text");
+        if (!/^\d+$/.test(pasted.replace(/\s+/g, ""))) {
+          e.preventDefault();
+        }
+      });
+
+      input.addEventListener("input", function () {
+        errorBox.textContent = "";
+        errorBox.classList.add("d-none");
+        input.classList.remove("is-invalid");
+      });
+
+      input.addEventListener("change", clearError);
+
+      form.addEventListener("submit", function (e) {
+
+        if (!iti.isValidNumber()) {
+          e.preventDefault();
+
+          let msg = "Enter a valid phone number.";
+          const errorCode = iti.getValidationError();
+
+          if (errorCode === intlTelInputUtils.validationError.TOO_SHORT) {
+            msg = "Phone number is too short.";
+          } else if (errorCode === intlTelInputUtils.validationError.TOO_LONG) {
+            msg = "Phone number is too long.";
+          } else if (errorCode === intlTelInputUtils.validationError.INVALID_COUNTRY_CODE) {
+            msg = "Invalid country code.";
+          }
+
+          // show error like Django
+          errorBox.textContent = msg;
+          errorBox.classList.remove("d-none");
+
+          input.classList.add("is-invalid");
+
+          // scroll + focus (Django behavior)
+          input.scrollIntoView({ behavior: "smooth", block: "center" });
+          input.focus();
+
+          return;
+        }
+
+        // valid → submit E.164
+        input.value = iti.getNumber();
+      });
+
+
+
+      function enforceMaxLength() {
+        const countryData = iti.getSelectedCountryData();
+        if (!countryData || !countryData.exampleNumber) return;
+
+        // extract digits from example number
+        const maxDigits = countryData.exampleNumber.replace(/\D/g, "").length;
+
+        if (input.value.length > maxDigits) {
+          input.value = input.value.slice(0, maxDigits);
+        }
+      }
+
+
+    });
+  </script>
+
+
+  <style>
+    .invalid-feedback {
+      display: block;
+      font-size: 0.875rem;
+      margin-top: 4px;
+    }
+
+    .is-invalid {
+      border-color: #dc3545 !important;
+    }
+  </style>
 
   {% endblock %}

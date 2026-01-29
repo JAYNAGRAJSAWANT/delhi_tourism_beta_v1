@@ -1,14 +1,15 @@
 import re
 from django import forms
-from .models import DTTDCTourCategory, DTTDCTour, DTTDCTraveller,DTTDCUserDetails
+from .models import DTTDCTourCategory, DTTDCTour, DTTDCTraveller, DTTDCUserDetails
 from django.core.exceptions import ValidationError
 from django.core.files.images import get_image_dimensions
 import imghdr
 from datetime import date, datetime, timedelta
-
+NAME_REGEX = re.compile(r"^[A-Za-z][A-Za-z.'-]*(?:\s[A-Za-z][A-Za-z.'-]*)*$")
 MAX_IMAGE_SIZE = 2 * 1024 * 1024  # 2MB
-
+from phonenumber_field.formfields import PhoneNumberField
 ALLOWED_IMAGE_TYPES = {"jpeg", "png", "webp"}
+
 
 # ==================================================================================================
 class AddTourCategoryForm(forms.ModelForm):
@@ -46,7 +47,10 @@ class AddTourCategoryForm(forms.ModelForm):
             raise ValidationError("Unsupported File type.")
 
         return image
+
+
 # ==================================================================================================
+
 
 class AddTourForm(forms.ModelForm):
     class Meta:
@@ -115,7 +119,8 @@ class AddTourForm(forms.ModelForm):
             "tour_status": forms.RadioSelect(),
             "extra_details": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
         }
-# ---------------------------------------------------------------------
+
+    # ---------------------------------------------------------------------
     def clean_tour_name(self):
         print("______________ale ahe re____________")
         name = self.cleaned_data.get("tour_name", "")
@@ -125,7 +130,8 @@ class AddTourForm(forms.ModelForm):
         if len(name.strip()) > 200:
             raise ValidationError(f"Tour name is too long: {len(name.strip())} chars")
         return name.strip()
-# ---------------------------------------------------------------------
+
+    # ---------------------------------------------------------------------
     def clean_fare_adult(self):
         fare = self.cleaned_data.get("fare_adult")
         print("DEBUG fare_adult:", fare)
@@ -133,14 +139,16 @@ class AddTourForm(forms.ModelForm):
         if fare is not None and fare < 0:
             raise ValidationError("Adult fare cannot be negative.")
         return fare
-# ---------------------------------------------------------------------
+
+    # ---------------------------------------------------------------------
     def clean_fare_child(self):
         fare = self.cleaned_data.get("fare_child")
         print("DEBUG fare_child:", fare)
         if fare is not None and fare < 0:
             raise ValidationError("Child fare cannot be negative.")
         return fare
-# ---------------------------------------------------------------------
+
+    # ---------------------------------------------------------------------
     def clean_total_days(self):
         days = self.cleaned_data.get("total_days")
 
@@ -151,7 +159,8 @@ class AddTourForm(forms.ModelForm):
         #  raise ValidationError("Total days must be at least 1.")
 
         return days
-# ------------------------------------------------
+
+    # ------------------------------------------------
     def clean_tour_image(self):
         image = self.cleaned_data.get("tour_image")
 
@@ -169,7 +178,8 @@ class AddTourForm(forms.ModelForm):
         #     raise ValidationError("Unsupported image type.")
 
         return image
-# ------------------------------------------------
+
+    # ------------------------------------------------
     def clean_departure_dated(self):
         value = self.cleaned_data.get("departure_dated", "").strip()
         print("DEBUG departure_dated RAW:", value)
@@ -185,39 +195,39 @@ class AddTourForm(forms.ModelForm):
             except ValueError:
                 print("INVALID DATE:", d)
                 raise ValidationError("Invalid date format detected.")
-        
+
         return ",".join(sorted(set(dates)))
-# ------------------------------------------------    
+
+    # ------------------------------------------------
     def clean(self):
-     cleaned_data = super().clean()
-     print("DEBUG cleaned_data BEFORE:", cleaned_data)
+        cleaned_data = super().clean()
+        print("DEBUG cleaned_data BEFORE:", cleaned_data)
 
-     from_time = self.data.get("timing_from")
-     to_time = self.data.get("timing_to")
-     print("DEBUG timing_from:", from_time, "timing_to:", to_time)
+        from_time = self.data.get("timing_from")
+        to_time = self.data.get("timing_to")
+        print("DEBUG timing_from:", from_time, "timing_to:", to_time)
 
-     if from_time and to_time:
-        cleaned_data["timing"] = f"{from_time} - {to_time}"
-     elif from_time or to_time:
-        raise ValidationError("Both From and To timings are required.")
-     else:
-        cleaned_data["timing"] = None
-# ------------------------------------------------   
-     # ---- TOUR DURATION ----
-     days = self.data.get("tour_days")
-     nights = self.data.get("tour_nights")
-     total_days = self.data.get("total_days")
-     print("DEBUG tour_days:", days, "tour_nights:", nights)
-     print("DEBUG total_days (raw):", total_days)
+        if from_time and to_time:
+            cleaned_data["timing"] = f"{from_time} - {to_time}"
+        elif from_time or to_time:
+            raise ValidationError("Both From and To timings are required.")
+        else:
+            cleaned_data["timing"] = None
+        # ------------------------------------------------
+        # ---- TOUR DURATION ----
+        days = self.data.get("tour_days")
+        nights = self.data.get("tour_nights")
+        total_days = self.data.get("total_days")
+        print("DEBUG tour_days:", days, "tour_nights:", nights)
+        print("DEBUG total_days (raw):", total_days)
 
-     if days is not None and nights is not None:
-        cleaned_data["tour_duration"] = f"{days} Days & {nights} Nights"
-     else:
-        cleaned_data["tour_duration"] = None
+        if days is not None and nights is not None:
+            cleaned_data["tour_duration"] = f"{days} Days & {nights} Nights"
+        else:
+            cleaned_data["tour_duration"] = None
 
-     print("DEBUG cleaned_data AFTER:", cleaned_data)
-     return cleaned_data
-
+        print("DEBUG cleaned_data AFTER:", cleaned_data)
+        return cleaned_data
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -236,31 +246,40 @@ class AddTourForm(forms.ModelForm):
         for field in required_fields:
             self.fields[field].required = True
 
+
 # ==================================================================================================
 # -----------------------------------User Details Form-------------------------
 # ==================================================================================================
 
+
 class UserDetailsForm(forms.ModelForm):
     
+    phone_number = PhoneNumberField(
+        widget=forms.TextInput(attrs={"class": "form-control","id": "id_phone_number", "placeholder": "Enter mobile number"}),
+        error_messages={"invalid": "Enter a valid mobile number."},
+    )
+
     ADULT_CHILD_CHOICES = [(i, str(i)) for i in range(0, 7)]
+
     number_of_adults = forms.ChoiceField(
         choices=ADULT_CHILD_CHOICES,
         widget=forms.Select(attrs={"class": "form-control"}),
-        initial=1
+        initial=1,
     )
 
     number_of_child = forms.ChoiceField(
         choices=ADULT_CHILD_CHOICES,
         widget=forms.Select(attrs={"class": "form-control"}),
-        initial=0
+        initial=0,
     )
 
     email = forms.EmailField(
         widget=forms.EmailInput(attrs={"class": "form-control"}),
-        error_messages={"required": "Email address is required.",
-                        "invalid": "Enter a valid email address."}
+        error_messages={
+            "required": "Email address is required.",
+            "invalid": "Enter a valid email address.",
+        },
     )
-
 
     class Meta:
         model = DTTDCUserDetails
@@ -293,25 +312,32 @@ class UserDetailsForm(forms.ModelForm):
                     "placeholder": "Enter full address",
                 }
             ),
-             "number_of_adults": forms.Select(
-                attrs={"class": "form-control"}
-            ),
-            "number_of_child": forms.Select(
-                attrs={"class": "form-control"}
-            ),
-
+            "number_of_adults": forms.Select(attrs={"class": "form-control"}),
+            "number_of_child": forms.Select(attrs={"class": "form-control"}),
+            
             "country": forms.Select(
-                attrs={"class": "form-control", "id": "country","data-selected": "",}
+                attrs={
+                    "class": "form-control",
+                    "id": "country",
+                    "data-selected": "",
+                }
             ),
             "state": forms.Select(
-                attrs={"class": "form-control", "id": "state","data-selected": "",}
+                attrs={
+                    "class": "form-control",
+                    "id": "state",
+                    "data-selected": "",
+                }
             ),
             "city": forms.Select(
-                attrs={"class": "form-control", "id": "city","data-selected": "",}
+                attrs={
+                    "class": "form-control",
+                    "id": "city",
+                    "data-selected": "",
+                }
             ),
-
         }
-     
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -321,8 +347,6 @@ class UserDetailsForm(forms.ModelForm):
 
         # Passport is optional
         self.fields["passport"].required = False
-
-
 
         self.fields["country"].choices = [
             ("", "Select Country"),
@@ -339,7 +363,6 @@ class UserDetailsForm(forms.ModelForm):
         self.fields["number_of_adults"].choices = self.ADULT_CHILD_CHOICES
         self.fields["number_of_child"].choices = self.ADULT_CHILD_CHOICES
 
-      
         placeholders = {
             "name": "Full Name",
             "email": "Email Address",
@@ -358,29 +381,40 @@ class UserDetailsForm(forms.ModelForm):
             if field_name in placeholders:
                 field.widget.attrs["placeholder"] = placeholders[field_name]
 
-    
+    def clean_name(self):
+        name = self.cleaned_data.get("name") or ""
+
+        #  Strip leading/trailing whitespace
+        name = name.strip()
+
+        #  Collapse multiple spaces into one
+        name = re.sub(r"\s+", " ", name)
+
+        # Minimum length enforcement
+        if len(name) < 2:
+            raise ValidationError("Name must be at least 2 characters long.")
+
+        #  Maximum length safety (DB-safe)
+        if len(name) > 150:
+            raise ValidationError("Name is too long.")
+
+        #  Strict ASCII Latin validation
+        if not NAME_REGEX.fullmatch(name):
+            raise ValidationError(
+                "Name may contain only English letters, single spaces, apostrophe ('), dot (.) and hyphen (-)."
+            )
+
+        return name
+
     def clean_number_of_adults(self):
         adults = int(self.cleaned_data.get("number_of_adults", 0))
         if adults < 1:
             raise ValidationError("At least 1 adult is required.")
         return adults
 
-    def clean_phone_number(self):
-        phone = self.cleaned_data.get("phone_number")
-
-        if not phone:
-            raise ValidationError("Mobile number is required.")
-
-        if not re.fullmatch(r"\+\d{10,15}", phone):
-            raise ValidationError(
-                "Enter a valid mobile number with country code."
-            )
-
-        return phone
 
     def clean_passport(self):
         passport = (self.cleaned_data.get("passport") or "").strip().upper()
-
 
         if passport:
             if not re.fullmatch(r"[A-Z0-9]{6,12}", passport):
@@ -389,7 +423,7 @@ class UserDetailsForm(forms.ModelForm):
                 )
 
         return passport
-    
+
     def clean_pincode(self):
         pincode = self.cleaned_data.get("pincode")
 
@@ -397,7 +431,7 @@ class UserDetailsForm(forms.ModelForm):
             if not re.fullmatch(r"\d{6}", pincode):
                 raise ValidationError("Enter a valid 6-digit PIN code.")
         return pincode
-    
+
     def clean_tour_journey_date(self):
         journey_date = self.cleaned_data.get("tour_journey_date")
         min_date = date.today() + timedelta(days=2)
@@ -426,10 +460,8 @@ class UserDetailsForm(forms.ModelForm):
         # ----------------------------
         if total > 6:
             self.add_error(
-                "number_of_adults",
-                "Maximum 6 passengers allowed (Adults + Children)."
+                "number_of_adults", "Maximum 6 passengers allowed (Adults + Children)."
             )
-
 
         # ----------------------------
         # Passport validation
@@ -438,14 +470,16 @@ class UserDetailsForm(forms.ModelForm):
             if not passport:
                 self.add_error(
                     "passport",
-                    "Passport number is required for international travelers."
+                    "Passport number is required for international travelers.",
                 )
 
-
         return cleaned_data
+
+
 # ==================================================================================================
 # ----------------------------------Traveller Form---------------------------------------
 # ==================================================================================================
+
 
 class TravellerForm(forms.ModelForm):
     class Meta:
@@ -459,9 +493,7 @@ class TravellerForm(forms.ModelForm):
             "age": forms.NumberInput(
                 attrs={"class": "form-control", "placeholder": "Age"}
             ),
-            "gender": forms.Select(
-                attrs={"class": "form-control"}
-            ),
+            "gender": forms.Select(attrs={"class": "form-control"}),
             "passport": forms.TextInput(
                 attrs={
                     "class": "form-control",
@@ -476,12 +508,8 @@ class TravellerForm(forms.ModelForm):
 
 
 TravellerFormSet = forms.modelformset_factory(
-    DTTDCTraveller,
-    form=TravellerForm,
-    extra=0,
-    can_delete=True
+    DTTDCTraveller, form=TravellerForm, extra=0, can_delete=True
 )
-
 
 
 # ==================================================================================================
@@ -489,27 +517,29 @@ TravellerFormSet = forms.modelformset_factory(
 # ==================================================================================================
 class TourAvailabilityForm(forms.Form):
     tour = forms.ModelChoiceField(
-        queryset=DTTDCTour.objects.filter(tour_status="active"),
-        required=True
+        queryset=DTTDCTour.objects.filter(tour_status="active"), required=True
     )
 
     from_date = forms.DateField(
-        widget=forms.DateInput(attrs={
-            "type": "date",
-            "class": "form-control",
-        })
+        widget=forms.DateInput(
+            attrs={
+                "type": "date",
+                "class": "form-control",
+            }
+        )
     )
 
     to_date = forms.DateField(
-        widget=forms.DateInput(attrs={
-            "type": "date",
-            "class": "form-control",
-        })
+        widget=forms.DateInput(
+            attrs={
+                "type": "date",
+                "class": "form-control",
+            }
+        )
     )
 
     total_seats = forms.IntegerField(
-        min_value=1,
-        widget=forms.NumberInput(attrs={"class": "form-control"})
+        min_value=1, widget=forms.NumberInput(attrs={"class": "form-control"})
     )
 
     def clean(self):
@@ -525,9 +555,7 @@ class TourAvailabilityForm(forms.Form):
             )
 
         if to_date and to_date < min_allowed_date:
-            raise forms.ValidationError(
-                "To date must be day after tomorrow or later."
-            )
+            raise forms.ValidationError("To date must be day after tomorrow or later.")
 
         if from_date and to_date and from_date > to_date:
             raise forms.ValidationError("From date cannot be after To date.")
