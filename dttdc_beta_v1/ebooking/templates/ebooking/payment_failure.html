@@ -1,0 +1,76 @@
+{% extends "ebooking/base_ebooking.html" %}
+{% load static %}
+
+{% block tours %}
+<div class="container py-5">
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+
+            <!-- Failure Card -->
+            <div class="card shadow border-0">
+                <div class="card-body text-center p-5">
+
+                    <div class="mb-4">
+                        <img src="{% static 'ebooking/images/failure.png' %}" 
+                             alt="Payment Failed" width="90">
+                    </div>
+
+                    <h2 class="text-danger fw-bold mb-3">
+                        Payment Failed
+                    </h2>
+
+                    <p class="text-muted mb-4">
+                        Unfortunately, your payment could not be completed.
+                    </p>
+
+                    <hr>
+
+                    <!-- Booking Info -->
+                    <div class="row text-start mt-4">
+                        <div class="col-md-6 mb-2">
+                            <strong>PNR Number:</strong><br>
+                            {{ booking.pnr_number }}
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <strong>Transaction ID:</strong><br>
+                            {{ payment.txnid }}
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <strong>Tour Name:</strong><br>
+                            {{ booking.dttdc_tour.tour_name }}
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <strong>Amount:</strong><br>
+                            ₹ {{ payment.amount }}
+                        </div>
+                    </div>
+
+                    {% if payment.error_Message %}
+                    <div class="alert alert-danger mt-4 text-start">
+                        <strong>Reason:</strong><br>
+                        {{ payment.error_Message }}
+                    </div>
+                    {% endif %}
+
+                    <!-- Actions -->
+                    <div class="d-flex justify-content-center gap-3 mt-4">
+                        <a href="{% url 'payu_payment_init' booking.pnr_number %}" 
+                           class="btn btn-danger px-4">
+                            Retry Payment
+                        </a>
+
+                        <a href="{% url 'contact_support' %}" 
+                           class="btn btn-outline-secondary px-4">
+                            Contact Support
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}

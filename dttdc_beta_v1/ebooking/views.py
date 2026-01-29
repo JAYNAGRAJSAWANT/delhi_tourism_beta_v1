@@ -4,6 +4,9 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponse, JsonResponse
 from django.db import transaction
 from dttdc_admin.captcha_utility import generateCaptchaValueWithToken, validate_captcha
+from django.utils import timezone
+from datetime import timedelta
+
 from .models import (
     DTTDCTourAvailability,
     DTTDCTourCategory,
@@ -14,13 +17,24 @@ from .models import (
     DTTDCUserDetails,
     Feedback,
 )
+from .models import (
+    DTTDCTourBooking,
+    DTTDCUserDetails,
+    DTTDCTourPaymentDetails
+)
+
 import uuid
 from .forms import TravellerForm, TravellerFormSet, UserDetailsForm
 from django.contrib import messages
 import re
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
-
+from django.urls import reverse
+from django.conf import settings
+import hashlib
+from django.db import transaction
+from .models import DTTDCTravellerBookingMap
+from django.views.decorators.csrf import csrf_exempt
 
 # -----------------------------Home View-------------------------------
 def home(request):
@@ -77,8 +91,6 @@ def start_booking(request, tour_id):
 
 
 # ----------------------------User Details View--------------------------------
-
-
 def booking_user_details(request, pnr):
     booking = get_object_or_404(DTTDCTourBooking, pnr_number=pnr)
 
@@ -87,8 +99,12 @@ def booking_user_details(request, pnr):
     # ==========================
     # FIXED PRICES (TEST TOUR)
     # ==========================
-    ADULT_PRICE = Decimal("1200.00")
-    CHILD_PRICE = Decimal("600.00")
+    tour = booking.dttdc_tour
+    adult_price = tour.fare_adult
+    child_price = tour.fare_child
+    
+    print("Adult Price : ", adult_price)
+    print("Child price : ", child_price)
 
     CGST_RATE = Decimal("0.025")  # 2.5%
     SGST_RATE = Decimal("0.025")  # 2.5%
@@ -104,20 +120,21 @@ def booking_user_details(request, pnr):
 
             adults = int(user.number_of_adults)
             children = int(user.number_of_child)
-
+            
             booking.number_of_passengers = adults + children
 
             # ==========================
             # FARE CALCULATION
             # ==========================
-            base_fare = (Decimal(adults) * ADULT_PRICE) + (
-                Decimal(children) * CHILD_PRICE
+            base_fare = (Decimal(adults) * adult_price) + (
+                Decimal(children) * child_price
             )
 
             cgst_amount = base_fare * CGST_RATE
             sgst_amount = base_fare * SGST_RATE
 
             total_fare = base_fare + cgst_amount + sgst_amount
+            print(total_fare)
             booking.total_fare = total_fare
             booking.booking_status = "details_filled"
             booking.save()
@@ -375,7 +392,8 @@ def ebooking_ticket_preview(request, pnr):
             captcha_value = captcha_data["captchaValue"]
         else:
             # ✅ Captcha success → proceed
-            return redirect("payment_page_url")  # change this
+            # return redirect("payment_page_url")  # change this
+            return redirect("payu_payment_init", pnr=pnr)
 
     context = {
         "booking": booking,
@@ -394,3 +412,224 @@ def ebooking_ticket_preview(request, pnr):
 
 def ebooking_termsandconditions(request):
     return render(request, "ebooking/ebooking_termsandconditions.html")
+
+
+# ----------------------------------- Payu Payment Initiated -------------------------
+# ---------------------- ADDED BY ABHIJEET THORAT ------------------------------------
+def verify_payu_hash(response_data):
+    hash_seq = (
+        settings.PAYU_MERCHANT_SALT + "|" +
+        response_data.get("status", "") + "|||||||||||" +
+        response_data.get("email", "") + "|" +
+        response_data.get("firstname", "") + "|" +
+        response_data.get("productinfo", "") + "|" +
+        response_data.get("amount", "") + "|" +
+        response_data.get("txnid", "") + "|" +
+        settings.PAYU_MERCHANT_KEY
+    )
+
+    calculated_hash = hashlib.sha512(hash_seq.encode()).hexdigest().lower()
+    return calculated_hash == response_data.get("hash")
+
+def payu_payment_init(request, pnr):
+    booking = get_object_or_404(DTTDCTourBooking, pnr_number=pnr)
+    user = get_object_or_404(DTTDCUserDetails, booking=booking) 
+    
+    if booking.booking_status == "paid":
+        return redirect("payment_already_done")
+    
+    
+    booking.booking_status = "payment_pending"
+    booking.save()
+    
+    amount = str(booking.total_fare)
+    productinfo = booking.dttdc_tour.tour_name
+    firstname = user.name
+    email = user.email
+    phone = user.phone_number
+
+    txnid = f"DTTDC{booking.id}{int(timezone.now().timestamp())}"
+    
+    surl = request.build_absolute_uri(reverse("payu_success"))
+    furl = request.build_absolute_uri(reverse("payu_failure"))
+    
+    hash_string = (
+        f"{settings.PAYU_MERCHANT_KEY}|{txnid}|{amount}|{productinfo}|"
+        f"{firstname}|{email}|||||||||||{settings.PAYU_MERCHANT_SALT}"
+    )
+
+    hashh = hashlib.sha512(hash_string.encode()).hexdigest().lower()
+    
+    DTTDCTourPaymentDetails.objects.create(
+        booking=booking,
+        txnid=txnid,
+        amount=booking.total_fare,
+        status="initiated",
+        firstname=firstname,
+        email=email,
+        phone=phone,
+        productinfo=productinfo,
+        address1=user.address,
+        city=user.city,
+        state=user.state,
+        country=user.country,
+        zipcode=user.pincode,
+        hash=hashh,
+        addedon=timezone.now(),
+        user_ip=request.META.get("REMOTE_ADDR"),
+    )
+    
+    context = {
+        "payu_url": settings.PAYU_BASE_URL,
+        "key": settings.PAYU_MERCHANT_KEY,
+        "txnid": txnid,
+        "amount": amount,
+        "productinfo": productinfo,
+        "firstname": firstname,
+        "email": email,
+        "phone": phone,
+        "surl": surl,
+        "furl": furl,
+        "hash": hashh,
+    }
+
+    return render(request, "payment/payu_redirect.html", context)
+
+@csrf_exempt
+@transaction.atomic
+def payu_success(request):
+    data = request.POST
+    txnid = data.get("txnid")
+
+    payment = get_object_or_404(DTTDCTourPaymentDetails, txnid=txnid)
+    booking = payment.booking
+
+    # ❌ Idempotency (PayU retries callbacks)
+    if payment.status == "success":
+        return render(
+            request,
+            "ebooking/payment_success.html",
+            {
+                "booking": payment.booking,
+                "payment": payment,
+                "already_processed": True,
+            },
+        )
+
+    # ❌ Hash mismatch
+    if not verify_payu_hash(data):
+        payment.status = "hash_failed"
+        payment.error_Message = "Hash verification failed"
+        payment.save()
+        return HttpResponse("Invalid payment response")
+
+    # ✅ Update Payment Details
+    payment.status = data.get("status")
+    payment.mihpayid = data.get("mihpayid")
+    payment.mode = data.get("mode")
+    payment.bank_ref_num = data.get("bank_ref_num")
+    payment.bankcode = data.get("bankcode")
+    payment.cardnum = data.get("cardnum")
+    payment.name_on_card = data.get("name_on_card")
+    payment.net_amount_debit = data.get("net_amount_debit")
+    payment.unmappedstatus = data.get("unmappedstatus")
+    payment.error = data.get("error")
+    payment.error_Message = data.get("error_Message")
+    payment.save()
+
+    # ✅ Update Booking
+    booking.booking_status = "paid"
+    booking.save()
+
+    # ✅ Mark ALL travellers as BOOKED
+    DTTDCTravellerBookingMap.objects.filter(
+        booking=booking
+    ).update(booking_status="booked")
+
+    return render(
+        request,
+        "ebooking/payment_success.html",
+        {"booking": booking, "payment": payment},
+    )
+
+@csrf_exempt
+def payu_failure(request):
+    data = request.POST
+    txnid = data.get("txnid")
+
+    payment = get_object_or_404(DTTDCTourPaymentDetails, txnid=txnid)
+    booking = payment.booking
+
+    payment.status = data.get("status", "failed")
+    payment.error = data.get("error")
+    payment.error_Message = data.get("error_Message")
+    payment.save()
+
+    # ❗ Mark booking as failed
+    booking.booking_status = "payment_failed"
+    booking.save()
+
+    # ❗ Release seats
+    release_seats(booking)
+
+    return render(
+        request,
+        "ebooking/payment_failure.html",
+        {
+            "booking": booking,
+            "payment": payment,
+            "reason": "Payment failed. Seats have been released.",
+        },
+    )
+
+
+def is_payment_timed_out(payment):
+    timeout_limit = timezone.now() - timedelta(minutes=15)
+    return payment.addedon < timeout_limit and payment.status == "initiated"
+
+def payment_timeout_view(request, pnr):
+    booking = get_object_or_404(DTTDCTourBooking, pnr_number=pnr)
+    payment = getattr(booking, "payment", None)
+
+    if not payment:
+        return redirect("booking_start")
+
+    if payment.status == "success":
+        return redirect("payment_success_page", pnr=pnr)
+
+    if is_payment_timed_out(payment):
+        payment.status = "timeout"
+        payment.save()
+
+        booking.booking_status = "payment_timeout"
+        booking.save()
+
+        # ❗ Release seats
+        release_seats(booking)
+
+        return render(
+            request,
+            "ebooking/payment_timeout.html",
+            {
+                "booking": booking,
+                "payment": payment,
+            },
+        )
+
+    return redirect("payu_payment_init", pnr=pnr)
+
+def release_seats(booking):
+    """
+    Releases seats / passenger allocations for a booking
+    """
+    DTTDCTravellerBookingMap.objects.filter(
+        booking=booking
+    ).update(booking_status=None)
+
+    # If you track available seats in tour:
+    # tour = booking.dttdc_tour
+    # tour.available_seats += booking.number_of_passengers
+    # tour.save()
+    
+    
+# -------------------------------------------------- END OF PAYMENT CYCLE FLOW --------------------------------
