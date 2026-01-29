@@ -110,6 +110,9 @@ class DTTDCTourBooking(models.Model):
         ("partial_cancelled", "Partial Cancelled"),
         ("cancelled", "Cancelled"),
         ("completed", "Completed"),
+        ("payment_pending", "Payment Pending"),
+        ("payment_failed", "Payment Failed"),
+        ("payment_timeout", "Payment Timeout"),
     ]
 
     dttdc_tour = models.ForeignKey("DTTDCTour", on_delete=models.PROTECT)

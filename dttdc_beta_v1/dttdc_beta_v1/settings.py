@@ -156,3 +156,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # PAYU_MERCHANT_SALT = "YOUR_MERCHANT_SALT"
 
 # PAYU_BASE_URL = "https://sandboxsecure.payu.in/_payment"
+
+
+PAYU_MERCHANT_KEY = "nviajG"
+PAYU_MERCHANT_SALT = "eYtmLtXQtmMbnBKS3WI6GvBZemqQ7fRA"
+PAYU_BASE_URL = "https://secure.payu.in/_payment"
+
+#PAYU_BASE_URL = "https://test.payu.in/_payment"

@@ -1,0 +1,82 @@
+{% extends "ebooking/base_ebooking.html" %}
+{% load static %}
+
+{% block tours %}
+<div class="container py-5">
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+
+            {% if already_processed %}
+            <div class="alert alert-info mt-3">
+                This payment was already confirmed earlier. No further action is required.
+            </div>
+            {% endif %}
+            
+            <!-- Success Card -->
+            <div class="card shadow border-0">
+                <div class="card-body text-center p-5">
+
+                    <div class="mb-4">
+                        <img src="{% static 'ebooking/images/tourism_booking_success.gif' %}" 
+                             alt="Payment Success" width="150">
+                    </div>
+
+                    <h2 class="text-success fw-bold mb-3">
+                        Payment Successful!
+                    </h2>
+
+                    <p class="text-muted mb-4">
+                        Your tour booking has been confirmed successfully.
+                    </p>
+
+                    <hr>
+
+                    <!-- Booking Info -->
+                    <div class="row text-start mt-4">
+                        <div class="col-md-6 mb-2">
+                            <strong>PNR Number:</strong><br>
+                            {{ booking.pnr_number }}
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <strong>Transaction ID:</strong><br>
+                            {{ payment.txnid }}
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <strong>Tour Name:</strong><br>
+                            {{ booking.dttdc_tour.tour_name }}
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <strong>Total Amount Paid:</strong><br>
+                            ₹ {{ payment.amount }}
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="alert alert-success mt-4">
+                        <i class="bi bi-check-circle"></i>
+                        All passengers have been successfully booked.
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="d-flex justify-content-center gap-3 mt-4">
+                        <a href="#" 
+                           class="btn btn-success px-4">
+                            Download Ticket
+                        </a>
+
+                        <a href="/ebooking" 
+                           class="btn btn-outline-secondary px-4">
+                            Back To Home
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}
