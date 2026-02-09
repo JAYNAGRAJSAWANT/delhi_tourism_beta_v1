@@ -5,7 +5,11 @@ from django.http import HttpResponse, JsonResponse
 from django.db import transaction
 from dttdc_admin.captcha_utility import generateCaptchaValueWithToken, validate_captcha
 from django.utils import timezone
+from django.db.models import F 
 from datetime import timedelta
+from django.db.models import Sum
+from django.contrib.messages import get_messages
+
 
 from .models import (
     DTTDCTourAvailability,
@@ -91,66 +95,82 @@ def start_booking(request, tour_id):
 
 
 # ----------------------------User Details View--------------------------------
+
 def booking_user_details(request, pnr):
     booking = get_object_or_404(DTTDCTourBooking, pnr_number=pnr)
-
     user_details = DTTDCUserDetails.objects.filter(booking=booking).first()
+    
 
-    # ==========================
-    # FIXED PRICES (TEST TOUR)
-    # ==========================
     tour = booking.dttdc_tour
     adult_price = tour.fare_adult
     child_price = tour.fare_child
-    
-    print("Adult Price : ", adult_price)
-    print("Child price : ", child_price)
 
-    CGST_RATE = Decimal("0.025")  # 2.5%
-    SGST_RATE = Decimal("0.025")  # 2.5%
+    CGST_RATE = Decimal("0.025")
+    SGST_RATE = Decimal("0.025")
 
     if request.method == "POST":
+        print("🔥 POST HIT")
+
+        print("-------------------yaha hai-------------")
         form = UserDetailsForm(request.POST, instance=user_details)
+
         if not form.is_valid():
-            print("FORM ERRORS:", form.errors)
-        else:
-            user = form.save(commit=False)
+            return render(request, "ebooking/user_details.html", {"form": form, "booking": booking})
+
+        user = form.save(commit=False)
+
+        journey_date = user.tour_journey_date
+        adults = int(user.number_of_adults)
+        children = int(user.number_of_child)
+        total_passengers = adults + children
+
+        with transaction.atomic():
+
+            availability = (
+                DTTDCTourAvailability.objects
+                .select_for_update()
+                .filter(tour=tour, available_date=journey_date)
+                .first()
+            )
+
+            if not availability:
+                form.add_error(None, "Tour is not available for the selected date.")
+                return render(request, "ebooking/user_details.html", {"form": form, "booking": booking})
+
+            print("DEBUG seats → available:", availability.available_seats)
+            print("DEBUG seats → requested:", total_passengers)
+
+            if total_passengers > availability.available_seats:
+                seat_word = "seat" if availability.available_seats == 1 else "seats"
+                verb = "is" if availability.available_seats == 1 else "are"
+
+                form.add_error(
+                    None,
+                    f"Only {availability.available_seats} {seat_word} {verb} available. "
+                    f"You selected {total_passengers} passengers."
+                )
+                return render(request, "ebooking/user_details.html", {"form": form, "booking": booking})
+
+            # ✅ SAVE EVERYTHING INSIDE SAME TRANSACTION
             user.booking = booking
             user.save()
 
-            adults = int(user.number_of_adults)
-            children = int(user.number_of_child)
-            
-            booking.number_of_passengers = adults + children
+            booking.number_of_passengers = total_passengers
 
-            # ==========================
-            # FARE CALCULATION
-            # ==========================
-            base_fare = (Decimal(adults) * adult_price) + (
-                Decimal(children) * child_price
-            )
-
+            base_fare = (Decimal(adults) * adult_price) + (Decimal(children) * child_price)
             cgst_amount = base_fare * CGST_RATE
             sgst_amount = base_fare * SGST_RATE
 
-            total_fare = base_fare + cgst_amount + sgst_amount
-            print(total_fare)
-            booking.total_fare = total_fare
+            booking.total_fare = base_fare + cgst_amount + sgst_amount
             booking.booking_status = "details_filled"
             booking.save()
 
-            return redirect("add_travellers", pnr=pnr)
-        return render(
-            request, "ebooking/user_details.html", {"form": form, "booking": booking}
-        )
+        return redirect("add_travellers", pnr=pnr)
 
     else:
         form = UserDetailsForm(instance=user_details)
 
-    return render(
-        request, "ebooking/user_details.html", {"form": form, "booking": booking}
-    )
-
+    return render(request, "ebooking/user_details.html", {"form": form, "booking": booking})
 
 # -----------------------------------Added By Jay------------------------------
 def captcha(request):
@@ -226,68 +246,94 @@ def ebooking_feedback_form(request):
 
 
 # --------------------------------------- Add Travellers View---------------------------
+from django.shortcuts import get_object_or_404, render, redirect
+from django.contrib import messages
+from django.db import transaction
+
+
 def ebooking_add_travellers(request, pnr):
     booking = get_object_or_404(DTTDCTourBooking, pnr_number=pnr)
     user_details = get_object_or_404(DTTDCUserDetails, booking=booking)
+
     existing_travellers = DTTDCTraveller.objects.filter(user=user_details)
 
-    adults = user_details.number_of_adults
-    children = user_details.number_of_child
+    adults = int(user_details.number_of_adults)
+    children = int(user_details.number_of_child)
     max_passengers = adults + children
 
     if request.method == "POST":
 
-        # Count passengers
-        passenger_count = 0
+        posted_travellers = build_posted_travellers(request.POST)
+
+        # =================================================
+        # 1. COUNT PASSENGERS (by passenger_x_name)
+        # =================================================
+        passenger_indexes = set()
         for key in request.POST:
             if key.startswith("passenger_") and key.endswith("_name"):
-                passenger_count += 1
+                passenger_indexes.add(key.split("_")[1])
+
+        passenger_count = len(passenger_indexes)
 
         if passenger_count != max_passengers:
-            messages.error(request, f"Please add exactly {max_passengers} passengers.")
-            return render(
+            messages.error(
                 request,
-                "ebooking/ebooking_add_travellers.html",
-                {
-                    "booking": booking,
-                    "adults": adults,
-                    "children": children,
-                },
+                f"Please add exactly {max_passengers} passengers "
+                f"({adults} Adult(s) + {children} Child(ren))."
             )
+            request.session["posted_travellers"] = posted_travellers
+            return redirect("add_travellers", pnr=pnr)
 
+
+        # =================================================
+        # 2. FORM VALIDATION
+        # =================================================
         travellers = []
-        errors = []
 
-        # Validate passengers
-        for key in request.POST:
-            if key.startswith("passenger_") and key.endswith("_name"):
-                index = key.split("_")[1]
+        for index in passenger_indexes:
+            form = TravellerForm({
+                "name": request.POST.get(f"passenger_{index}_name"),
+                "age": request.POST.get(f"passenger_{index}_age"),
+                "gender": request.POST.get(f"passenger_{index}_gender"),
+                "passport": request.POST.get(f"passenger_{index}_passport"),
+            })
 
-                form = TravellerForm({
-                    "name": request.POST.get(f"passenger_{index}_name"),
-                    "age": request.POST.get(f"passenger_{index}_age"),
-                    "gender": request.POST.get(f"passenger_{index}_gender"),
-                    "passport": request.POST.get(f"passenger_{index}_passport"),
-                })
+            if not form.is_valid():
+                messages.error(request, "Please correct passenger details.")
+                request.session["posted_travellers"] = posted_travellers
+                return redirect("add_travellers", pnr=pnr)
 
-                if form.is_valid():
-                    travellers.append(form.cleaned_data)
-                else:
-                    errors.append(form.errors)
+            travellers.append(form.cleaned_data)
 
-        if errors:
-            messages.error(request, "Please correct passenger details.")
-            return render(
+        # =================================================
+        # 3. AGE → ADULT / CHILD VALIDATION
+        # RULE:
+        # age > 10  = Adult
+        # age <= 10 = Child (Infant included)
+        # =================================================
+        adult_count = 0
+        child_count = 0
+
+        for t in travellers:
+            age = int(t["age"])
+            if age > 10:
+                adult_count += 1
+            else:
+                child_count += 1
+
+        if adult_count != adults or child_count != children:
+            messages.error(
                 request,
-                "ebooking/ebooking_add_travellers.html",
-                {
-                    "booking": booking,
-                    "adults": adults,
-                    "children": children,
-                },
+                f"Passenger age does not match your selection. "
+                f"You selected {adults} Adult(s) and {children} Child(ren). "
+                f"Please check passenger ages."
             )
+            request.session["posted_travellers"] = posted_travellers
+            return redirect("add_travellers", pnr=pnr)
 
-        # 🔐 ATOMIC TRANSACTION (delete + create together)
+        # =================================================
+        # 4. SAVE DATA (ATOMIC TRANSACTION)
+        # =================================================
         with transaction.atomic():
 
             DTTDCTraveller.objects.filter(user=user_details).delete()
@@ -302,27 +348,57 @@ def ebooking_add_travellers(request, pnr):
                     passport=t["passport"],
                 )
 
-                # Map traveller with booking
                 DTTDCTravellerBookingMap.objects.create(
                     booking=booking,
                     traveller=traveller_obj,
-                    
                 )
+        request.session.pop("posted_travellers", None)
+
+        list(messages.get_messages(request))
 
         return redirect("ebooking_ticket_preview", pnr=pnr)
+    
+    posted_travellers = request.session.pop("posted_travellers", None)
+    # =================================================
+    # GET REQUEST (CLEAN PAGE, NO OLD ERRORS)
+    # =================================================
+    return render(
+        request,
+        "ebooking/ebooking_add_travellers.html",
+        {
+            "booking": booking,
+            "adults": adults,
+            "children": children,
+            "existing_travellers": existing_travellers,
+            "posted_travellers": posted_travellers,
+            "existing_passengers": len(posted_travellers) if posted_travellers else existing_travellers.count(),
+        },
+    )
 
-    else:
-        return render(
-            request,
-            "ebooking/ebooking_add_travellers.html",
-            {
-                "booking": booking,
-                "adults": adults,
-                "children": children,
-                "existing_passengers": existing_travellers.count(),
-                "existing_travellers": existing_travellers,
-            },
-        )
+
+
+
+def build_posted_travellers(post_data):
+    travellers = []
+
+    passenger_indexes = sorted({
+        key.split("_")[1]
+        for key in post_data
+        if key.startswith("passenger_") and key.endswith("_name")
+    })
+
+    for index in passenger_indexes:
+        travellers.append({
+            "index": int(index),
+            "name": post_data.get(f"passenger_{index}_name"),
+            "age": post_data.get(f"passenger_{index}_age"),
+            "gender": post_data.get(f"passenger_{index}_gender"),
+            "passport": post_data.get(f"passenger_{index}_passport"),
+        })
+
+    return travellers
+
+
 # --------------------------------------Check Tour Availability View---------------------------
 def check_tour_availability(request):
 
@@ -537,6 +613,18 @@ def payu_success(request):
     payment.error_Message = data.get("error_Message")
     payment.save()
 
+    if payment.status != "success":
+        booking.booking_status = "payment_failed"
+        booking.save()
+        
+        return render(
+            request,
+            "ebooking/payment_failure.html",
+            {"booking": booking, "payment":payment}
+        )
+    
+    reduce_seats_after_after_payment(booking)
+
     # ✅ Update Booking
     booking.booking_status = "paid"
     booking.save()
@@ -551,6 +639,39 @@ def payu_success(request):
         "ebooking/payment_success.html",
         {"booking": booking, "payment": payment},
     )
+
+def reduce_seats_after_after_payment(booking):                               
+    """
+    Docstring for reduce_seats_after_after_payment
+    
+    Reduce the available seats for the tour on the journey date    
+    """
+    
+    user = booking.user_details
+    tour = booking.dttdc_tour
+    journey_date = user.tour_journey_date
+    passengers = booking.number_of_passengers
+    
+    print("Tour Information : ", tour)
+    print(" ======================== ")
+    print("Journey Information : ", journey_date)
+    print(" ======================== ")
+    print("Passengers Information : ", passengers)
+    
+    availability = (
+        DTTDCTourAvailability.objects
+        .select_for_update()
+        .get(tour=tour, available_date=journey_date)
+    )
+    
+    if availability.available_seats < passengers:
+        raise ValidationError(
+            f"Insuffcient seats for {journey_date}"
+        )
+    
+    availability.available_seats = F("available_seats") - passengers
+    availability.save()
+
 
 @csrf_exempt
 def payu_failure(request):
@@ -633,3 +754,12 @@ def release_seats(booking):
     
     
 # -------------------------------------------------- END OF PAYMENT CYCLE FLOW --------------------------------
+
+# --------------------------------------------------- Start of Tour Cancellation ------------------------------
+
+def ebooking_tour_cancellation(request):
+    print("===== Ebooking Tour Cancellation Starts =====")
+    
+    if request.POST:
+        print("Inside post method ....")
+    return render("ebooking/ebooking_tour_cancellation.html")

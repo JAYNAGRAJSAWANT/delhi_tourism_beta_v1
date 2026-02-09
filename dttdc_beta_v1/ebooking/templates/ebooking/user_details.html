@@ -211,6 +211,8 @@
                 <!-- PASSENGER DETAILS -->
                 <div class="ticket-section border-top pt-3">
                   <div class="section-label">Passenger Details </div>
+                  <div id="seatLimitError" class="text-danger small mb-2 d-none"></div>
+
                   {% if form.number_of_adults.errors or form.number_of_child.errors %}
                   <div class="text-danger small mb-3">
                     {% if form.number_of_adults.errors %}
@@ -415,10 +417,14 @@
         })
         .then(data => {
           if (data.available) {
-            availabilityBox.innerHTML = `Available Seats: ${data.seats}`;
-            availabilityBox.className = "text-success small fw-semibold";
-            submitBtn.disabled = false;
-          } else {
+  availableSeats = parseInt(data.seats); // 👈 IMPORTANT
+
+  availabilityBox.innerHTML = `Available Seats: ${data.seats}`;
+  availabilityBox.className = "text-success small fw-semibold";
+
+  checkSeatLimit(); // 👈 re-check passengers
+}
+ else {
             availabilityBox.innerHTML = data.message || "Tour not available";
             availabilityBox.className = "text-danger small fw-semibold";
             submitBtn.disabled = true;
@@ -568,5 +574,48 @@
       border-color: #dc3545 !important;
     }
   </style>
+
+
+<script>
+  let availableSeats = null;
+
+  const adultsSelect = document.getElementById("id_number_of_adults");
+  const childrenSelect = document.getElementById("id_number_of_child");
+  const seatErrorBox = document.getElementById("seatLimitError");
+  const submitBtn3 = document.querySelector("button[type='submit']");
+
+  function checkSeatLimit() {
+    if (availableSeats === null) return;
+
+    const adults = parseInt(adultsSelect.value || 0);
+    const children = parseInt(childrenSelect.value || 0);
+    const totalPassengers = adults + children;
+
+    if (totalPassengers > availableSeats) {
+
+      const seatWord = availableSeats === 1 ? "seat" : "seats";
+      const seatVerb = availableSeats === 1 ? "is" : "are";
+
+      const passengerWord =
+        totalPassengers === 1 ? "passenger" : "passengers";
+
+      seatErrorBox.textContent =
+        `Only ${availableSeats} ${seatWord} ${seatVerb} available. ` +
+        `You selected ${totalPassengers} ${passengerWord}.`;
+
+      seatErrorBox.classList.remove("d-none");
+      submitBtn3.disabled = true; //comment this when you want to check the backkend validation is working or not 
+
+    } else {
+      seatErrorBox.textContent = "";
+      seatErrorBox.classList.add("d-none");
+      submitBtn3.disabled = false;
+    }
+  }
+
+  adultsSelect.addEventListener("change", checkSeatLimit);
+  childrenSelect.addEventListener("change", checkSeatLimit);
+</script>
+
 
   {% endblock %}
