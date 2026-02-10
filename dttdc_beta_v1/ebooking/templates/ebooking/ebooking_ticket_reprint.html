@@ -1,0 +1,621 @@
+{% extends "ebooking/base_ebooking.html" %}
+{% load static %}
+
+{% block ebooking_ticket_reprint %}
+
+<div class="container">
+  <div class="row m-3">
+
+    <aside class="col-12 col-md-3">
+      {% include "ebooking/components/tour_booking_sidebar.html" %}
+    </aside>
+
+    <div class="col-lg-9">
+      <div class="card mt-4 shadow-sm">
+
+        <div class="card-header text-center bg-light py-2"
+          style="border-bottom: 3px solid #b8440e; border-radius: .5rem .5rem 0 0;">
+          <h5 class=" fw-bold mb-1" style="font-size: 1.5rem; letter-spacing: 0.5px;">
+            Online Tour Booking Form
+          </h5>
+        </div>
+
+
+        <div class="SideTitle p-2 text-center bg-light my-2 text-white">
+          {{ booking.dttdc_tour.tour_name }}
+        </div>
+
+        <div class="ticket-wrapper">
+
+          <div class="ticket-wrapper">
+
+            <div class="ticket-card">
+
+              <!-- TICKET HEADER -->
+              <div class="ticket-header d-flex justify-content-between align-items-center">
+                <!-- LEFT: Shrink to content -->
+                <div class="d-flex flex-column">
+                  <h6 class="mb-0 text-uppercase fw-semibold">Tour Booking Ticket</h6>
+                </div>
+
+                <!-- RIGHT: PNR aligned to right -->
+                <div>
+                  <span class="pnr-badge">
+                    PNR : <strong>{{ booking.pnr_number }}</strong>
+                  </span>
+                </div>
+              </div>
+
+
+              <form method="post" novalidate>
+                {% csrf_token %}
+
+                <!-- CONTACT DETAILS -->
+                <div class="ticket-section">
+                  {% if form.non_field_errors %}
+                  <div class="alert alert-danger">
+                    {% for error in form.non_field_errors %}
+                    {{ error }}
+                    {% endfor %}
+                  </div>
+                  {% endif %}
+
+                  <div class="section-label">Contact Information</div>
+
+                  <div class="row mb-3 align-items-center">
+                    <label class="col-md-3 col-form-label fw-semibold">
+                      Date of Journey <span class="text-danger">*</span>
+                    </label>
+
+                    <div class="col-md-4">
+                      {{ form.tour_journey_date }}
+
+                      {% if form.tour_journey_date.errors %}
+                      <div class="text-danger small mt-1">
+                        {{ form.tour_journey_date.errors.0 }}
+                      </div>
+                      {% endif %}
+                    </div>
+
+                    <!-- Inline Availability Message -->
+                    <div class="col-md-5">
+                      <span id="availabilityMessage" class="small fw-semibold"></span>
+                    </div>
+                  </div>
+
+
+                  <div class="row mb-3 align-items-center">
+                    <label class="col-md-3 col-form-label fw-semibold">Full Name <span
+                        class="text-danger">*</span></label>
+                    <div class="col-md-9">
+                      {{ form.name }}
+                      {% if form.name.errors %}
+                      <div class="text-danger small mt-1">
+                        {{ form.name.errors.0 }}
+                      </div>
+                      {% endif %}
+                    </div>
+                  </div>
+
+                  <div class="row mb-3 align-items-center">
+                    <label class="col-md-3 col-form-label fw-semibold">
+                      Mobile Number <span class="text-danger">*</span>
+                    </label>
+
+                    <div class="col-md-9">
+
+                      {{ form.phone_number }}
+
+                      <!-- JS validation error -->
+                      <div id="phone-error" class="invalid-feedback d-none"></div>
+
+                      {% if form.phone_number.errors %}
+                      <div class="invalid-feedback d-block">
+                        {{ form.phone_number.errors.0 }}
+                      </div>
+                      {% endif %}
+
+                    </div>
+
+
+                  </div>
+
+                  <div class="row mb-3 align-items-center">
+                    <label class="col-md-3 col-form-label fw-semibold">Email <span class="text-danger">*</span></label>
+                    <div class="col-md-9">
+                      {{ form.email }}
+                      {% if form.email.errors %}
+                      <div class="text-danger small mt-1">
+                        {{ form.email.errors.0 }}
+                      </div>
+                      {% endif %}
+                    </div>
+                  </div>
+
+
+                </div>
+
+                <!-- ADDRESS DETAILS -->
+                <div class="ticket-section border-top pt-3">
+                  <div class="section-label">Address Details</div>
+
+                  <div class="row mb-3 align-items-center">
+                    <label class="col-md-3 col-form-label fw-semibold">Complete Address <span
+                        class="text-danger">*</span></label>
+                    <div class="col-md-9">
+                      {{ form.address }}
+                      {% if form.address.errors %}
+                      <div class="text-danger small mt-1">
+                        {{ form.address.errors.0 }}
+                      </div>
+                      {% endif %}
+                    </div>
+                  </div>
+
+                  <div class="row mb-3 align-items-center">
+                    <label class="col-md-3 col-form-label fw-semibold">Country <span
+                        class="text-danger">*</span></label>
+                    <div class="col-md-3">{{ form.country }}{% if form.country.errors %}
+                      <div class="text-danger small mt-1">
+                        {{ form.country.errors.0 }}
+                      </div>
+                      {% endif %} <input type="text" id="country_other" class="form-control mt-2 d-none"
+                        placeholder="Enter Country manually">
+                    </div>
+
+                    <label class="col-md-3 col-form-label fw-semibold">State <span class="text-danger">*</span></label>
+                    <div class="col-md-3">{{ form.state }}{% if form.state.errors %}
+                      <div class="text-danger small mt-1">
+                        {{ form.state.errors.0 }}
+                      </div>
+                      {% endif %}<input type="text" id="state_other" class="form-control mt-2 d-none"
+                        placeholder="Enter State manually">
+                    </div>
+                  </div>
+
+                  <div class="row mb-3 align-items-center">
+                    <label class="col-md-3 col-form-label fw-semibold">City <span class="text-danger">*</span></label>
+                    <div class="col-md-3">{{ form.city }}{% if form.city.errors %}
+                      <div class="text-danger small mt-1">
+                        {{ form.city.errors.0 }}
+                      </div>
+                      {% endif %}<input type="text" id="city_other" class="form-control mt-2 d-none"
+                        placeholder="Enter City manually">
+                    </div>
+
+                    <label class="col-md-3 col-form-label fw-semibold">PIN / ZIP Code <span
+                        class="text-danger">*</span></label>
+                    <div class="col-md-3">{{ form.pincode }}{% if form.pincode.errors %}
+                      <div class="text-danger small mt-1">
+                        {{ form.pincode.errors.0 }}
+                      </div>
+                      {% endif %}
+                    </div>
+                  </div>
+
+
+                  <div class="row mb-3 align-items-center" id="passport_row" style="display:none;">
+
+                    <label class="col-md-3 col-form-label fw-semibold">Passport Number <span
+                        class="text-danger">*</span></label>
+                    <div class="col-md-9">{{ form.passport }}{% if form.passport.errors %}
+                      <div class="text-danger small mt-1">
+                        {{ form.passport.errors.0 }}
+                      </div>
+                      {% endif %}
+                    </div>
+                  </div>
+
+                </div>
+
+                <!-- PASSENGER DETAILS -->
+                <div class="ticket-section border-top pt-3">
+                  <div class="section-label">Passenger Details </div>
+                  <div id="seatLimitError" class="text-danger small mb-2 d-none"></div>
+
+                  {% if form.number_of_adults.errors or form.number_of_child.errors %}
+                  <div class="text-danger small mb-3">
+                    {% if form.number_of_adults.errors %}
+                    {% for err in form.number_of_adults.errors %}
+                    {% if forloop.first %}
+                    {{ err }}
+                    {% endif %}
+                    {% endfor %}
+                    {% else %}
+                    {% for err in form.number_of_child.errors %}
+                    {% if forloop.first %}
+                    {{ err }}
+                    {% endif %}
+                    {% endfor %}
+                    {% endif %}
+                  </div>
+                  {% endif %}
+
+
+                  <div class="row mb-3 align-items-center">
+                    <label class="col-md-3 col-form-label fw-semibold">Adults <small class="text-danger">(Age above
+                        10)</small><span class="text-danger">*</span></label>
+                    <div class="col-md-3">{{ form.number_of_adults }}
+                    </div>
+
+                    <label class="col-md-3 col-form-label fw-semibold">Children <small class="text-danger">(Age
+                        5-10)</small><span class="text-danger">*</span></label>
+                    <div class="col-md-3">{{ form.number_of_child }}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- FOOTER -->
+                <div class="ticket-footer border-top d-flex justify-content-between align-items-center">
+                  <div class="small text-muted text-start">
+                    <strong>Note:</strong><br>
+                    1. Age below 5 years have no travel cost.
+                  </div>
+                  <div>
+                    <button type="submit" class="btn btn-primary px-4">
+                      Save & Continue
+                    </button>
+                  </div>
+                </div>
+
+              </form>
+
+
+
+
+            </div>
+
+          </div>
+
+
+
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <style>
+    .ticket-section {
+      background: #ffffff;
+      padding: 25px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #495057;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      border-bottom: 1px dashed #dee2e6;
+      padding-bottom: 8px;
+      margin-bottom: 15px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 5px;
+    }
+
+    .ticket-footer {
+      padding: 15px 0;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #e75a1e, #77340b, #e75a1e);
+      border: none;
+      font-weight: 600;
+    }
+
+    .fw-semibold {
+      font-weight: 600 !important;
+    }
+
+    .pnr-badge {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .ticket-wrapper {
+      background: #f3f4f6;
+      padding: 6px;
+      padding-top: 0px;
+      border-radius: 10px;
+    }
+
+    .ticket-card {
+      background: #ffffff;
+      border-radius: 8px;
+      border: 1px solid #dee2e6;
+    }
+
+    .ticket-header {
+      background: linear-gradient(135deg, #e75a1e, #d8844f, #e75a1e);
+      color: #fff;
+      padding: 16px 20px;
+    }
+
+    .ticket-header h6 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin: 0;
+      color: whitesmoke;
+    }
+
+    .pnr-badge {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 0.85rem;
+    }
+
+    .ticket-section {
+      padding: 20px;
+    }
+
+    .section-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      color: #6c757d;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+    }
+
+    .form-label-col {
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: #495057;
+      padding-top: 6px;
+    }
+
+    .ticket-footer {
+      background: #f8f9fa;
+      padding: 15px 20px;
+      border-top: 1px solid #dee2e6;
+    }
+  </style>
+  <script>
+    document.getElementById("country").dataset.selected = "{{ form.instance.country|default:'' }}";
+    document.getElementById("state").dataset.selected = "{{ form.instance.state|default:'' }}";
+    document.getElementById("city").dataset.selected = "{{ form.instance.city|default:'' }}";
+  </script>
+
+  <script src="{% static 'ebooking/js/location.js' %}"></script>
+
+  <script>
+    const journeyDateInput = document.getElementById("id_tour_journey_date");
+    const availabilityBox = document.getElementById("availabilityMessage");
+    const submitBtn = document.querySelector("button[type='submit']");
+
+    const TOUR_ID = "{{ booking.dttdc_tour.id }}";
+    const CHECK_URL = "{% url 'check_tour_availability' %}";
+
+    journeyDateInput.addEventListener("change", function () {
+      const date = this.value;
+
+      availabilityBox.innerHTML = "";
+      submitBtn.disabled = true;
+
+      if (!date) return;
+
+      fetch(`${CHECK_URL}?tour_id=${TOUR_ID}&journey_date=${date}`)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error("Network response was not OK");
+          }
+          return response.json();
+        })
+        .then(data => {
+          if (data.available) {
+  availableSeats = parseInt(data.seats); // 👈 IMPORTANT
+
+  availabilityBox.innerHTML = `Available Seats: ${data.seats}`;
+  availabilityBox.className = "text-success small fw-semibold";
+
+  checkSeatLimit(); // 👈 re-check passengers
+}
+ else {
+            availabilityBox.innerHTML = data.message || "Tour not available";
+            availabilityBox.className = "text-danger small fw-semibold";
+            submitBtn.disabled = true;
+          }
+
+        })
+        .catch(error => {
+          console.error("Availability check failed:", error);
+          availabilityBox.innerHTML = `
+          <div class="alert alert-danger py-2 mb-0">
+            Unable to check availability. Try again.
+          </div>
+        `;
+        });
+    });
+  </script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const dateInput = document.getElementById("id_tour_journey_date");
+      if (!dateInput) return;
+
+      const minDate = new Date();
+      minDate.setDate(minDate.getDate() + 2);
+
+      const yyyy = minDate.getFullYear();
+      const mm = String(minDate.getMonth() + 1).padStart(2, "0");
+      const dd = String(minDate.getDate()).padStart(2, "0");
+
+      dateInput.min = `${yyyy}-${mm}-${dd}`;
+    });
+  </script>
+
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+      const input = document.getElementById("id_phone_number");
+      const form = input.closest("form");
+      const errorBox = document.getElementById("phone-error");
+
+      const iti = window.intlTelInput(input, {
+        initialCountry: "in",
+        separateDialCode: true,
+        nationalMode: false,
+        utilsScript:
+          "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js",
+      });
+
+      function showError(message) {
+        input.classList.add("is-invalid");
+        errorBox.textContent = message;
+        errorBox.classList.remove("d-none");
+        input.scrollIntoView({ behavior: "smooth", block: "center" });
+        input.focus();
+      }
+
+      function clearError() {
+        input.classList.remove("is-invalid");
+        errorBox.textContent = "";
+        errorBox.classList.add("d-none");
+      }
+
+      // 🔒 BLOCK ALPHABETS
+      input.addEventListener("keypress", function (e) {
+        const char = String.fromCharCode(e.which);
+        if (!/[0-9]/.test(char)) {
+          e.preventDefault();
+        }
+      });
+
+      input.addEventListener("paste", function (e) {
+        const pasted = (e.clipboardData || window.clipboardData).getData("text");
+        if (!/^\d+$/.test(pasted.replace(/\s+/g, ""))) {
+          e.preventDefault();
+        }
+      });
+
+      input.addEventListener("input", function () {
+        errorBox.textContent = "";
+        errorBox.classList.add("d-none");
+        input.classList.remove("is-invalid");
+      });
+
+      input.addEventListener("change", clearError);
+
+      form.addEventListener("submit", function (e) {
+
+        if (!iti.isValidNumber()) {
+          e.preventDefault();
+
+          let msg = "Enter a valid phone number.";
+          const errorCode = iti.getValidationError();
+
+          if (errorCode === intlTelInputUtils.validationError.TOO_SHORT) {
+            msg = "Phone number is too short.";
+          } else if (errorCode === intlTelInputUtils.validationError.TOO_LONG) {
+            msg = "Phone number is too long.";
+          } else if (errorCode === intlTelInputUtils.validationError.INVALID_COUNTRY_CODE) {
+            msg = "Invalid country code.";
+          }
+
+          // show error like Django
+          errorBox.textContent = msg;
+          errorBox.classList.remove("d-none");
+
+          input.classList.add("is-invalid");
+
+          // scroll + focus (Django behavior)
+          input.scrollIntoView({ behavior: "smooth", block: "center" });
+          input.focus();
+
+          return;
+        }
+
+        // valid → submit E.164
+        input.value = iti.getNumber();
+      });
+
+
+
+      function enforceMaxLength() {
+        const countryData = iti.getSelectedCountryData();
+        if (!countryData || !countryData.exampleNumber) return;
+
+        // extract digits from example number
+        const maxDigits = countryData.exampleNumber.replace(/\D/g, "").length;
+
+        if (input.value.length > maxDigits) {
+          input.value = input.value.slice(0, maxDigits);
+        }
+      }
+
+
+    });
+  </script>
+
+
+  <style>
+    .invalid-feedback {
+      display: block;
+      font-size: 0.875rem;
+      margin-top: 4px;
+    }
+
+    .is-invalid {
+      border-color: #dc3545 !important;
+    }
+  </style>
+
+
+<script>
+  let availableSeats = null;
+
+  const adultsSelect = document.getElementById("id_number_of_adults");
+  const childrenSelect = document.getElementById("id_number_of_child");
+  const seatErrorBox = document.getElementById("seatLimitError");
+  const submitBtn3 = document.querySelector("button[type='submit']");
+
+  function checkSeatLimit() {
+    if (availableSeats === null) return;
+
+    const adults = parseInt(adultsSelect.value || 0);
+    const children = parseInt(childrenSelect.value || 0);
+    const totalPassengers = adults + children;
+
+    if (totalPassengers > availableSeats) {
+
+      const seatWord = availableSeats === 1 ? "seat" : "seats";
+      const seatVerb = availableSeats === 1 ? "is" : "are";
+
+      const passengerWord =
+        totalPassengers === 1 ? "passenger" : "passengers";
+
+      seatErrorBox.textContent =
+        `Only ${availableSeats} ${seatWord} ${seatVerb} available. ` +
+        `You selected ${totalPassengers} ${passengerWord}.`;
+
+      seatErrorBox.classList.remove("d-none");
+      submitBtn3.disabled = true; //comment this when you want to check the backkend validation is working or not 
+
+    } else {
+      seatErrorBox.textContent = "";
+      seatErrorBox.classList.add("d-none");
+      submitBtn3.disabled = false;
+    }
+  }
+
+  adultsSelect.addEventListener("change", checkSeatLimit);
+  childrenSelect.addEventListener("change", checkSeatLimit);
+</script>
+
+
+  {% endblock %}

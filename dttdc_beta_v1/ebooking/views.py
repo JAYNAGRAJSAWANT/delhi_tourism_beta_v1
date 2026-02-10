@@ -758,8 +758,14 @@ def release_seats(booking):
 # --------------------------------------------------- Start of Tour Cancellation ------------------------------
 
 def ebooking_tour_cancellation(request):
-    print("===== Ebooking Tour Cancellation Starts =====")
-    
     if request.POST:
         print("Inside post method ....")
-    return render("ebooking/ebooking_tour_cancellation.html")
+    return render( request,"ebooking/ebooking_tour_cancellation.html")
+
+# --------------------------------------------------- End of Tour Cancellation ------------------------------
+# --------------------------------------------------- Start of Ticket Reprint ------------------------------
+def ebooking_ticket_reprint(request):
+    if request.POST:
+        print("Inside post method ....")
+    return render( request,"ebooking/ebooking_ticket_reprint.html")
+# --------------------------------------------------- End of Ticket Reprint ------------------------------
