@@ -31,7 +31,7 @@
 
             <div class="ticket-card">
 
-          
+
 
 
               <form method="post" novalidate>
@@ -47,16 +47,21 @@
                   </div>
                   {% endif %}
                   <div class="row mb-3 align-items-center">
-                    <label class="col-md-3 col-form-label fw-semibold">PNR <span class="text-danger">*</span></label>
+                    <label class="col-md-3 col-form-label fw-semibold">
+                      PNR <span class="text-danger">*</span>
+                    </label>
+
                     <div class="col-md-9">
                       {{ form.pnr_number }}
-                      {% if form.pnr_number %}
+
+                      {% if form.pnr_number.errors %}
                       <div class="text-danger small mt-1">
-                        {{ form.pnr_number.0 }}
+                        {{ form.pnr_number.errors.0 }}
                       </div>
                       {% endif %}
                     </div>
                   </div>
+
 
 
                   <div class="row mb-3 align-items-center">
@@ -86,205 +91,183 @@
                       </div>
                       {% endif %}
                     </div>
-                    
+
                   </div>
 
 
                   <div class="mb-3 row w-100 align-items-center">
-                  <label class="col-sm-3 col-form-label required fw-semibold">Captcha <span class="text-danger">*</span></label>
+                    <label class="col-sm-3 col-form-label required fw-semibold">Captcha <span
+                        class="text-danger">*</span></label>
 
-                  <div class="col-sm-9">
-                    <div class="captcha-wrap">
-                      <!-- Canvas CAPTCHA -->
-                      <canvas
-                        id="captchaCanvas"
-                        class="border rounded"
-                        width="150"
-                        height="50"
-                      >
-                        TEXT
-                      </canvas>
+                    <div class="col-sm-9">
+                      <div class="captcha-wrap">
+                        <!-- Canvas CAPTCHA -->
+                        <canvas id="captchaCanvas" class="border rounded" width="150" height="50">
+                          TEXT
+                        </canvas>
 
-                      <!-- Reload icon -->
-                      <i
-                        class="fa fa-refresh"
-                        aria-hidden="true"
-                        role="button"
-                        title="Reload Captcha"
-                        style="cursor:pointer; font-size:1.1rem;"
-                        onclick="reloadCaptcha()"
-                      ></i>
+                        <!-- Reload icon -->
+                        <i class="fa fa-refresh" aria-hidden="true" role="button" title="Reload Captcha"
+                          style="cursor:pointer; font-size:1.1rem;" onclick="reloadCaptcha()"></i>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <!-- Captcha Input -->
-                <div class="mb-3 row w-100">
-                  <label for="userCaptchaInput" class="col-sm-3 col-form-label required fw-semibold">
-                    Enter Captcha <span class="text-danger">*</span>
-                  </label>
+                  <!-- Captcha Input -->
+                  <div class="mb-3 row w-100">
+                    <label for="userCaptchaInput" class="col-sm-3 col-form-label required fw-semibold">
+                      Enter Captcha <span class="text-danger">*</span>
+                    </label>
 
-                  <div class="col-sm-9">
-                    <input
-                      id="userCaptchaInput"
-                      name="user_captcha_input"
-                      class="form-control"
-                      placeholder="Enter Captcha"
-                      type="text"
-                      maxlength="6"
-                      required
-                    />
+                    <div class="col-sm-9">
+                      <input id="userCaptchaInput" name="user_captcha_input" class="form-control"
+                        placeholder="Enter Captcha" type="text" maxlength="6" required />
+                    </div>
                   </div>
+
+                  <!-- Hidden Captcha Token -->
+                  <input type="hidden" id="captchaTokenField" name="captchaToken" value="{{ captcha_token }}" />
                 </div>
-
-                <!-- Hidden Captcha Token -->
-                <input
-                  type="hidden"
-                  id="captchaTokenField"
-                  name="captchaToken"
-                  value="{{ captcha_token }}"
-                />
-                </div>
-                </div>
-
-                <!-- PASSENGER DETAILS -->
-              
-
-                <!-- FOOTER -->
-                <div class="ticket-footer border-top d-flex justify-content-between align-items-center">
-                  <div>
-                    <button type="submit" class="btn btn-primary px-4">
-                      Save & Continue
-                    </button>
-                  </div>
-                </div>
-
-              </form>
-
-
-
-
             </div>
+
+            <!-- PASSENGER DETAILS -->
+
+
+            <!-- FOOTER -->
+            <div class="ticket-footer border-top d-flex justify-content-between align-items-center">
+              <div>
+                <button type="submit" class="btn btn-primary px-4">
+                  Save & Continue
+                </button>
+              </div>
+            </div>
+
+            </form>
+
+
+
 
           </div>
 
-
-
-
         </div>
+
+
+
+
       </div>
-
     </div>
+
   </div>
+</div>
 
-  <style>
-    .ticket-section {
-      background: #ffffff;
-      padding: 25px;
-      margin-bottom: 15px;
-      border-radius: 8px;
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
-    }
+<style>
+  .ticket-section {
+    background: #ffffff;
+    padding: 25px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+  }
 
-    .section-label {
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: #495057;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      border-bottom: 1px dashed #dee2e6;
-      padding-bottom: 8px;
-      margin-bottom: 15px;
-    }
+  .section-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #495057;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-bottom: 1px dashed #dee2e6;
+    padding-bottom: 8px;
+    margin-bottom: 15px;
+  }
 
-    .form-label {
-      display: block;
-      font-size: 0.875rem;
-      font-weight: 500;
-      margin-bottom: 5px;
-    }
+  .form-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 5px;
+  }
 
-    .ticket-footer {
-      padding: 15px 0;
-    }
+  .ticket-footer {
+    padding: 15px 0;
+  }
 
-    .btn-primary {
-      background: linear-gradient(135deg, #e75a1e, #77340b, #e75a1e);
-      border: none;
-      font-weight: 600;
-    }
+  .btn-primary {
+    background: linear-gradient(135deg, #e75a1e, #77340b, #e75a1e);
+    border: none;
+    font-weight: 600;
+  }
 
-    .fw-semibold {
-      font-weight: 600 !important;
-    }
+  .fw-semibold {
+    font-weight: 600 !important;
+  }
 
-    .pnr-badge {
-      background: rgba(255, 255, 255, 0.2);
-      padding: 6px 12px;
-      border-radius: 4px;
-      font-size: 0.85rem;
-      font-weight: 600;
-    }
+  .pnr-badge {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
 
-    .ticket-wrapper {
-      background: #f3f4f6;
-      padding: 6px;
-      padding-top: 0px;
-      border-radius: 10px;
-    }
+  .ticket-wrapper {
+    background: #f3f4f6;
+    padding: 6px;
+    padding-top: 0px;
+    border-radius: 10px;
+  }
 
-    .ticket-card {
-      background: #ffffff;
-      border-radius: 8px;
-      border: 1px solid #dee2e6;
-    }
+  .ticket-card {
+    background: #ffffff;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+  }
 
-    .ticket-header {
-      background: linear-gradient(135deg, #e75a1e, #d8844f, #e75a1e);
-      color: #fff;
-      padding: 16px 20px;
-    }
+  .ticket-header {
+    background: linear-gradient(135deg, #e75a1e, #d8844f, #e75a1e);
+    color: #fff;
+    padding: 16px 20px;
+  }
 
-    .ticket-header h6 {
-      font-size: 0.95rem;
-      font-weight: 600;
-      margin: 0;
-      color: whitesmoke;
-    }
+  .ticket-header h6 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 0;
+    color: whitesmoke;
+  }
 
-    .pnr-badge {
-      background: rgba(255, 255, 255, 0.2);
-      padding: 6px 12px;
-      border-radius: 4px;
-      font-size: 0.85rem;
-    }
+  .pnr-badge {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+  }
 
-    .ticket-section {
-      padding: 20px;
-    }
+  .ticket-section {
+    padding: 20px;
+  }
 
-    .section-label {
-      font-size: 0.75rem;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      color: #6c757d;
-      margin-bottom: 16px;
-      text-transform: uppercase;
-    }
+  .section-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: #6c757d;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+  }
 
-    .form-label-col {
-      font-size: 0.85rem;
-      font-weight: 500;
-      color: #495057;
-      padding-top: 6px;
-    }
+  .form-label-col {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #495057;
+    padding-top: 6px;
+  }
 
-    .ticket-footer {
-      background: #f8f9fa;
-      padding: 15px 20px;
-      border-top: 1px solid #dee2e6;
-    }
-  </style>
+  .ticket-footer {
+    background: #f8f9fa;
+    padding: 15px 20px;
+    border-top: 1px solid #dee2e6;
+  }
+</style>
 
 <script>
   let CAPTCHA_VALUE = "{{ captcha_value|escapejs }}";
@@ -347,4 +330,4 @@
   }
 </script>
 
-  {% endblock %}
+{% endblock %}

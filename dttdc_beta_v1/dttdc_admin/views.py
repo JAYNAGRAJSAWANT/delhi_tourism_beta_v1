@@ -563,3 +563,23 @@ def admin_tour_booking_report(request):
         "dttdc_admin/admin_tour_booking_report.html",
         context
     )
+
+
+# ---------------------------------Admin Ticket Cancellation Requests----------------------------------------
+
+@admin_jwt_required
+def admin_ticket_cancellation_requests(request):
+       booking_list = (
+        DTTDCTourBooking.objects
+        .select_related("dttdc_tour", "cancellation")
+        .filter(cancellation__isnull=False)
+        .order_by("-cancellation__cancellation_date")
+    )
+       return render(request,"dttdc_admin/admin_ticket_cancellation_requests.html",{"booking_list": booking_list})
+
+
+# -------------------------------------------------------------------------
+
+@admin_jwt_required
+def admin_cancellation_details_preview(request, pnr):
+    return render(request,"dttdc_admin/admin_cancellation_details_preview.html",{"pnr": pnr})

@@ -23,7 +23,10 @@ urlpatterns = [
     path("payment/success/", views.payu_success, name="payu_success"),
     path("payment/failure/", views.payu_failure, name="payu_failure"),
     # -----------------------------------------------------------Ticket Reprint and cancellation URL  -------------------------------------------------------
-    path("tour_cancellation/", views.ebooking_tour_cancellation, name="tour_cancellation"),
-    path("ticket_reprint/", views.ebooking_ticket_reprint, name="ticket_reprint")
+    path("tour_cancellation", views.ebooking_tour_cancellation, name="tour_cancellation"),
+    path("ticket_cancellation_preview/<str:pnr>/", views.ebooking_ticket_cancellation_preview, name="ticket_cancellation_preview"),
+    path("ticket_reprint/", views.ebooking_ticket_reprint, name="ticket_reprint"),
+    path("ebooking_termsandconditionsforcancellation/",views.ebooking_termsandconditionsforcancellation,name="ebooking_termsandconditionsforcancellation"),
+    path("ebooking_ticket_cancel/<str:pnr>/",views.ebooking_ticket_cancellation_success,name="ebooking_ticket_cancel"),
 
 ]

@@ -13,6 +13,7 @@ from django.contrib.messages import get_messages
 
 from .models import (
     DTTDCTourAvailability,
+    DTTDCTourCancellation,
     DTTDCTourCategory,
     DTTDCTour,
     DTTDCTourBooking,
@@ -28,7 +29,7 @@ from .models import (
 )
 
 import uuid
-from .forms import TravellerForm, TravellerFormSet, UserDetailsForm
+from .forms import TourCancellationForm, TravellerForm, TravellerFormSet, UserDetailsForm
 from django.contrib import messages
 import re
 from django.core.validators import validate_email
@@ -757,15 +758,133 @@ def release_seats(booking):
 
 # --------------------------------------------------- Start of Tour Cancellation ------------------------------
 
+# def ebooking_tour_cancellation(request):
+#     if request.POST:
+#         print("Inside post method ....")
+#     return render( request,"ebooking/ebooking_tour_cancellation.html")
+
 def ebooking_tour_cancellation(request):
-    if request.POST:
-        print("Inside post method ....")
-    return render( request,"ebooking/ebooking_tour_cancellation.html")
+    if request.method == "POST":
+        form = TourCancellationForm(request.POST)
+
+        # 1. Captcha validation
+        captcha_result = validate_captcha(
+            request.POST.get("user_captcha_input"),
+            request.POST.get("captchaToken"),
+        )
+
+        if captcha_result["status"] != "success":
+            captcha_data = generateCaptchaValueWithToken()
+            return render(
+                request,
+                "ebooking/ebooking_tour_cancellation.html",
+                {
+                    "form": form,
+                    "captcha_value": captcha_data["captchaValue"],
+                    "captcha_token": captcha_data["captchaToken"],
+                    "error_message": captcha_result["message"],
+                },
+            )
+
+        # 2. Form validation
+        if not form.is_valid():
+            captcha_data = generateCaptchaValueWithToken()
+            return render(
+                request,
+                "ebooking/ebooking_tour_cancellation.html",
+                {
+                    "form": form,
+                    "captcha_value": captcha_data["captchaValue"],
+                    "captcha_token": captcha_data["captchaToken"],
+                    "error_message": None,
+                },
+            )
+
+        # 3. SUCCESS — only valid data reaches here
+        booking = form.booking
+        return redirect("ticket_cancellation_preview", pnr=booking.pnr_number)
+
+    else:
+        captcha_data = generateCaptchaValueWithToken()
+        return render(
+            request,
+            "ebooking/ebooking_tour_cancellation.html",
+            {
+                "form": TourCancellationForm(),
+                "captcha_value": captcha_data["captchaValue"],
+                "captcha_token": captcha_data["captchaToken"],
+                "error_message": None,
+            },
+        )
 
 # --------------------------------------------------- End of Tour Cancellation ------------------------------
+def ebooking_ticket_cancellation_preview(request, pnr):
+    booking = get_object_or_404(DTTDCTourBooking, pnr_number=pnr)
+    user = get_object_or_404(DTTDCUserDetails, booking=booking)
+    passengers = DTTDCTraveller.objects.filter(user=user)
+
+    if request.method == "POST":
+
+        #  SELECTED PASSENGERS
+        selected_passenger_ids = request.POST.getlist("selected_passengers")
+        print("selected passengers id -----jay checking-----",selected_passenger_ids)
+
+        total_passengers = passengers.count()
+        selected_count = len(selected_passenger_ids)
+
+        if selected_count == 0:
+            messages.error(request, "Please select at least one passenger.")
+            return redirect(request.path)
+
+        #  FULL CANCELLATION
+        if selected_count == total_passengers:
+            cancellation_type = "full"
+            booking.booking_status = "cancelled"
+
+        #  PARTIAL CANCELLATION
+        else:
+            cancellation_type = "partial"
+            booking.booking_status = "partial_cancelled"
+        booking.save()
+
+        # Create cancellation record
+        DTTDCTourCancellation.objects.create(
+            tour_booking=booking,
+            cancellation_type=cancellation_type,
+            cancellation_date=timezone.now(),
+            cancellation_status="pending"
+        )
+
+        messages.success(request, "Cancellation request submitted successfully.")
+
+        return redirect("ebooking_ticket_cancel",pnr=booking.pnr_number)
+
+    captcha_data = generateCaptchaValueWithToken()
+    return render(request, "ebooking/ebooking_ticket_cancel.html", {
+        "booking": booking,
+        "user": user,
+        "passengers": passengers,
+        "captcha_value": captcha_data["captchaValue"],
+        "captcha_token": captcha_data["captchaToken"],
+    })
+
+# ---------------------------------------------------cancellation page ------------------------------
+def ebooking_ticket_cancellation_success(request, pnr):
+    booking = get_object_or_404(DTTDCTourBooking, pnr_number=pnr)
+
+    return render(
+        request,
+        "ebooking/ebooking_cancellation_page.html",
+        {"booking": booking}
+    )
+
 # --------------------------------------------------- Start of Ticket Reprint ------------------------------
 def ebooking_ticket_reprint(request):
     if request.POST:
         print("Inside post method ....")
     return render( request,"ebooking/ebooking_ticket_reprint.html")
 # --------------------------------------------------- End of Ticket Reprint ------------------------------
+
+
+def ebooking_termsandconditionsforcancellation(request):
+    return render( request,"ebooking/ebooking_termsandconditionsforcancellation.html")
