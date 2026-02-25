@@ -54,4 +54,10 @@ urlpatterns = [
 # -------------------------------------------------------Admin Tour Booking Report----------------------------------------------------------    
     path("admin_tour_booking_report/",views.admin_tour_booking_report,name="admin_tour_booking_report"),
 
+    # -------------------------------------------------------Admin Ticket Cancellation Requests----------------------------------------------------------    
+    path("admin_ticket_cancellation_requests/",views.admin_ticket_cancellation_requests,name="ticket_cancellation_requests"),
+
+    # -------------------------------------------------------Admin cancellation detail preview----------------------------------------------------------    
+     path("admin_cancellation_details_preview/<str:pnr>/",views.admin_cancellation_details_preview,name="admin_cancellation_details_preview"),
+
 ]
