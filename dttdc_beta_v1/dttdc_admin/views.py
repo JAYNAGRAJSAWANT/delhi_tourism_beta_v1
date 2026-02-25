@@ -14,6 +14,8 @@ from django.utils.timezone import make_aware
 from ebooking.forms import AddTourCategoryForm, AddTourForm, TourAvailabilityForm
 from ebooking.models import DTTDCTourAvailability, DTTDCTourBooking, DTTDCTourCategory, DTTDCTour
 from ebooking.models import Feedback
+from django.db.models import Sum
+
 
 
 def admin_login(request):
@@ -242,7 +244,7 @@ def admin_add_tour(request):
     context = {
         "form": tour_form,
         "days": days,
-        "range_0_31": range(0, 32),  # 🔥 REQUIRED for dropdowns
+        "range_0_31": range(0, 32),  
     }
 
     return render(request, "dttdc_admin/admin_add_tour.html", context)
@@ -374,7 +376,11 @@ def admin_feedback_report(request):
         "end_date": end_date,
     }
 
-    return render(request, "dttdc_admin/admin_feedback_report.html", context)
+    return render(
+        request,
+        "dttdc_admin/admin_feedback_report.html",
+        context
+    )
 
 
 # -----------------------------------Update Tour Availability--------------------------------------
@@ -522,40 +528,78 @@ def check_tour_availability_status(request):
 @admin_jwt_required
 def admin_tour_booking_report(request):
 
-    start_date = request.GET.get("start_date")
-    end_date = request.GET.get("end_date")
+    year = request.GET.get("year")
+    month = request.GET.get("month")
+    day = request.GET.get("day")
+    date_type = request.GET.get("date_type", "booking_date")
+    payment_status = request.GET.get("payment_status", "all")
 
     bookings = (
         DTTDCTourBooking.objects
-        .select_related(
-            "dttdc_tour",
-            "user_details",
-            "payment"
-        )
-        .prefetch_related(
-            "passenger_map__traveller"
-        )
+        .select_related("dttdc_tour", "user_details", "payment")
+        .prefetch_related("passenger_map__traveller")
         .order_by("-booking_date")
     )
 
-    # 🔹 Date filter
-    if start_date and end_date:
-        try:
-            start_dt = make_aware(datetime.strptime(start_date, "%Y-%m-%d"))
-            end_dt = make_aware(
-                datetime.strptime(end_date, "%Y-%m-%d")
-            ).replace(hour=23, minute=59, second=59)
+    # 🔹 Decide which field to filter
+    if date_type == "journey_date":
+        filter_field = "user_details__tour_journey_date"
+    else:
+        filter_field = "booking_date"
 
-            bookings = bookings.filter(
-                booking_date__range=(start_dt, end_dt)
-            )
-        except ValueError:
-            messages.error(request, "Invalid date format")
+    try:
+        # Exact date
+        if year and month and day:
+            bookings = bookings.filter(**{
+                f"{filter_field}__year": int(year),
+                f"{filter_field}__month": int(month),
+                f"{filter_field}__day": int(day),
+            })
+
+        # Month
+        elif year and month:
+            bookings = bookings.filter(**{
+                f"{filter_field}__year": int(year),
+                f"{filter_field}__month": int(month),
+            })
+
+        # Year
+        elif year:
+            bookings = bookings.filter(**{
+                f"{filter_field}__year": int(year),
+            })
+
+    except ValueError:
+        messages.error(request, "Invalid date selection")
+
+
+    if payment_status == "success":
+     bookings = bookings.filter(
+        payment__status__iexact="success"
+    )
+     
+    total_amount = (
+        bookings
+        .filter(payment__isnull=False)
+        .aggregate(total=Sum("payment__amount"))
+        ["total"] or 0
+    )
 
     context = {
         "booking_list": bookings,
-        "start_date": start_date,
-        "end_date": end_date,
+        "selected_year": year or "",
+        "selected_month": month or "",
+        "selected_day": day or "",
+        "date_type": date_type,
+        "total_amount": total_amount,
+        "payment_status" : payment_status,
+        "years": [2023, 2024, 2025, 2026],
+        "months": [
+            (1, "January"), (2, "February"), (3, "March"),
+            (4, "April"), (5, "May"), (6, "June"),
+            (7, "July"), (8, "August"), (9, "September"),
+            (10, "October"), (11, "November"), (12, "December")
+        ],
     }
 
     return render(
