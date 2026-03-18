@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 11px;
+            color: #000;
+        }
+
+        .header-img {
+            width: 100%;
+            height: auto;
+        }
+
+        .center {
+            text-align: center;
+        }
+
+        .main-title {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .sub-title {
+            font-size: 11px;
+        }
+
+        .ticket-title {
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+        }
+
+        th {
+            background-color: #e6e6e6;
+            font-weight: bold;
+            font-size: 11px;
+        }
+
+        td, th {
+            border: 1px solid #000;
+            padding: 6px;
+        }
+
+        /* Zebra rows */
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        .section-title {
+            font-weight: bold;
+            margin-top: 10px;
+            font-size: 12px;
+        }
+
+        .no-border td {
+            border: none;
+        }
+
+        .bold {
+            font-weight: bold;
+        }
+
+        .grey-box {
+            background-color: #f5f5f5;
+            padding: 8px;
+            border: 1px solid #ccc;
+        }
+
+        .bullet {
+            margin-left: 10px;
+        }
+
+        .page-break {
+            page-break-before: always;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- HEADER IMAGE -->
+<img src="{{ header_image_path }}" class="header-img">
+<script>
+console.log("---------------",{{ header_image_path }})
+</script>
+<div class="center main-title">
+    Delhi Tourism & Transport Development Corp. Ltd.
+</div>
+
+<div class="center sub-title">
+    (A Govt. Undertaking)<br>
+    website : www.delhitourism.gov.in
+</div>
+
+<div class="center ticket-title">E-Ticket</div>
+
+<!-- BOOKING DETAILS -->
+<table>
+<tr>
+<td class="bold">Tour Name :</td>
+<td>{{ booking.dttdc_tour.tour_name }}</td>
+<td class="bold">Date Of Booking :</td>
+<td>{{ booking.booking_date|date:"d M Y" }}</td>
+</tr>
+
+<tr>
+<td class="bold">PNR No :</td>
+<td>{{ booking.pnr_number }}</td>
+<td class="bold">Date Of Journey :</td>
+<td>{{ user_details.tour_journey_date }}</td>
+</tr>
+
+<tr>
+<td class="bold">No Of Passenger :</td>
+<td>Adult : {{ user_details.number_of_adults }} , Child : {{ user_details.number_of_child }}</td>
+<td class="bold">Invoice No :</td>
+<td>{{ booking.invoice_number }}</td>
+</tr>
+
+<tr>
+<td class="bold">Passenger Contact No :</td>
+<td>{{ user_details.phone_number }}</td>
+<td class="bold">Booking Status :</td>
+<td>{{ booking.booking_status }}</td>
+</tr>
+
+<tr>
+<td class="bold">Passenger Address :</td>
+<td colspan="3">{{ user_details.address }}</td>
+</tr>
+</table>
+
+<!-- PASSENGER DETAILS -->
+<div class="section-title">Passenger Details</div>
+
+<table>
+<tr>
+<th>Sr.No</th>
+<th>Name</th>
+<th>Age</th>
+<th>Gender</th>
+</tr>
+
+{% for t in travellers %}
+<tr>
+<td>{{ forloop.counter }}</td>
+<td>{{ t.traveller.name }}</td>
+<td>{{ t.traveller.age }}</td>
+<td>{{ t.traveller.gender }}</td>
+</tr>
+{% endfor %}
+</table>
+
+<!-- TICKET DETAILS -->
+<div class="section-title">Ticket Details</div>
+
+<table>
+<tr>
+<td width="50%">
+<div class="grey-box">
+GST Details :GSTIN 07AAACD0169J1ZS<br>
+SAC Code :<br>
+Place of Service : Delhi<br>
+State Code : 07/Delhi<br>
+SGST = 2.5%<br>
+CGST = 2.5%
+</div>
+</td>
+
+<td>
+<div class="grey-box">
+Amount :<br><br>
+<span class="bold">Total Amount : Rs. {{ payment.amount }}/-</span><br>
+Tax Amount : Rs. 0.05/-<br>
+SGST : Rs. 0.03/- &nbsp;&nbsp; CGST : Rs. 0.03 /-
+</div>
+</td>
+</tr>
+</table>
+
+<!-- KINDLY NOTE -->
+<div class="section-title">Kindly Note :</div>
+
+<div class="grey-box">
+Tour will start from Central Reservation Office, Coffee Home,<br>
+Baba Kharak Singh Marg, (opposite Hanuman Temple),<br>
+Connaught Place, New Delhi - 110 001<br><br>
+
+<span class="bold">Reporting time :</span> 15 Minutes before the tour departure time<br>
+<span class="bold">Note :</span> All Tourist Carry their address proof<br>
+
+Telephone No. : +91-11-23365358/23363607<br>
+Fax : +91-11-23367322<br>
+Email : tourism@delhitourism.gov.in
+</div>
+
+
+
+<!-- PAGE 2 -->
+
+<div class="section-title">Cancellation Rules:</div>
+
+<div class="grey-box">
+<div class="bullet">• 18% GST will be levied on the Cancellation amount.</div>
+<div class="bullet">• 15 days before: Rs. 100/- or 10% whichever is higher.</div>
+<div class="bullet">• 8-14 days: 25% of package cost.</div>
+<div class="bullet">• 04-07 days: 50% of package cost.</div>
+<div class="bullet">• Less than 04 days: No refund.</div>
+<div class="bullet">• No refund after tour departure.</div>
+<div class="bullet">• Refund processed within 15 days.</div>
+<div class="bullet">• Applicable for Regular, LTC tours & Car Rentals.</div>
+</div>
+
+<div class="section-title">Terms And Conditions :</div>
+
+<div class="grey-box">
+<div class="bullet">• Carry printed e-ticket.</div>
+<div class="bullet">
+    • Carry valid ID proof.<br><br>
+
+    <span style="display:block; margin-left:20px;">
+        1. All Tourist Carry their address proof.<br><br>
+
+        2. A photocopy of any one from the listed identity cards of one of the main traveller
+        (Voter Identity Card / Passport / PAN Card / Driving License / Photo ID card issued
+        by Central / State Govt /Student Identity Card with photograph issued by
+        recognized School or College for their students /Nationalised Bank Passbook with
+        photograph / Credit Cards issued by Banks with embedded photograph (Carry the
+        original proof along for verification purpose).<br><br>
+
+        3. Copy of Front side of Credit Card of the person who have made the booking.
+    </span>
+</div>
+<div class="bullet">• Submit ID copy of main traveller.</div>
+<div class="bullet">• Credit card copy required.</div>
+<div class="bullet">• Reconfirm tour one day before.</div>
+<div class="bullet">• Tour via Bus or Car.</div>
+<div class="bullet">• Cancellation via email.</div>
+<div class="bullet">• Monument fee not included.</div>
+</div>
+
+</body>
+</html>
