@@ -1,5 +1,6 @@
 # views.py
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
+from decimal import Decimal
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.contrib.auth import authenticate, get_user_model
@@ -12,7 +13,7 @@ from .decorators import admin_jwt_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.timezone import make_aware
 from ebooking.forms import AddTourCategoryForm, AddTourForm, TourAvailabilityForm
-from ebooking.models import DTTDCTourAvailability, DTTDCTourBooking, DTTDCTourCategory, DTTDCTour, DTTDCTraveller, DTTDCTravellerBookingMap, DTTDCUserDetails
+from ebooking.models import DTTDCCancellationHistory, DTTDCTourAvailability, DTTDCTourBooking, DTTDCTourCategory, DTTDCTour, DTTDCTraveller, DTTDCTravellerBookingMap, DTTDCUserDetails
 from ebooking.models import Feedback
 from django.db.models import Sum
 
@@ -632,7 +633,6 @@ def admin_cancellation_details_preview(request, pnr):
 
     cancellation = getattr(booking, "cancellation", None)
 
-    # ✅ Get cancelled passengers from mapping table
     cancelled_passenger_ids = list(
         DTTDCTravellerBookingMap.objects.filter(
             booking=booking,
@@ -640,7 +640,57 @@ def admin_cancellation_details_preview(request, pnr):
         ).values_list("traveller_id", flat=True)
     )
 
+    booking_date = booking.booking_date.date()
+    today = date.today()
+    days_since_booking = (today - booking_date).days
 
+    if request.method == "POST":
+        refund_amount = request.POST.get("refund_amount")
+
+        if refund_amount:
+            refund_amount = Decimal(refund_amount)
+
+            # ✅ Decide cancellation type FIRST
+            if len(cancelled_passenger_ids) == passengers.count():
+                cancellation_type = "full"
+            else:
+                cancellation_type = "partial"
+
+            # ✅ FULL cancellation
+            if cancellation_type == "full":
+                DTTDCCancellationHistory.objects.create(
+                    booking=booking,
+                    traveller=None,
+                    cancellation_type="full",
+                    cancellation_amount=refund_amount,
+                    created_at=timezone.now()
+                )
+
+            # ✅ PARTIAL cancellation
+            else:
+                for traveller_id in cancelled_passenger_ids:
+                    traveller = DTTDCTraveller.objects.filter(id=traveller_id).first()
+
+                    if not traveller:
+                        continue
+
+                    DTTDCCancellationHistory.objects.create(
+                        booking=booking,
+                        traveller=traveller,
+                        cancellation_type="partial",
+                        cancellation_amount=refund_amount,
+                        created_at=timezone.now()
+                    )
+
+                    
+
+                    
+            if cancellation:
+                        cancellation.cancellation_status = "completed"
+                        cancellation.save()
+            # ✅ Redirect after save
+            messages.success(request, "Cancellation completed successfully.")
+            return redirect("admin_cancellation_details_preview", pnr=pnr)
 
     return render(
         request,
@@ -651,5 +701,6 @@ def admin_cancellation_details_preview(request, pnr):
             "passengers": passengers,
             "cancellation": cancellation,
             "cancelled_passenger_ids": cancelled_passenger_ids,
+            "days_since_booking": days_since_booking,
         }
     )

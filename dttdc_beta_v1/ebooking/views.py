@@ -643,6 +643,7 @@ def payu_success(request):
         "ebooking/payment_success.html",
         {"booking": booking, "payment": payment},
     )
+
 #### added by shubhi ########
 ###### download ticket view starts here #########
 
@@ -656,7 +657,8 @@ def download_ticket_pdf(request, pnr):
         "ebooking/static/ebooking/images/ticket_header.png"
     )
     # ✅ IMPORTANT FIX
-    header_image_path = f'file:///{image_path.replace("\\", "/")}'
+    # header_image_path = f'file:///{image_path.replace("\\", "/")}'
+    header_image_path = 'file:///{0}'.format(image_path.replace("\\", "/"))
 
     print("header image path", header_image_path)
 
@@ -908,22 +910,31 @@ def ebooking_ticket_cancellation_preview(request, pnr):
             cancellation_status="pending"
         )
 
+        
+
         DTTDCTravellerBookingMap.objects.filter(
             booking=booking,
             traveller_id__in=selected_passenger_ids
         ).update(booking_status="cancelled")
 
-        messages.success(request, "Cancellation request submitted successfully.")
+
 
         return redirect("ebooking_ticket_cancel",pnr=booking.pnr_number)
 
     captcha_data = generateCaptchaValueWithToken()
+    cancelled_passenger_ids = list(
+            DTTDCTravellerBookingMap.objects.filter(
+                booking=booking,
+                booking_status="cancelled"
+            ).values_list("traveller_id", flat=True)
+        )
     return render(request, "ebooking/ebooking_ticket_cancel.html", {
         "booking": booking,
         "user": user,
         "passengers": passengers,
         "captcha_value": captcha_data["captchaValue"],
         "captcha_token": captcha_data["captchaToken"],
+        "cancelled_passenger_ids": cancelled_passenger_ids,
     })
 
 # ---------------------------------------------------cancellation page ------------------------------
