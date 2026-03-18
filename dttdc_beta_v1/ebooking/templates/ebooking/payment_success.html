@@ -59,18 +59,49 @@
                         All passengers have been successfully booked.
                     </div>
 
+                    <!-- Status Message -->
+                    <div id="ticketStatus" class="alert alert-info mt-3">
+                        Preparing your ticket... Please wait ⏳
+                    </div>
+
                     <!-- Actions -->
                     <div class="d-flex justify-content-center gap-3 mt-4">
-                        <a href="#" 
-                           class="btn btn-success px-4">
+
+                        <!-- View Ticket -->
+                        <a href="{% url 'view_ticket' booking.pnr_number %}" 
+                        id="viewTicketBtn"
+                        class="btn btn-primary px-4 disabled">
+                            View Ticket
+                        </a>
+
+                        <!-- Download Ticket -->
+                        <a href="{% url 'download_ticket_pdf' booking.pnr_number %}" 
+                        id="downloadTicketBtn"
+                        class="btn btn-success px-4 disabled">
                             Download Ticket
                         </a>
 
                         <a href="/ebooking" 
-                           class="btn btn-outline-secondary px-4">
+                        class="btn btn-outline-secondary px-4">
                             Back To Home
                         </a>
+
                     </div>
+                    <script>
+                        setTimeout(function () {
+
+                            // Enable buttons
+                            document.getElementById("viewTicketBtn").classList.remove("disabled");
+                            document.getElementById("downloadTicketBtn").classList.remove("disabled");
+
+                            // Update message
+                            let status = document.getElementById("ticketStatus");
+                            status.innerHTML = "✅ Your ticket is ready.";
+                            status.classList.remove("alert-info");
+                            status.classList.add("alert-success");
+
+                        }, 5000);
+                    </script>
 
                 </div>
             </div>

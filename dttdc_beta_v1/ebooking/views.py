@@ -9,7 +9,10 @@ from django.db.models import F
 from datetime import timedelta
 from django.db.models import Sum
 from django.contrib.messages import get_messages
-
+from django.template.loader import get_template
+from xhtml2pdf import pisa
+import os
+from django.conf import settings
 
 from .models import (
     DTTDCTourAvailability,
@@ -640,7 +643,55 @@ def payu_success(request):
         "ebooking/payment_success.html",
         {"booking": booking, "payment": payment},
     )
+#### added by shubhi ########
+###### download ticket view starts here #########
 
+def download_ticket_pdf(request, pnr):
+    booking = get_object_or_404(DTTDCTourBooking, pnr_number=pnr)
+
+    template = get_template("ebooking/ticket_pdf.html")
+
+    image_path = os.path.join(
+        settings.BASE_DIR,
+        "ebooking/static/ebooking/images/ticket_header.png"
+    )
+    # ✅ IMPORTANT FIX
+    header_image_path = f'file:///{image_path.replace("\\", "/")}'
+
+    print("header image path", header_image_path)
+
+    context = {
+        "booking": booking,
+        "user_details": booking.user_details,
+        "travellers": booking.passenger_map.select_related("traveller"),
+        "payment": booking.payment,
+        "header_image_path": header_image_path
+    }
+
+    html = template.render(context)
+
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="ticket_{pnr}.pdf"'
+
+    pisa.CreatePDF(html, dest=response)
+
+    return response
+
+################################################################################
+
+################## view ticket starts here #####################################
+def view_ticket(request, pnr):
+    booking = get_object_or_404(DTTDCTourBooking, pnr_number=pnr)
+
+    return render(request, "ebooking/view_ticket.html", {
+        "booking": booking,
+        "user_details": booking.user_details,
+        "travellers": booking.passenger_map.select_related("traveller"),
+        "payment": booking.payment
+    })
+
+################################################################################
+#### shubhi code ends here ################ 
 def reduce_seats_after_after_payment(booking):                               
     """
     Docstring for reduce_seats_after_after_payment

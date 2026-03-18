@@ -28,5 +28,7 @@ urlpatterns = [
     path("ticket_reprint/", views.ebooking_ticket_reprint, name="ticket_reprint"),
     path("ebooking_termsandconditionsforcancellation/",views.ebooking_termsandconditionsforcancellation,name="ebooking_termsandconditionsforcancellation"),
     path("ebooking_ticket_cancel/<str:pnr>/",views.ebooking_ticket_cancellation_success,name="ebooking_ticket_cancel"),
+    path("ticket/<str:pnr>/", views.view_ticket, name="view_ticket"),
+    path("ticket/<str:pnr>/download/", views.download_ticket_pdf, name="download_ticket_pdf"),
 
 ]
