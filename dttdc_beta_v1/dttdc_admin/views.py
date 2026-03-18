@@ -12,7 +12,7 @@ from .decorators import admin_jwt_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.timezone import make_aware
 from ebooking.forms import AddTourCategoryForm, AddTourForm, TourAvailabilityForm
-from ebooking.models import DTTDCTourAvailability, DTTDCTourBooking, DTTDCTourCategory, DTTDCTour
+from ebooking.models import DTTDCTourAvailability, DTTDCTourBooking, DTTDCTourCategory, DTTDCTour, DTTDCTraveller, DTTDCTravellerBookingMap, DTTDCUserDetails
 from ebooking.models import Feedback
 from django.db.models import Sum
 
@@ -626,4 +626,30 @@ def admin_ticket_cancellation_requests(request):
 
 @admin_jwt_required
 def admin_cancellation_details_preview(request, pnr):
-    return render(request,"dttdc_admin/admin_cancellation_details_preview.html",{"pnr": pnr})
+    booking = get_object_or_404(DTTDCTourBooking, pnr_number=pnr)
+    user = get_object_or_404(DTTDCUserDetails, booking=booking)
+    passengers = DTTDCTraveller.objects.filter(user=user)
+
+    cancellation = getattr(booking, "cancellation", None)
+
+    # ✅ Get cancelled passengers from mapping table
+    cancelled_passenger_ids = list(
+        DTTDCTravellerBookingMap.objects.filter(
+            booking=booking,
+            booking_status="cancelled"
+        ).values_list("traveller_id", flat=True)
+    )
+
+
+
+    return render(
+        request,
+        "dttdc_admin/admin_cancellation_details_preview.html",
+        {
+            "booking": booking,
+            "user": user,
+            "passengers": passengers,
+            "cancellation": cancellation,
+            "cancelled_passenger_ids": cancelled_passenger_ids,
+        }
+    )
