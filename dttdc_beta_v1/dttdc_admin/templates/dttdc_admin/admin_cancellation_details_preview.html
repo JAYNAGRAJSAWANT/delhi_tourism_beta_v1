@@ -1,27 +1,50 @@
-{% extends "ebooking/base_ebooking.html" %}
+{% extends "dttdc_admin/base_admin.html" %}
 {% load static %}
 
-{% block admin_cancellation_details_preview %}
+{% block cancellation_preview_admin %}
 
-<div class="container">
-  <div class="row m-3">
+<div class="container-fluid px-3 px-md-4">
+  <div class="row g-4">
 
-    <!-- SIDEBAR -->
-    <aside class="col-12 col-md-3">
-      {% include "ebooking/components/tour_booking_sidebar.html" %}
+     <!-- Sidebar (offcanvas for small, static for md+) -->
+    <aside class="col-12 col-md-3 col-lg-3">
+      <!-- Offcanvas wrapper (Bootstrap) -->
+      <div class="offcanvas offcanvas-start d-md-none" tabindex="-1" id="adminSidebar" aria-labelledby="adminSidebarLabel">
+        <div class="offcanvas-header">
+          <h5 class="offcanvas-title" id="adminSidebarLabel">Admin Panel</h5>
+          <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body p-0">
+          {% include "dttdc_admin/components/sidebar_content.html" %}
+        </div>
+ 
+      </div>
+
+      <!-- Static sidebar for md+ -->
+      <div class="d-none d-md-block">
+        {% include "dttdc_admin/components/sidebar.html" %}
+      </div>
     </aside>
 
     <!-- MAIN CONTENT -->
-    <div class="col-lg-9">
+    <div class="col-12 col-md-9 col-lg-9">
       <div class="card mt-4 shadow-sm">
 
-        <!-- PAGE HEADER -->
-        <div class="card-header text-center bg-light py-4"
-          style="border-bottom: 3px solid #b8440e; border-radius: .5rem .5rem 0 0;">
-          <h5 class="fw-bold mb-1" style="font-size: 1.5rem; letter-spacing: 0.5px;">
-            Cancellation Details Preview
-          </h5>
-        </div>
+        <div class="card-header bg-light py-3 d-flex align-items-center justify-content-center position-relative"
+     style="border-bottom: 3px solid #b8440e; border-radius: .5rem .5rem 0 0;">
+
+  <!-- Back Button LEFT -->
+  <a href="{% url 'ticket_cancellation_requests' %}"
+     class="btn btn-danger position-absolute start-0 ms-3">
+    ← Back
+  </a>
+
+  <!-- Center Title -->
+  <h5 class="fw-bold mb-0 text-center w-100"
+      style="font-size: 1.5rem; letter-spacing: 0.5px; color:rgb(0, 0, 0)">
+    Cancellation Details Preview
+  </h5>
+</div>
 
 
         <div class="ticket-wrapper">
@@ -30,7 +53,7 @@
 
             <!-- TICKET HEADER -->
             <div class="ticket-header d-flex justify-content-between align-items-center">
-              <h6 class="mb-0 text-uppercase fw-semibold">
+              <h6 class="mb-0 text-uppercase fw-semibold" style="color: rgb(255, 255, 255);">
                 Tour Booking Ticket
               </h6>
 
@@ -107,12 +130,25 @@
             <div class="ticket-section border-top">
               <div class="section-label">Passenger Details</div>
 
+              {% if cancellation %}
+                <div class="alert alert-info mt-3">
+                  <strong>Cancellation Type:</strong> 
+                  {{ cancellation.cancellation_type|title }}
+
+                  <br>
+
+                  <strong>Status:</strong> 
+                  {{ cancellation.cancellation_status|title }}
+                </div>
+              {% endif %}
+
               <table class="table table-bordered text-center">
                 <thead class="table-light">
                   <tr>
                     <th>Name</th>
                     <th>Age</th>
                     <th>Gender</th>
+                    <th>Status</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -121,10 +157,16 @@
                     <td>{{ p.name }}</td>
                     <td>{{ p.age }}</td>
                     <td>{{ p.gender|title }}</td>
-                  </tr>
-                  {% empty %}
-                  <tr>
-                    <td colspan="3" class="text-muted">No passengers added</td>
+
+                    <!-- NEW COLUMN -->
+                    <td>
+                      {% if p.id in cancelled_passenger_ids %}
+                        <span class="badge bg-danger">Cancelled</span>
+                      {% else %}
+                        <span class="badge bg-success">Booked</span>
+                      {% endif %}
+                    </td>
+
                   </tr>
                   {% endfor %}
                 </tbody>
@@ -142,10 +184,10 @@
 
 
               <!-- CONFIRMATION -->
-              <div class="ticket-footer position-relative d-flex justify-content-between align-items-center w-100">
+              <div class="ticket-footer position-relative d-flex  align-items-center w-100">
 
                 <!-- LEFT SIDE: Previous -->
-                <a href="javascript:history.back()" class="btn btn-outline-secondary">
+                <a href="javascript:history.back()" class="btn btn-outline-secondary px-4 me-2">
                   Previous
                 </a>
 
@@ -153,8 +195,8 @@
                 <div class="d-flex flex-column align-items-end">
 
                   <div class="d-flex align-items-center">
-                    <button type="submit" class="btn btn-primary px-4 me-2" id="payBtn">
-                      Pay Now
+                    <button type="button" class="btn btn-primary px-4 me-2" id="initiateBtn">
+                     Initiate Cancellation Process
                     </button>
                   </div>
 
@@ -165,6 +207,43 @@
 
 
             </form>
+
+            <div id="cancellationSection" style="display:none; margin-top:20px;">
+  <div class="card p-3 shadow-sm">
+
+    <div class="mb-3">
+      <label class="form-label fw-bold">Tour_Booking_Id *</label>
+      <input type="text" class="form-control" value="{{ booking.id }}" readonly>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label fw-bold">Cancellation Type *</label>
+      <input type="text" class="form-control"
+        value="{% if cancellation %}{{ cancellation.cancellation_type|title }}{% else %}--{% endif %}"
+        readonly>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label fw-bold">User Cancellation Date *</label>
+      <input type="text" class="form-control"
+        value="{% if cancellation %}{{ cancellation.cancellation_date|date:'d M Y' }}{% endif %}"
+        readonly>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label fw-bold">Refund Amount *</label>
+      <input type="number" class="form-control" placeholder="Enter Refund Amount" name="refund_amount">
+    </div>
+
+    <button type="submit" class="btn btn-warning">
+      Cancel Booking
+    </button>
+
+  </div>
+</div>
+
+
+
 
 
           </div>
@@ -288,6 +367,46 @@
     border: none;
     font-weight: 600;
   }
+
+  .ticket-wrapper {
+  background: #f3f4f6;
+  padding: 20px;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+}
+
+.ticket-card {
+  width: 100%;
+  max-width: 900px; /* prevents over-stretch */
+  background: #ffffff;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+}
+
+.card {
+  border-radius: 10px;
+}
+
+.ticket-header {
+  border-radius: 8px 8px 0 0;
+}
+
+.table th, .table td {
+  vertical-align: middle;
+}
+
+@media (max-width: 768px) {
+  .ticket-section {
+    padding: 15px;
+  }
+
+  .ticket-header {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+}
 </style>
 
 
@@ -402,5 +521,19 @@
   });
 </script>
 
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const btn = document.getElementById("initiateBtn");
+  const section = document.getElementById("cancellationSection");
+
+  btn.addEventListener("click", function () {
+    section.style.display = "block";
+
+    // Optional: scroll to section
+    section.scrollIntoView({ behavior: "smooth" });
+  });
+});
+</script>
 
 {% endblock %}

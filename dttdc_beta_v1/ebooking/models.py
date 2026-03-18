@@ -341,5 +341,6 @@ class DTTDCTourCancellation(models.Model):
         blank=True
     )
 
+
     def __str__(self):
         return f"{self.tour_booking.pnr_number} - {self.cancellation_type}"

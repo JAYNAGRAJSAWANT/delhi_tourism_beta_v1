@@ -829,6 +829,8 @@ def ebooking_ticket_cancellation_preview(request, pnr):
         selected_passenger_ids = request.POST.getlist("selected_passengers")
         print("selected passengers id -----jay checking-----",selected_passenger_ids)
 
+       
+
         total_passengers = passengers.count()
         selected_count = len(selected_passenger_ids)
 
@@ -854,6 +856,11 @@ def ebooking_ticket_cancellation_preview(request, pnr):
             cancellation_date=timezone.now(),
             cancellation_status="pending"
         )
+
+        DTTDCTravellerBookingMap.objects.filter(
+            booking=booking,
+            traveller_id__in=selected_passenger_ids
+        ).update(booking_status="cancelled")
 
         messages.success(request, "Cancellation request submitted successfully.")
 
