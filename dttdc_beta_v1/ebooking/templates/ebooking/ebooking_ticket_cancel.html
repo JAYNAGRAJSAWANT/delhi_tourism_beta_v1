@@ -119,8 +119,13 @@
                       <td>{{ p.name }}</td>
                       <td>{{ p.age }}</td>
                       <td>{{ p.gender|title }}</td>
-                      <td><input type="checkbox" name="selected_passengers" value="{{ p.id }}"></td>
-
+                      <td>
+                        {% if p.id in cancelled_passenger_ids %}
+                          <span class="text-danger fw-semibold">Cancelled</span>
+                        {% else %}
+                          <input type="checkbox" name="selected_passengers" value="{{ p.id }}">
+                        {% endif %}
+                      </td>
                     </tr>
                     {% empty %}
                     <tr>

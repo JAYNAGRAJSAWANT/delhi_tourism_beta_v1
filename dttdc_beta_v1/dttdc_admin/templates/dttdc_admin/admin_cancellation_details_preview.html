@@ -26,9 +26,21 @@
       </div>
     </aside>
 
+    
+
     <!-- MAIN CONTENT -->
     <div class="col-12 col-md-9 col-lg-9">
       <div class="card mt-4 shadow-sm">
+        {% if messages %}
+  <div class="px-3 pt-3">
+    {% for message in messages %}
+      <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
 
         <div class="card-header bg-light py-3 d-flex align-items-center justify-content-center position-relative"
      style="border-bottom: 3px solid #b8440e; border-radius: .5rem .5rem 0 0;">
@@ -211,25 +223,47 @@
             <div id="cancellationSection" style="display:none; margin-top:20px;">
   <div class="card p-3 shadow-sm">
 
-    <div class="mb-3">
-      <label class="form-label fw-bold">Tour_Booking_Id *</label>
-      <input type="text" class="form-control" value="{{ booking.id }}" readonly>
+    <div class="row mb-2">
+      <div class="col-5 fw-bold">Tour Booking ID:</div>
+      <div class="col-7">{{ booking.id }}</div>
     </div>
 
-    <div class="mb-3">
-      <label class="form-label fw-bold">Cancellation Type *</label>
-      <input type="text" class="form-control"
-        value="{% if cancellation %}{{ cancellation.cancellation_type|title }}{% else %}--{% endif %}"
-        readonly>
+    <div class="row mb-2">
+      <div class="col-5 fw-bold">Cancellation Type:</div>
+      <div class="col-7">
+        {% if cancellation %}
+          {{ cancellation.cancellation_type|title }}
+        {% else %}
+          --
+        {% endif %}
+      </div>
     </div>
 
-    <div class="mb-3">
-      <label class="form-label fw-bold">User Cancellation Date *</label>
-      <input type="text" class="form-control"
-        value="{% if cancellation %}{{ cancellation.cancellation_date|date:'d M Y' }}{% endif %}"
-        readonly>
+    <div class="row mb-2">
+      <div class="col-5 fw-bold">User Cancellation Date:</div>
+      <div class="col-7">
+        {% if cancellation %}
+          {{ cancellation.cancellation_date|date:'d M Y' }}
+        {% else %}
+          --
+        {% endif %}
+      </div>
     </div>
 
+    <div class="row mb-2">
+      <div class="col-5 fw-bold">Days Since Booking:</div>
+      <div class="col-7">
+        {% if cancellation %}
+          {{ days_since_booking }} days
+        {% else %}
+          --
+        {% endif %}
+      </div>
+    </div>
+
+    <hr>
+<form method="POST">
+  {% csrf_token %}
     <div class="mb-3">
       <label class="form-label fw-bold">Refund Amount *</label>
       <input type="number" class="form-control" placeholder="Enter Refund Amount" name="refund_amount">
@@ -241,6 +275,8 @@
 
   </div>
 </div>
+
+</form>
 
 
 
