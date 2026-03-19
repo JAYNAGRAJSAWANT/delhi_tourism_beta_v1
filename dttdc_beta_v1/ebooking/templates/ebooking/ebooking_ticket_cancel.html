@@ -15,6 +15,8 @@
     <div class="col-lg-9">
       <div class="card mt-4 shadow-sm">
 
+
+
         <!-- PAGE HEADER -->
         <div class="card-header text-center bg-light py-4"
           style="border-bottom: 3px solid #b8440e; border-radius: .5rem .5rem 0 0;">
@@ -22,6 +24,8 @@
             Ticket Cancellation Preview
           </h5>
         </div>
+
+         
 
         <!-- TOUR NAME STRIP -->
         <div class="SideTitle p-2 text-center bg-light my-2 text-white">
@@ -103,6 +107,24 @@
               <!-- PASSENGER DETAILS -->
               <div class="ticket-section border-top">
                 <div class="section-label">Passenger Details for Cancellation</div>
+                   {% if messages %}
+  <div class="p-3">
+    {% for message in messages %}
+      <div class="alert 
+        {% if message.tags == 'success' %}alert-success
+        {% elif message.tags == 'error' %}alert-danger
+        {% else %}alert-info
+        {% endif %}
+        alert-dismissible fade show"
+        role="alert">
+
+        {{ message }}
+
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
 
                 <table class="table table-bordered text-center">
                   <thead class="table-light">

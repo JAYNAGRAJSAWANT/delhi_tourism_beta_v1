@@ -1,6 +1,6 @@
 {% extends "dttdc_admin/base_admin.html" %}
 {% load static %}
-
+{% load custom_tags %}
 {% block cancellation_preview_admin %}
 
 <div class="container-fluid px-3 px-md-4">
@@ -161,6 +161,7 @@
                     <th>Age</th>
                     <th>Gender</th>
                     <th>Status</th>
+                    <th>Refund Amount</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -176,6 +177,14 @@
                         <span class="badge bg-danger">Cancelled</span>
                       {% else %}
                         <span class="badge bg-success">Booked</span>
+                      {% endif %}
+                    </td>
+
+                    <td>
+                      {% if p.id in refund_map %}
+                        ₹ {{ refund_map|get_item:p.id }}
+                      {% else %}
+                        -
                       {% endif %}
                     </td>
 

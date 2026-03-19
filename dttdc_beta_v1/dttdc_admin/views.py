@@ -644,6 +644,17 @@ def admin_cancellation_details_preview(request, pnr):
     today = date.today()
     days_since_booking = (today - booking_date).days
 
+
+    cancellation_history = DTTDCCancellationHistory.objects.filter(
+                    booking=booking
+                )     
+
+    refund_map = {
+                ch.traveller_id: ch.cancellation_amount
+                for ch in cancellation_history
+                if ch.traveller_id
+            } 
+
     if request.method == "POST":
         refund_amount = request.POST.get("refund_amount")
 
@@ -651,47 +662,54 @@ def admin_cancellation_details_preview(request, pnr):
             refund_amount = Decimal(refund_amount)
 
             # ✅ Decide cancellation type FIRST
-            if len(cancelled_passenger_ids) == passengers.count():
-                cancellation_type = "full"
-            else:
-                cancellation_type = "partial"
+            # if len(cancelled_passenger_ids) == passengers.count():
+            #     cancellation_type = "full"
+            # else:
+            #     cancellation_type = "partial"
 
             # ✅ FULL cancellation
-            if cancellation_type == "full":
-                DTTDCCancellationHistory.objects.create(
-                    booking=booking,
-                    traveller=None,
-                    cancellation_type="full",
-                    cancellation_amount=refund_amount,
-                    created_at=timezone.now()
-                )
+            # if cancellation_type == "full":
+            #     DTTDCCancellationHistory.objects.get_or_create(
+            #         booking=booking,
+            #         traveller=None,
+            #         defaults={
+            #             "cancellation_type": "full",
+            #             "cancellation_amount": refund_amount,
+            #             "created_at": timezone.now()
+            #         }
+            #     )
 
             # ✅ PARTIAL cancellation
-            else:
-                for traveller_id in cancelled_passenger_ids:
+            # else:
+            for traveller_id in cancelled_passenger_ids:
                     traveller = DTTDCTraveller.objects.filter(id=traveller_id).first()
 
                     if not traveller:
                         continue
 
-                    DTTDCCancellationHistory.objects.create(
+                    # prevent duplicate
+                    exists = DTTDCCancellationHistory.objects.filter(
                         booking=booking,
-                        traveller=traveller,
-                        cancellation_type="partial",
-                        cancellation_amount=refund_amount,
-                        created_at=timezone.now()
-                    )
+                        traveller=traveller
+                    ).exists()
 
-                    
-
-                    
+                    if not exists:
+                        DTTDCCancellationHistory.objects.create(
+                            booking=booking,
+                            traveller=traveller,
+                            cancellation_type="partial",
+                            cancellation_amount=refund_amount,
+                            created_at=timezone.now()
+                        )
+            
             if cancellation:
-                        cancellation.cancellation_status = "completed"
-                        cancellation.save()
-            # ✅ Redirect after save
-            messages.success(request, "Cancellation completed successfully.")
-            return redirect("admin_cancellation_details_preview", pnr=pnr)
+             cancellation.cancellation_status = "completed"
+             cancellation.save()
 
+        # ✅ SUCCESS MESSAGE
+        messages.success(request, "Cancellation completed successfully.")
+
+        return redirect("admin_cancellation_details_preview", pnr=pnr)
     return render(
         request,
         "dttdc_admin/admin_cancellation_details_preview.html",
@@ -702,5 +720,8 @@ def admin_cancellation_details_preview(request, pnr):
             "cancellation": cancellation,
             "cancelled_passenger_ids": cancelled_passenger_ids,
             "days_since_booking": days_since_booking,
+            "cancellation_history": cancellation_history, 
+            "refund_map": refund_map,
+            
         }
     )
