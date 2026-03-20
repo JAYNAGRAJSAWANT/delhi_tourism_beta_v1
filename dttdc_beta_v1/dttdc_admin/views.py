@@ -647,13 +647,21 @@ def admin_cancellation_details_preview(request, pnr):
 
     cancellation_history = DTTDCCancellationHistory.objects.filter(
                     booking=booking
-                )     
+                )    
+
+    total_refund = (
+        cancellation_history.first().cancellation_amount
+        if cancellation_history.exists()
+        else 0
+    ) 
 
     refund_map = {
                 ch.traveller_id: ch.cancellation_amount
                 for ch in cancellation_history
                 if ch.traveller_id
             } 
+    
+   
 
     if request.method == "POST":
         refund_amount = request.POST.get("refund_amount")
@@ -681,6 +689,12 @@ def admin_cancellation_details_preview(request, pnr):
 
             # ✅ PARTIAL cancellation
             # else:
+
+
+            if len(cancelled_passenger_ids) == passengers.count():
+                cancellation_type = "full"
+            else:
+                cancellation_type = "partial"
             for traveller_id in cancelled_passenger_ids:
                     traveller = DTTDCTraveller.objects.filter(id=traveller_id).first()
 
@@ -697,7 +711,7 @@ def admin_cancellation_details_preview(request, pnr):
                         DTTDCCancellationHistory.objects.create(
                             booking=booking,
                             traveller=traveller,
-                            cancellation_type="partial",
+                            cancellation_type=cancellation_type,
                             cancellation_amount=refund_amount,
                             created_at=timezone.now()
                         )
@@ -705,6 +719,8 @@ def admin_cancellation_details_preview(request, pnr):
             if cancellation:
              cancellation.cancellation_status = "completed"
              cancellation.save()
+
+             
 
         # ✅ SUCCESS MESSAGE
         messages.success(request, "Cancellation completed successfully.")
@@ -722,6 +738,7 @@ def admin_cancellation_details_preview(request, pnr):
             "days_since_booking": days_since_booking,
             "cancellation_history": cancellation_history, 
             "refund_map": refund_map,
+            "total_refund": total_refund,
             
         }
     )

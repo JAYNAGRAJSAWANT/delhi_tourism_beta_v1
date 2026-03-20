@@ -165,32 +165,29 @@
                   </tr>
                 </thead>
                 <tbody>
-                  {% for p in passengers %}
-                  <tr>
-                    <td>{{ p.name }}</td>
-                    <td>{{ p.age }}</td>
-                    <td>{{ p.gender|title }}</td>
+  {% for p in passengers %}
+  <tr>
+    <td>{{ p.name }}</td>
+    <td>{{ p.age }}</td>
+    <td>{{ p.gender|title }}</td>
 
-                    <!-- NEW COLUMN -->
-                    <td>
-                      {% if p.id in cancelled_passenger_ids %}
-                        <span class="badge bg-danger">Cancelled</span>
-                      {% else %}
-                        <span class="badge bg-success">Booked</span>
-                      {% endif %}
-                    </td>
+    <td>
+      {% if p.id in cancelled_passenger_ids %}
+        <span class="badge bg-danger">Cancelled</span>
+      {% else %}
+        <span class="badge bg-success">Booked</span>
+      {% endif %}
+    </td>
 
-                    <td>
-                      {% if p.id in refund_map %}
-                        ₹ {{ refund_map|get_item:p.id }}
-                      {% else %}
-                        -
-                      {% endif %}
-                    </td>
+    {% if forloop.first %}
+      <td rowspan="{{ passengers|length }}">
+        ₹ {{ total_refund }}
+      </td>
+    {% endif %}
 
-                  </tr>
-                  {% endfor %}
-                </tbody>
+  </tr>
+  {% endfor %}
+</tbody>
               </table>
             </div>
             <form method="post">
