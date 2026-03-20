@@ -389,3 +389,6 @@ class DTTDCCancellationHistory(models.Model):
 
     def __str__(self):
         return f"{self.booking.pnr_number} - {self.cancellation_type} - {self.cancellation_amount}"
+
+    class Meta:
+        unique_together = ('booking', 'traveller')

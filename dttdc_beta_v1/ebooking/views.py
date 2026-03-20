@@ -15,6 +15,7 @@ import os
 from django.conf import settings
 
 from .models import (
+    DTTDCCancellationHistory,
     DTTDCTourAvailability,
     DTTDCTourCancellation,
     DTTDCTourCategory,
@@ -889,6 +890,13 @@ def ebooking_ticket_cancellation_preview(request, pnr):
     user = get_object_or_404(DTTDCUserDetails, booking=booking)
     passengers = DTTDCTraveller.objects.filter(user=user)
 
+    cancelled_passenger_ids = list(
+        DTTDCTravellerBookingMap.objects.filter(
+            booking=booking,
+            booking_status="cancelled"
+        ).values_list("traveller_id", flat=True)
+    )
+
     if request.method == "POST":
 
         #  SELECTED PASSENGERS
@@ -897,15 +905,31 @@ def ebooking_ticket_cancellation_preview(request, pnr):
 
        
 
-        total_passengers = passengers.count()
+        active_passengers = passengers.exclude(
+            id__in=cancelled_passenger_ids
+        )
         selected_count = len(selected_passenger_ids)
 
         if selected_count == 0:
             messages.error(request, "Please select at least one passenger.")
             return redirect(request.path)
 
+        
+         #  Get selected & remaining passengers
+        # selected_passengers = passengers.filter(id__in=selected_passenger_ids)
+        remaining_passengers = active_passengers.exclude(id__in=selected_passenger_ids)
+
+        # Define child/adult (based on age)
+        remaining_children = [p for p in remaining_passengers if p.age <= 10 ]
+        remaining_adults = [p for p in remaining_passengers if p.age > 10]
+
+        #  RULE: child cannot travel alone
+        if remaining_children and not remaining_adults:
+            messages.error(request, "Children cannot travel without at least one adult.")
+            return redirect(request.path)
+
         #  FULL CANCELLATION
-        if selected_count == total_passengers:
+        if selected_count == active_passengers.count():
             cancellation_type = "full"
             booking.booking_status = "cancelled"
 
@@ -916,11 +940,13 @@ def ebooking_ticket_cancellation_preview(request, pnr):
         booking.save()
 
         # Create cancellation record
-        DTTDCTourCancellation.objects.create(
+        DTTDCTourCancellation.objects.update_or_create(
             tour_booking=booking,
-            cancellation_type=cancellation_type,
-            cancellation_date=timezone.now(),
-            cancellation_status="pending"
+            defaults={
+                "cancellation_type": cancellation_type,
+                "cancellation_date": timezone.now(),
+                "cancellation_status": "pending"
+            }
         )
 
         
@@ -935,12 +961,7 @@ def ebooking_ticket_cancellation_preview(request, pnr):
         return redirect("ebooking_ticket_cancel",pnr=booking.pnr_number)
 
     captcha_data = generateCaptchaValueWithToken()
-    cancelled_passenger_ids = list(
-            DTTDCTravellerBookingMap.objects.filter(
-                booking=booking,
-                booking_status="cancelled"
-            ).values_list("traveller_id", flat=True)
-        )
+   
     return render(request, "ebooking/ebooking_ticket_cancel.html", {
         "booking": booking,
         "user": user,
