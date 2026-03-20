@@ -646,19 +646,28 @@ def payu_success(request):
 
 #### added by shubhi ########
 ###### download ticket view starts here #########
+def link_callback(uri, rel):
+    import os
+    from django.conf import settings
+
+    if uri.startswith(settings.STATIC_URL):
+        path = os.path.join(settings.STATIC_ROOT, uri.replace(settings.STATIC_URL, ""))
+    else:
+        path = uri  # already absolute path
+
+    return path
 
 def download_ticket_pdf(request, pnr):
     booking = get_object_or_404(DTTDCTourBooking, pnr_number=pnr)
 
     template = get_template("ebooking/ticket_pdf.html")
 
-    image_path = os.path.join(
-        settings.BASE_DIR,
-        "ebooking/static/ebooking/images/ticket_header.png"
+    header_image_path = os.path.join(
+        settings.STATIC_ROOT,
+        'ebooking/images/ticket_header.png'
     )
-    # ✅ IMPORTANT FIX
-    # header_image_path = f'file:///{image_path.replace("\\", "/")}'
-    header_image_path = 'file:///{0}'.format(image_path.replace("\\", "/"))
+   
+    
 
     print("header image path", header_image_path)
 
@@ -675,7 +684,11 @@ def download_ticket_pdf(request, pnr):
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="ticket_{pnr}.pdf"'
 
-    pisa.CreatePDF(html, dest=response)
+    pisa.CreatePDF(
+    html,
+    dest=response,
+    link_callback=link_callback
+)
 
     return response
 
