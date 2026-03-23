@@ -67,4 +67,8 @@ urlpatterns = [
       # -------------------------------------------------------Admin ticket cancellation report----------------------------------------------------------    
       path("admin_ticket_cancellation_report",views.admin_ticket_cancellation_report,name="admin_ticket_cancellation_report"),
 
+    ### --------------------------------- view tour booking report ------------- added by shubhi####
+    path("ticket/view/<str:pnr>/", views.admin_view_tour_ticket, name="admin_view_tour_ticket"),
+
+
 ]

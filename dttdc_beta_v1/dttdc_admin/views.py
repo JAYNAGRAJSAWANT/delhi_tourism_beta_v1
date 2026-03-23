@@ -19,6 +19,9 @@ from django.db.models import Sum
 from django.utils.dateparse import parse_date
 from django.db.models.functions import Coalesce
 
+import os
+from django.http import FileResponse, Http404
+from ebooking.views import save_ticket_pdf  
 def admin_login(request):
 
     token = request.COOKIES.get("admin_access_token")
@@ -964,3 +967,8 @@ def admin_ticket_cancellation_report(request):
             "end_date": end_date,
         }
     )
+###-------------- shubhi views starts here-------##########
+######----------- admin view tour booking report-------------#########
+
+def admin_view_tour_ticket(request, pnr):
+    return redirect('view_ticket', pnr=pnr)
