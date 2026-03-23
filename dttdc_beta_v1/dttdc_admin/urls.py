@@ -59,5 +59,10 @@ urlpatterns = [
 
     # -------------------------------------------------------Admin cancellation detail preview----------------------------------------------------------    
      path("admin_cancellation_details_preview/<str:pnr>/",views.admin_cancellation_details_preview,name="admin_cancellation_details_preview"),
+    # -------------------------------------------------------Admin transaction Report----------------------------------------------------------    
+     path("admin_transaction_report",views.admin_transaction_report,name="admin_transaction_report"),
+
+    # -------------------------------------------------------Admin transaction Details Preview----------------------------------------------------------    
+      path("admin_transaction_details_preview/<str:pnr_number>/",views.admin_transaction_details_preview,name="admin_transaction_details_preview"),
 
 ]

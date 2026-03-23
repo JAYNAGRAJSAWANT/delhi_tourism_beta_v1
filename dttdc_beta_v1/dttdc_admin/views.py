@@ -13,10 +13,10 @@ from .decorators import admin_jwt_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.timezone import make_aware
 from ebooking.forms import AddTourCategoryForm, AddTourForm, TourAvailabilityForm
-from ebooking.models import DTTDCCancellationHistory, DTTDCTourAvailability, DTTDCTourBooking, DTTDCTourCategory, DTTDCTour, DTTDCTraveller, DTTDCTravellerBookingMap, DTTDCUserDetails
+from ebooking.models import DTTDCCancellationHistory, DTTDCTourAvailability, DTTDCTourBooking, DTTDCTourCategory, DTTDCTour, DTTDCTourPaymentDetails, DTTDCTraveller, DTTDCTravellerBookingMap, DTTDCUserDetails
 from ebooking.models import Feedback
 from django.db.models import Sum
-
+from django.utils.dateparse import parse_date
 
 
 def admin_login(request):
@@ -614,13 +614,35 @@ def admin_tour_booking_report(request):
 
 @admin_jwt_required
 def admin_ticket_cancellation_requests(request):
-       booking_list = (
+
+    start_date = request.GET.get("start_date")
+    end_date = request.GET.get("end_date")
+
+    booking_list = (
         DTTDCTourBooking.objects
-        .select_related("dttdc_tour", "cancellation")
+        .select_related("dttdc_tour", "cancellation", "user_details")
         .filter(cancellation__isnull=False)
         .order_by("-cancellation__cancellation_date")
     )
-       return render(request,"dttdc_admin/admin_ticket_cancellation_requests.html",{"booking_list": booking_list})
+
+    # ✅ Apply date filter
+    if start_date and end_date:
+        start_date = parse_date(start_date)
+        end_date = parse_date(end_date)
+
+        booking_list = booking_list.filter(
+            cancellation__cancellation_date__date__range=(start_date, end_date)
+        )
+
+    return render(
+        request,
+        "dttdc_admin/admin_ticket_cancellation_requests.html",
+        {
+            "booking_list": booking_list,
+            "start_date": start_date,
+            "end_date": end_date,
+        }
+    )
 
 
 # -------------------------------------------------------------------------
@@ -741,4 +763,65 @@ def admin_cancellation_details_preview(request, pnr):
             "total_refund": total_refund,
             
         }
+    )
+
+
+
+# ----------------------------------Admin Transaction Report---------------------------------------
+
+
+
+@admin_jwt_required
+def admin_transaction_report(request):
+
+    start_date = request.GET.get("start_date")
+    end_date = request.GET.get("end_date")
+
+    bookings = DTTDCTourBooking.objects.select_related(
+        "user_details",
+        "payment"
+    ).all().order_by("-booking_date")
+
+    # Apply date filter (on payment date OR booking date)
+    if start_date and end_date:
+        start_date = parse_date(start_date)
+        end_date = parse_date(end_date)
+
+        bookings = bookings.filter(
+            booking_date__date__range=(start_date, end_date)
+        )
+
+    return render(
+        request,
+        "dttdc_admin/admin_transaction_report.html",
+        {
+            "booking_list": bookings,
+            "start_date": start_date,
+            "end_date": end_date,
+        }
+    )
+
+# ----------------------------------Admin Transaction Details Preview---------------------------------------
+@admin_jwt_required
+def admin_transaction_details_preview(request, pnr_number):
+
+    booking = get_object_or_404(
+        DTTDCTourBooking.objects.select_related(
+            "payment",
+            "user_details",
+            "dttdc_tour"
+        ),
+        pnr_number=pnr_number
+    )
+
+    context = {
+        "booking": booking,
+        "payment": getattr(booking, "payment", None),
+        "user": getattr(booking, "user_details", None),
+    }
+
+    return render(
+        request,
+        "dttdc_admin/admin_transaction_details_preview.html",
+        context
     )
