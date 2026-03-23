@@ -65,4 +65,8 @@ urlpatterns = [
     # -------------------------------------------------------Admin transaction Details Preview----------------------------------------------------------    
       path("admin_transaction_details_preview/<str:pnr_number>/",views.admin_transaction_details_preview,name="admin_transaction_details_preview"),
 
+    ### --------------------------------- view tour booking report ------------- added by shubhi####
+    path("ticket/view/<str:pnr>/", views.admin_view_tour_ticket, name="admin_view_tour_ticket"),
+
+
 ]

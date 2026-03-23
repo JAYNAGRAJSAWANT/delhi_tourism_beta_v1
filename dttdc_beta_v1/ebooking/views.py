@@ -13,6 +13,8 @@ from django.template.loader import get_template
 from xhtml2pdf import pisa
 import os
 from django.conf import settings
+from django.http import FileResponse, Http404
+
 
 from .models import (
     DTTDCCancellationHistory,
@@ -639,6 +641,9 @@ def payu_success(request):
         booking=booking
     ).update(booking_status="booked")
 
+    # ✅ SAVE PDF (does NOT affect download flow)
+    save_ticket_pdf(booking)
+    
     return render(
         request,
         "ebooking/payment_success.html",
@@ -648,13 +653,24 @@ def payu_success(request):
 #### added by shubhi ########
 ###### download ticket view starts here #########
 def link_callback(uri, rel):
-    import os
-    from django.conf import settings
+    # Handle STATIC files
+    if uri.startswith('/static/'):
+        # Point to app static directory
+        path = os.path.join(
+            settings.BASE_DIR,
+            'ebooking',
+            'static',
+            uri.replace('/static/', '')
+        )
 
-    if uri.startswith(settings.STATIC_URL):
-        path = os.path.join(settings.STATIC_ROOT, uri.replace(settings.STATIC_URL, ""))
+    elif uri.startswith('/media/'):
+        path = os.path.join(settings.MEDIA_ROOT, uri.replace('/media/', ''))
+
     else:
-        path = uri  # already absolute path
+        return uri
+
+    if not os.path.isfile(path):
+        raise Exception(f"File not found: {path}")
 
     return path
 
@@ -689,7 +705,7 @@ def download_ticket_pdf(request, pnr):
     html,
     dest=response,
     link_callback=link_callback
-)
+    )
 
     return response
 
@@ -705,6 +721,28 @@ def view_ticket(request, pnr):
         "travellers": booking.passenger_map.select_related("traveller"),
         "payment": booking.payment
     })
+
+
+def save_ticket_pdf(booking):
+    template = get_template("ebooking/ticket_pdf.html")
+
+    context = {
+        "booking": booking,
+        "user_details": booking.user_details,
+        "travellers": booking.passenger_map.select_related("traveller"),
+        "payment": booking.payment,
+    }
+
+    html = template.render(context)
+
+    file_name = f"ticket_{booking.pnr_number}.pdf"
+    file_path = os.path.join(settings.MEDIA_ROOT, "tickets", file_name)
+
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+
+    with open(file_path, "wb") as f:
+        pisa.CreatePDF(html, dest=f,
+        link_callback=link_callback)
 
 ################################################################################
 #### shubhi code ends here ################ 

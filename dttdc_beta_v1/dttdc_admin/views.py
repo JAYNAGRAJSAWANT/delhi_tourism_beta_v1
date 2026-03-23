@@ -17,8 +17,9 @@ from ebooking.models import DTTDCCancellationHistory, DTTDCTourAvailability, DTT
 from ebooking.models import Feedback
 from django.db.models import Sum
 from django.utils.dateparse import parse_date
-
-
+import os
+from django.http import FileResponse, Http404
+from ebooking.views import save_ticket_pdf  
 def admin_login(request):
 
     token = request.COOKIES.get("admin_access_token")
@@ -825,3 +826,9 @@ def admin_transaction_details_preview(request, pnr_number):
         "dttdc_admin/admin_transaction_details_preview.html",
         context
     )
+
+###-------------- shubhi views starts here-------##########
+######----------- admin view tour booking report-------------#########
+
+def admin_view_tour_ticket(request, pnr):
+    return redirect('view_ticket', pnr=pnr)
