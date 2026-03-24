@@ -148,7 +148,8 @@ def admin_home(request):
 
                 booking_alerts.append({
                     "date": localtime(b.booking_date),
-                    "message": f"New booking for {b.dttdc_tour.tour_name} Tour with PNR - {b.pnr_number}, Journey Date : {journey_date}"
+                    "message": f"New booking for {b.dttdc_tour.tour_name} Tour with PNR - {b.pnr_number}, Journey Date : {journey_date}",
+                    "booking_id": b.id
                 })
 
             # -------- CANCELLATION ALERTS --------
@@ -156,13 +157,38 @@ def admin_home(request):
         for c in cancellations:
                 cancellation_alerts.append({
                     "date": localtime(c.cancellation_date),
-                    "message": f"New cancellation request for PNR - {c.tour_booking.pnr_number}, Cancellation Type : {c.get_cancellation_type_display().upper()}"
+                    "message": f"New cancellation request for PNR - {c.tour_booking.pnr_number}, Cancellation Type : {c.get_cancellation_type_display().upper()}",
+                    "booking_id": c.tour_booking.id
                 })
 
         return render(request, "dttdc_admin/admin_home.html", {
                 "booking_alerts": booking_alerts,
                 "cancellation_alerts": cancellation_alerts
             })
+
+def booking_detail(request, id):
+    booking = get_object_or_404(
+        DTTDCTourBooking.objects.select_related(
+            "dttdc_tour",     # tour details
+            "payment",        # OneToOne payment
+            "user_details"    # OneToOne user details
+        ).prefetch_related(
+            "passenger_map__traveller",   # travellers
+            "cancellation_history"        # cancellation history
+        ),
+        id=id
+    )
+
+    context = {
+        "booking": booking,
+        "payment": getattr(booking, "payment", None),
+        "user": getattr(booking, "user_details", None),
+        "travellers": booking.passenger_map.all(),
+        "cancellation": getattr(booking, "cancellation", None),
+        "cancellation_history": booking.cancellation_history.all(),
+    }
+
+    return render(request, "dttdc_admin/admin_booking_detail.html", context)
 
 
 def admin_logout(request):
