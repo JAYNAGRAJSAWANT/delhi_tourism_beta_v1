@@ -6,6 +6,7 @@ from django.db import transaction
 from dttdc_admin.captcha_utility import generateCaptchaValueWithToken, validate_captcha
 from django.utils import timezone
 from datetime import timedelta
+from django.db.models import F
 
 from .models import (
     DTTDCTourAvailability,
@@ -499,6 +500,7 @@ def payu_payment_init(request, pnr):
 @transaction.atomic
 def payu_success(request):
     data = request.POST
+    print("Payment Data Response : ", data)
     txnid = data.get("txnid")
 
     payment = get_object_or_404(DTTDCTourPaymentDetails, txnid=txnid)
@@ -537,6 +539,18 @@ def payu_success(request):
     payment.error_Message = data.get("error_Message")
     payment.save()
 
+    if payment.status != "success":
+        booking.booking_status = "payment_failed"
+        booking.save()
+        
+        return render(
+            request,
+            "ebooking/payment_failure.html",
+            {"booking": booking, "payment":payment}
+        )
+    
+    reduce_seats_after_after_payment(booking)
+    
     # ✅ Update Booking
     booking.booking_status = "paid"
     booking.save()
@@ -551,7 +565,39 @@ def payu_success(request):
         "ebooking/payment_success.html",
         {"booking": booking, "payment": payment},
     )
-
+    
+def reduce_seats_after_after_payment(booking):
+    """
+    Docstring for reduce_seats_after_after_payment
+    
+    Reduce the available seats for the tour on the journey date    
+    """
+    
+    user = booking.user_details
+    tour = booking.dttdc_tour
+    journey_date = user.tour_journey_date
+    passengers = booking.number_of_passengers
+    
+    print("Tour Information : ", tour)
+    print(" ======================== ")
+    print("Journey Information : ", journey_date)
+    print(" ======================== ")
+    print("Passengers Information : ", passengers)
+    
+    availability = (
+        DTTDCTourAvailability.objects
+        .select_for_update()
+        .get(tour=tour, available_date=journey_date)
+    )
+    
+    if availability.available_seats < passengers:
+        raise ValidationError(
+            f"Insuffcient seats for {journey_date}"
+        )
+    
+    availability.available_seats = F("available_seats") - passengers
+    availability.save()
+    
 @csrf_exempt
 def payu_failure(request):
     data = request.POST
@@ -633,3 +679,12 @@ def release_seats(booking):
     
     
 # -------------------------------------------------- END OF PAYMENT CYCLE FLOW --------------------------------
+
+# --------------------------------------------------- Start of Tour Cancellation ------------------------------
+
+def ebooking_tour_cancellation(request):
+    print("===== Ebooking Tour Cancellation Starts =====")
+    
+    if request.POST:
+        print("Inside post method ....")
+    return render("ebooking/ebooking_tour_cancellation.html")

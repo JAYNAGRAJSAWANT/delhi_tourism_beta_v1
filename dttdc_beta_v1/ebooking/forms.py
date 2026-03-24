@@ -561,3 +561,18 @@ class TourAvailabilityForm(forms.Form):
             raise forms.ValidationError("From date cannot be after To date.")
 
         return cleaned_data
+
+
+
+# ==================================================================================================
+# ----------------------------------Tour Cancellation Form---------------------------------------
+# ==================================================================================================
+
+class TourCancellationForm(forms.Form):
+    email = forms.EmailField(
+        widget=forms.EmailInput(attrs={"class": "form-control"}),
+        error_messages={
+            "required": "Email address is required.",
+            "invalid": "Enter a valid email address.",
+        },
+    )

@@ -22,4 +22,5 @@ urlpatterns = [
     path("payment/payu/<str:pnr>/", views.payu_payment_init, name="payu_payment_init"),
     path("payment/success/", views.payu_success, name="payu_success"),
     path("payment/failure/", views.payu_failure, name="payu_failure"),
+    path("tour_cancellation/", views.ebooking_tour_cancellation, name="tour_cancellation")
 ]
