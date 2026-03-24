@@ -26,14 +26,14 @@
 
 
 
-            <div class="d-flex justify-content-center align-items-center">
-  {% if tour.tour_image %}
-    <img src="{{ tour.tour_image.url }}"
-         class="img-fluid border p-1"
-         style="max-height:140px; object-fit:contain;"
-         alt="{{ tour.tour_name }}">
-  {% endif %}
-</div>
+          <div class="d-flex justify-content-center align-items-center">
+            {% if tour.tour_image %}
+              <img src="{{ tour.tour_image.url }}"
+                  class="img-fluid border p-1"
+                  style="max-height:140px; object-fit:contain;"
+                  alt="{{ tour.tour_name }}">
+            {% endif %}
+          </div>
 
 
           </div>

@@ -582,6 +582,7 @@ def payu_payment_init(request, pnr):
 @transaction.atomic
 def payu_success(request):
     data = request.POST
+    print("Payment Data Response : ", data)
     txnid = data.get("txnid")
 
     payment = get_object_or_404(DTTDCTourPaymentDetails, txnid=txnid)
@@ -631,7 +632,6 @@ def payu_success(request):
         )
     
     reduce_seats_after_after_payment(booking)
-
     # ✅ Update Booking
     booking.booking_status = "paid"
     booking.save()
