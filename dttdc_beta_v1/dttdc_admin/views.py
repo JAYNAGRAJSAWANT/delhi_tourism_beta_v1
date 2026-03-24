@@ -380,17 +380,17 @@ def admin_edit_tour(request, pk):
             tour_obj = form.save(commit=False)
 
             timing_from = request.POST.get("timing_from")
-        timing_to = request.POST.get("timing_to")
+            timing_to = request.POST.get("timing_to")
 
-        if timing_from and timing_to:
-            from_time = datetime.strptime(timing_from, "%H:%M").strftime("%I:%M %p")
-            to_time = datetime.strptime(timing_to, "%H:%M").strftime("%I:%M %p")
+            if timing_from and timing_to:
+             from_time = datetime.strptime(timing_from, "%H:%M").strftime("%I:%M %p")
+             to_time = datetime.strptime(timing_to, "%H:%M").strftime("%I:%M %p")
 
-            tour_obj.timing = f"{from_time} - {to_time}"
+             tour_obj.timing = f"{from_time} - {to_time}"
 
             # Handle multiple checkbox schedule values
-            schedule_days = request.POST.getlist("schedule")
-            tour_obj.schedule = ",".join(schedule_days) if schedule_days else ""
+             schedule_days = request.POST.getlist("schedule")
+             tour_obj.schedule = ",".join(schedule_days) if schedule_days else ""
 
             tour_obj.save()
             messages.success(request, "Tour updated successfully.")
