@@ -69,7 +69,8 @@ def ebooking_all_tour_categories(request):
 
 
 def ebooking_all_tours(request, category_id):
-    category = DTTDCTourCategory.objects.get(id=category_id)
+
+    category = get_object_or_404(DTTDCTourCategory, id=category_id)
     tours = DTTDCTour.objects.filter(tour_category=category, tour_status="active")
 
     return render(
@@ -1121,3 +1122,10 @@ def ebooking_ticket_cancellation_success(request, pnr):
 
 def ebooking_termsandconditionsforcancellation(request):
     return render( request,"ebooking/ebooking_termsandconditionsforcancellation.html")
+
+
+# -------------------------------------------- 404 Page --------------------------------------------------
+
+def custom_404(request, exception):
+    return render(request, "ebooking/ebooking_404.html", status=404)
+

@@ -1,0 +1,75 @@
+{% extends "ebooking/base_ebooking.html" %}
+{% load static %}
+
+{% block alltours %}
+
+<style>
+    .error-container {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 80vh;
+        text-align: center;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .error-image {
+        width: 800px;
+        margin-bottom: 20px;
+        opacity: 0.9;
+    }
+
+    .error-code {
+        font-size: 60px;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 5px;
+    }
+
+    .error-title {
+        font-size: 22px;
+        color: #34495e;
+        margin-bottom: 10px;
+    }
+
+    .error-desc {
+        font-size: 15px;
+        color: #7f8c8d;
+        margin-bottom: 25px;
+        max-width: 400px;
+    }
+
+    .home-btn {
+        text-decoration: none;
+        padding: 10px 22px;
+        border-radius: 6px;
+        background-color: #3498db;
+        color: white;
+        font-size: 14px;
+        transition: 0.3s ease;
+    }
+
+    .home-btn:hover {
+        background-color: #2980b9;
+    }
+</style>
+
+<div class="error-container">
+
+    <!-- Image -->
+    <img src="{% static 'ebooking/images/notfound.png' %}" alt="Page Not Found" class="error-image">
+
+    <!-- Text -->
+    {% comment %} <div class="error-code">404</div>
+    <div class="error-title">Page Not Found</div> {% endcomment %}
+    <div class="error-desc">
+        The category or page you’re looking for doesn’t exist or may have been moved.
+    </div>
+
+    <!-- CTA -->
+    <a href="/ebooking/" class="home-btn">Explore Tours</a>
+
+</div>
+
+{% endblock %}
