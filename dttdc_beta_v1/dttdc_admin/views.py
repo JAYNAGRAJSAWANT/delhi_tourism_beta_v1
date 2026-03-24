@@ -11,12 +11,14 @@ from .captcha_utility import generateCaptchaValueWithToken, validate_captcha
 from .jwt_utils import create_access_token
 from .decorators import admin_jwt_required
 from django.shortcuts import get_object_or_404, redirect, render
-from django.utils.timezone import make_aware
+from django.utils.timezone import localtime, make_aware
 from ebooking.forms import AddTourCategoryForm, AddTourForm, TourAvailabilityForm
-from ebooking.models import DTTDCCancellationHistory, DTTDCTourAvailability, DTTDCTourBooking, DTTDCTourCategory, DTTDCTour, DTTDCTourPaymentDetails, DTTDCTraveller, DTTDCTravellerBookingMap, DTTDCUserDetails
+from ebooking.models import DTTDCCancellationHistory, DTTDCTourAvailability, DTTDCTourBooking, DTTDCTourCancellation, DTTDCTourCategory, DTTDCTour, DTTDCTourPaymentDetails, DTTDCTraveller, DTTDCTravellerBookingMap, DTTDCUserDetails
 from ebooking.models import Feedback
 from django.db.models import Sum
 from django.utils.dateparse import parse_date
+from django.db.models.functions import Coalesce
+
 import os
 from django.http import FileResponse, Http404
 from ebooking.views import save_ticket_pdf  
@@ -122,8 +124,71 @@ def check_captcha(request):
 
 @admin_jwt_required
 def admin_home(request):
-    # Only accessible if valid JWT cookie is present
-    return render(request, "dttdc_admin/admin_home.html")
+        bookings = (
+                DTTDCTourBooking.objects
+                .select_related("dttdc_tour", "user_details")
+                .order_by("-booking_date")[:10]
+            )
+
+            # 🔴 Latest Cancellations
+        cancellations = (
+                DTTDCTourCancellation.objects
+                .select_related("tour_booking", "tour_booking__dttdc_tour")
+                .order_by("-cancellation_date")[:10]
+            )
+
+            # -------- BOOKING ALERTS --------
+        booking_alerts = []
+        for b in bookings:
+                journey_date = (
+                    b.user_details.tour_journey_date.strftime("%d-%m-%Y")
+                    if hasattr(b, "user_details") and b.user_details
+                    else "N/A"
+                )
+
+                booking_alerts.append({
+                    "date": localtime(b.booking_date),
+                    "message": f"New booking for {b.dttdc_tour.tour_name} Tour with PNR - {b.pnr_number}, Journey Date : {journey_date}",
+                    "booking_id": b.id
+                })
+
+            # -------- CANCELLATION ALERTS --------
+        cancellation_alerts = []
+        for c in cancellations:
+                cancellation_alerts.append({
+                    "date": localtime(c.cancellation_date),
+                    "message": f"New cancellation request for PNR - {c.tour_booking.pnr_number}, Cancellation Type : {c.get_cancellation_type_display().upper()}",
+                    "booking_id": c.tour_booking.id
+                })
+
+        return render(request, "dttdc_admin/admin_home.html", {
+                "booking_alerts": booking_alerts,
+                "cancellation_alerts": cancellation_alerts
+            })
+
+def booking_detail(request, id):
+    booking = get_object_or_404(
+        DTTDCTourBooking.objects.select_related(
+            "dttdc_tour",     # tour details
+            "payment",        # OneToOne payment
+            "user_details"    # OneToOne user details
+        ).prefetch_related(
+            "passenger_map__traveller",   # travellers
+            "cancellation_history"        # cancellation history
+        ),
+        id=id
+    )
+
+    context = {
+        "booking": booking,
+        "payment": getattr(booking, "payment", None),
+        "user": getattr(booking, "user_details", None),
+        "travellers": booking.passenger_map.all(),
+        "cancellation": getattr(booking, "cancellation", None),
+        "cancellation_history": booking.cancellation_history.all(),
+    }
+
+    return render(request, "dttdc_admin/admin_booking_detail.html", context)
 
 
 def admin_logout(request):
@@ -827,6 +892,107 @@ def admin_transaction_details_preview(request, pnr_number):
         context
     )
 
+# ----------------------------------Admin Ticket Cancellation Report---------------------------------------
+@admin_jwt_required
+def admin_ticket_cancellation_report(request):
+
+    # -------- GET FILTER VALUES --------
+    category_id = request.GET.get("category")
+    tour_id = request.GET.get("tour")
+    year = request.GET.get("year")
+    month = request.GET.get("month")
+    start_date = request.GET.get("start_date")
+    end_date = request.GET.get("end_date")
+
+    # -------- BASE QUERY --------
+    booking_list = (
+        DTTDCTourBooking.objects
+        .select_related("dttdc_tour", "cancellation")
+        .prefetch_related("cancellation_history")
+        .filter(cancellation__isnull=False)
+        .order_by("-cancellation__cancellation_date")
+    )
+
+    # -------- FILTER: CATEGORY --------
+    if category_id:
+        booking_list = booking_list.filter(
+            dttdc_tour__tour_category_id=category_id
+        )
+
+    # -------- FILTER: TOUR --------
+    if tour_id:
+        booking_list = booking_list.filter(
+            dttdc_tour_id=tour_id
+        )
+
+    # -------- FILTER: YEAR --------
+    if year:
+        booking_list = booking_list.filter(
+            cancellation__cancellation_date__year=year
+        )
+
+    # -------- FILTER: MONTH --------
+    if month:
+        booking_list = booking_list.filter(
+            cancellation__cancellation_date__month=month
+        )
+
+    # -------- DATE RANGE FILTER --------
+    if start_date and end_date:
+        booking_list = booking_list.filter(
+            cancellation__cancellation_date__date__range=[start_date, end_date]
+        )
+
+    # -------- YOUR LOGIC (DO NOT SUM, TAKE FIRST) --------
+    total_amount = 0
+
+    for booking in booking_list:
+        first_record = booking.cancellation_history.first()
+
+        booking.total_refund = (
+            first_record.cancellation_amount if first_record else 0
+        )
+
+        total_amount += booking.total_refund
+
+    # -------- DROPDOWN DATA --------
+    categories = DTTDCTourCategory.objects.all()
+    tours = DTTDCTour.objects.all()
+
+    years = (
+        DTTDCTourBooking.objects
+        .dates("booking_date", "year", order="DESC")
+    )
+
+    months = [
+        (1, "January"), (2, "February"), (3, "March"),
+        (4, "April"), (5, "May"), (6, "June"),
+        (7, "July"), (8, "August"), (9, "September"),
+        (10, "October"), (11, "November"), (12, "December"),
+    ]
+
+    return render(
+        request,
+        "dttdc_admin/admin_ticket_cancellation_report.html",
+        {
+            "booking_list": booking_list,
+            "total_amount": total_amount,
+
+            # filters
+            "categories": categories,
+            "tours": tours,
+            "years": [y.year for y in years],
+            "months": months,
+
+            # selected values
+            "selected_category": category_id,
+            "selected_tour": tour_id,
+            "selected_year": year,
+            "selected_month": month,
+            "start_date": start_date,
+            "end_date": end_date,
+        }
+    )
 ###-------------- shubhi views starts here-------##########
 ######----------- admin view tour booking report-------------#########
 
