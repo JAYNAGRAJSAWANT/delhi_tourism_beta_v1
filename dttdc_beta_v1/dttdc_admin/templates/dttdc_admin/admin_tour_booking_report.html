@@ -6,47 +6,116 @@
 <div class="container-fluid mt-3">
 
   <!-- Header -->
-  <div class="position-relative mb-3">
-    <a href="{% url 'admin_home' %}"
-       class="btn btn-danger position-absolute start-0 top-50 translate-middle-y">
-      ← Back
-    </a>
+  <div class="mb-2 mt-2">
 
+  <a href="{% url 'admin_home' %}"
+     class="btn btn-danger
+            d-inline-flex align-items-center
+            position-static position-md-absolute
+            start-md-0 top-md-50 translate-middle-md-y">
+    ← Back
+  </a>
+
+</div>
+
+
+  <div class="position-relative mb-2 mt-2">
     <h4 class="fw-bold text-center mb-0">
       Tour Booking Report
     </h4>
   </div>
 
+
   <!-- Date Filter -->
-  <form method="get" id="reportForm">
-    <div class="card p-3 mb-3">
-      <div class="row align-items-end g-3">
 
-        <div class="col-lg-2 fw-semibold">
-          Enter Date:
-        </div>
+<div  class="row g-3">
+  <div class="col-md-12">
+  <form method="get">
+  <div class="card p-2 ">
 
-        <div class="col-lg-4 col-md-6">
-          <label class="form-label small mb-0">From</label>
-          <input type="date" name="start_date" class="form-control"
-                 value="{{ start_date }}">
-        </div>
+  <div class="col-12">
 
-        <div class="col-lg-4 col-md-6">
-          <label class="form-label small mb-0">To</label>
-          <input type="date" name="end_date" class="form-control"
-                 value="{{ end_date }}">
-        </div>
+  <div class="d-flex gap-2 ms-2 mt-1" >
+    <div class="form-check">
+      <input class="form-check-input"
+             type="radio"
+             name="date_type"
+             id="bookedDate"
+             value="booking_date"
+             {% if date_type != "journey_date" %}checked{% endif %}>
+      <label class="form-check-label" for="bookedDate">
+        Booked Date
+      </label>
+    </div>
 
-        <div class="col-lg-2">
-          <button type="submit" class="btn btn-primary w-100">
-            Generate Report
-          </button>
-        </div>
+    <div class="form-check">
+      <input class="form-check-input"
+             type="radio"
+             name="date_type"
+             id="journeyDate"
+             value="journey_date"
+             {% if date_type == "journey_date" %}checked{% endif %}>
+      <label class="form-check-label" for="journeyDate">
+        Journey Date
+      </label>
+    </div>
+  </div> 
+  </div>
 
+      <hr class="custom">
+
+    <div class="row align-items-end g-2 mb-3">
+
+      <div class="col-md-3">
+        <label class="form-label small">Year</label>
+        <select name="year" id="year" class="form-select">
+          <option value="">Select Year</option>
+          {% for y in years %}
+            <option value="{{ y }}" {% if selected_year == y|stringformat:"s" %}selected{% endif %}>
+              {{ y }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+ 
+      <div class="col-md-3">
+        <label class="form-label small">Month</label>
+        <select name="month" id="month" class="form-select">
+          <option value="">Select Month</option>
+          {% for m_val, m_name in months %}
+            <option value="{{ m_val }}" {% if selected_month == m_val|stringformat:"s" %}selected{% endif %}>
+              {{ m_name }}
+            </option>
+          {% endfor %}
+        </select>
+      </div> 
+    
+      <div class="col-md-3">
+        <label class="form-label small">Date</label>
+        <select name="day" id="day" class="form-select">
+          <option value="">Select Date</option>
+        </select>
+      </div>  
+      
+      <div class="col-md-3">
+        <button class="btn btn-primary w-100 ">Generate Report</button>
       </div>
     </div>
+  </div>
   </form>
+</div>
+
+<div class="d-flex justify-content-between gap-2">
+      <div class="px-3 py-2 border rounded fw-semibold text-center"
+           style="background:#A3D9A5; min-width: 100px;">
+          Total Amount: ₹{{ total_amount }}
+      </div>
+      <div class="px-3 py-2 border rounded fw-semibold text-center"
+           style="background:#B8E986; min-width: 100px;">
+           Total Bookings: {{ booking_list|length }}
+      </div>
+</div>
+
 
   <!-- Table -->
   <div class="card shadow-sm">
@@ -95,8 +164,13 @@
             </td>
 
             <td class="text-nowrap">
-              {{ booking.booking_date|date:"d/m/Y H:i" }}
+              {% if date_type == "journey_date" %}
+                {{ booking.user_details.tour_journey_date|date:"d/m/Y" }}
+              {% else %}
+                {{ booking.booking_date|date:"d/m/Y H:i" }}
+              {% endif %}
             </td>
+
 
             <td class="text-nowrap">
               {{ booking.user_details.tour_journey_date|date:"d/m/Y" }}
@@ -135,9 +209,10 @@
             </td>
 
             <td class="text-center">
-              <a href="#"
-                 class="btn btn-sm btn-primary">
-                View
+              <a href="{% url 'admin_view_tour_ticket' booking.pnr_number %}"
+                target="_blank"
+                class="btn btn-sm btn-primary">
+                  View
               </a>
             </td>
 
@@ -160,14 +235,8 @@
 
       </table>
      </div>
-      <div class="mt-3 d-flex justify-content-end">
-        <div class="px-3 py-2 border rounded fw-semibold"
-             style="background:#bad875;">
-          Total Bookings: {{ booking_list|length }}
-        </div>
-      </div>
-
-    </div>
+      
+  </div>
   </div>
 
 </div>
@@ -189,6 +258,16 @@
 #bookingTable td.text-wrap {
   white-space: normal;
 }
+
+.custom{
+  width: 300px;     
+  height: 1px;      
+  background-color: #a4a19f;   
+  margin-top: 1px ;
+  border-radius: 50px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+}
+
 </style>
 
 
@@ -221,15 +300,51 @@ $(document).ready(function () {
 
 <!-- Date Validation -->
 <script>
-document.getElementById('reportForm').addEventListener('submit', function (e) {
-  const startDate = document.querySelector('input[name="start_date"]').value;
-  const endDate = document.querySelector('input[name="end_date"]').value;
+document.addEventListener("DOMContentLoaded", function () {
 
-  if (!startDate || !endDate) {
-    e.preventDefault();
-    alert('Please select both From and To dates.');
+  const monthSelect = document.getElementById("month");
+  const yearSelect  = document.getElementById("year");
+  const daySelect   = document.getElementById("day");
+
+  function updateDays(restoreDay = null) {
+    const month = parseInt(monthSelect.value);
+    const year  = parseInt(yearSelect.value) || new Date().getFullYear();
+
+    daySelect.innerHTML = '<option value="">Select Date</option>';
+    daySelect.disabled  = true;
+
+    if (!month) return;
+
+    const totalDays = new Date(year, month, 0).getDate();
+
+    for (let d = 1; d <= totalDays; d++) {
+      const opt   = document.createElement("option");
+      opt.value   = d;
+      opt.text    = d < 10 ? "0" + d : String(d);
+      daySelect.appendChild(opt);
+    }
+
+    daySelect.disabled = false;
+
+    if (restoreDay && parseInt(restoreDay) <= totalDays) {
+      daySelect.value = restoreDay;
+    }
   }
+
+  monthSelect.addEventListener("change", function () {
+    updateDays();
+  });
+
+  yearSelect.addEventListener("change", function () {
+    updateDays(daySelect.value || null);
+  });
+
+  {% if selected_month %}
+    updateDays("{{ selected_day|default:'' }}");
+  {% endif %}
+
 });
+
 </script>
 
 {% endblock %}

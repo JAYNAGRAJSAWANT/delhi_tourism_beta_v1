@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 13px;
+            color: #000;
+        }
+
+        .header-img {
+            width: 100%;
+            height: auto;
+        }
+
+        .center {
+            text-align: center;
+        }
+
+        .main-title {
+            text-align: center;
+            color: red;
+            font-size: 25px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            margin-top: 2px;
+        }
+
+        .sub-title {
+            text-align: center;
+            font-size: 18px;
+            line-height: 1.2;
+            margin-top: 0;
+        }
+
+        .ticket-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 5px;
+            text-align: center;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+        }
+
+        th {
+            background-color: #e6e6e6;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        td, th {
+            border: 1px solid #000;
+            padding: 6px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        .section-title {
+            font-weight: bold;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        .bold {
+            font-weight: bold;
+        }
+
+        .grey-box {
+            background-color: #f5f5f5;
+            padding: 8px;
+            border: 1px solid #ccc;
+        }
+
+        .bullet {
+            margin-left: 10px;
+            margin-top: 2px;
+            margin-bottom: 2px;
+        }
+        .final-note {
+                margin-top: 5px !important;
+                margin-left: 0;
+                
+                padding-left: 8px; /* same as grey-box padding */
+                font-size: 15px;
+            }
+    </style>
+</head>
+
+<body>
+
+<div class="ticket-body">
+
+    <!-- HEADER -->
+    <img src="/static/ebooking/images/ticket_header.png" class="header-img">
+
+    <div class="center main-title">
+        Delhi Tourism & Transport Development Corp. Ltd.
+    </div>
+
+    <div class="center sub-title">
+        (A Govt. Undertaking)<br>
+        website : www.delhitourism.gov.in
+    </div>
+
+    <div class="center ticket-title">E-Ticket</div>
+
+    <!-- BOOKING -->
+    <table>
+        <tr>
+            <td class="bold">Tour Name :</td>
+            <td>{{ booking.dttdc_tour.tour_name }}</td>
+            <td class="bold">Date Of Booking :</td>
+            <td>{{ booking.booking_date|date:"d M Y" }}</td>
+        </tr>
+
+        <tr>
+            <td class="bold">PNR No :</td>
+            <td>{{ booking.pnr_number }}</td>
+            <td class="bold">Date Of Journey :</td>
+            <td>{{ user_details.tour_journey_date }}</td>
+        </tr>
+
+        <tr>
+            <td class="bold">No Of Passenger :</td>
+            <td>Adult : {{ user_details.number_of_adults }} , Child : {{ user_details.number_of_child }}</td>
+            <td class="bold">Invoice No :</td>
+            <td>{{ booking.invoice_number }}</td>
+        </tr>
+
+        <tr>
+            <td class="bold">Passenger Contact No :</td>
+            <td>{{ user_details.phone_number }}</td>
+            <td class="bold">Tour Time (IST) :</td>
+            <td>{{ booking.tour_time|default:"-" }}</td>
+        </tr>
+
+        <tr>
+            <td class="bold">Booking Status :</td>
+            <td>{{ booking.booking_status }}</td>
+            <td class="bold">Passenger Address :</td>
+            <td style="word-break: break-word;">
+                {{ user_details.address }}
+            </td>
+        </tr>
+    </table>
+
+    <!-- PASSENGERS -->
+    <div class="section-title">Passenger Details</div>
+
+    <table>
+        <tr>
+            <th>Sr.No</th>
+            <th>Name</th>
+            <th>Age</th>
+            <th>Gender</th>
+        </tr>
+
+        {% for t in travellers %}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ t.traveller.name }}</td>
+            <td>{{ t.traveller.age }}</td>
+            <td>{{ t.traveller.gender }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <!-- TICKET DETAILS -->
+    <div class="section-title">Ticket Details</div>
+
+    <table>
+        <tr>
+            <td width="50%" class="grey-box" style="vertical-align: top; height: 140px;">
+                <span class="bold">
+                    GST Details :GSTIN 07AAACD0169J1ZS<br>
+                    SAC Code :<br>
+                    Place of Service : Delhi<br>
+                    State Code : 07/Delhi<br>
+                    SGST = 2.5%<br>
+                    CGST = 2.5%
+                </span>
+            </td>
+
+            <td class="grey-box" style="vertical-align: top; height: 140px;">
+                <span class="bold">
+                    Amount :<br>
+                    Total Amount : Rs. {{ payment.amount }}/-<br>
+                    Tax Amount : Rs. 0.05/-<br>
+                    SGST : Rs. 0.03/- &nbsp;&nbsp; CGST : Rs. 0.03 /-
+                </span>
+            </td>
+        </tr>
+    </table><br/>
+
+    <!-- NOTE -->
+            <div class="section-title">Kindly Note :</div>
+
+                <div class="grey-box">
+                    Tour will start from Central Reservation Office, Coffee Home,<br>
+                    Baba Kharak Singh Marg, (opposite Hanuman Temple),<br>
+                    Connaught Place, New Delhi - 110 001<br><br>
+
+                    <span class="bold">Reporting time :</span> 15 Minutes before the tour departure time<br>
+                    <span class="bold">Note :</span> All Tourist Carry their address proof<br>
+
+                    <span class="bold">Telephone No. :</span> +91-11-23365358/23363607<br>
+                    <span class="bold">Fax :</span> +91-11-23367322<br>
+                    <span class="bold">Email :</span> tourism@delhitourism.gov.in
+                </div>
+
+            <!-- CANCELLATION -->
+            <div class="section-title">Cancellation Rules:</div>
+
+                <div class="grey-box">
+                    <p class="bullet">• 18% GST will be levied on the Cancellation amount.</p>
+                    <p class="bullet">• 15 days before (Excluding departure date), Rs. 100/- per person to be charged as
+                    minimum amount or 10% whichever is higher.</p>
+                    <p class="bullet">• 8-14 days before (Excluding departure date) 25% of the package cost.</p>
+                    <p class="bullet">• 04-07 days before (Excluding departure date) 50% of the package cost.</p>
+                    <p class="bullet">• Less than 04 days before departure date 100% of the package cost means no refund.</p>
+                    <p class="bullet">• No refund will be allowed, if the tourist misses the tour or cancels the journey after the
+                    departure of the tour.</p>
+                    <p class="bullet">• For cancellations made online, refund of money will be as per rules. The refund amount
+                    will be send in your account through which the payment has been made within 15 days.</p>
+                    <p class="bullet">• In case tour is cancelled by DTTDC the tourist collect cash refund from Central
+                    Reservation Office or by online within 15 days. These rules will be applicable both for
+                    Regular, LTC tours as well as Car Rental</p>
+                    
+                    
+                </div>
+
+                <p class="bold final-note">
+                    These Rules Will be applicable both for Regular,LTC tours as well as Car Rentals
+                </p>
+                
+
+            <!-- TERMS -->
+            <div class="section-title">Terms And Conditions :</div>
+
+                <div class="grey-box">
+
+                    • Please take a printout of the e-Ticket issued by DTTDC.<br><br>
+
+                    • At the time of availing the service, you have to carry e-Ticket print and submit both of
+                    the following to DTTDC Official:<br>
+
+                    <span style="margin-left:20px; width:55%;">
+                        1. All Tourist Carry their address proof.<br/>
+
+                        2. A photocopy of any one from the listed identity cards of one of the main traveller
+                        (Voter Identity Card / Passport / PAN Card / Driving License / Photo ID card issued
+                        by Central / State Govt /Student Identity Card with photograph issued by
+                        recognized School or College for their students /Nationalised Bank Passbook with
+                        photograph / Credit Cards issued by Banks with embedded photograph (Carry the
+                        original proof along for verification purpose).<br>
+
+                        3. Copy of Front side of Credit Card of the person who have made the booking.
+                    </span><br>
+
+                    • Reconfirm the tour one day before the departure.<br>
+                    • Tour may be conducted by Tourist car or Bus.<br>
+                    • Ticket may also be cancelled by sending E-mail at tourism@delhitourism.gov.in ,
+                    mentioning all ticket details including PNR number, E-Mail ID, and Date of Journey. Ticket
+                    shall only be considered cancelled, if you received acknowledgement email form Delhi
+                    tourism.<br>
+                    • Monument fee is not included in tour tickets.
+
+                </div>
+        </div>
+
+</body>
+</html>

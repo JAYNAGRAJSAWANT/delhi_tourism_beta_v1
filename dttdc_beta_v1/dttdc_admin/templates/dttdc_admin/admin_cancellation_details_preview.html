@@ -1,0 +1,580 @@
+{% extends "dttdc_admin/base_admin.html" %}
+{% load static %}
+{% block cancellation_preview_admin %}
+
+<div class="container-fluid px-3 px-md-4">
+  <div class="row g-4">
+
+     <!-- Sidebar (offcanvas for small, static for md+) -->
+    <aside class="col-12 col-md-3 col-lg-3">
+      <!-- Offcanvas wrapper (Bootstrap) -->
+      <div class="offcanvas offcanvas-start d-md-none" tabindex="-1" id="adminSidebar" aria-labelledby="adminSidebarLabel">
+        <div class="offcanvas-header">
+          <h5 class="offcanvas-title" id="adminSidebarLabel">Admin Panel</h5>
+          <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body p-0">
+          {% include "dttdc_admin/components/sidebar_content.html" %}
+        </div>
+ 
+      </div>
+
+      <!-- Static sidebar for md+ -->
+      <div class="d-none d-md-block">
+        {% include "dttdc_admin/components/sidebar.html" %}
+      </div>
+    </aside>
+
+    
+
+    <!-- MAIN CONTENT -->
+    <div class="col-12 col-md-9 col-lg-9">
+      <div class="card mt-4 shadow-sm">
+        {% if messages %}
+  <div class="px-3 pt-3">
+    {% for message in messages %}
+      <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+        <div class="card-header bg-light py-3 d-flex align-items-center justify-content-center position-relative"
+     style="border-bottom: 3px solid #b8440e; border-radius: .5rem .5rem 0 0;">
+
+  <!-- Back Button LEFT -->
+  <a href="{% url 'ticket_cancellation_requests' %}"
+     class="btn btn-danger position-absolute start-0 ms-3">
+    ← Back
+  </a>
+
+  <!-- Center Title -->
+  <h5 class="fw-bold mb-0 text-center w-100"
+      style="font-size: 1.5rem; letter-spacing: 0.5px; color:rgb(0, 0, 0)">
+    Cancellation Details Preview
+  </h5>
+</div>
+
+
+        <div class="ticket-wrapper">
+
+          <div class="ticket-card">
+
+            <!-- TICKET HEADER -->
+            <div class="ticket-header d-flex justify-content-between align-items-center">
+              <h6 class="mb-0 text-uppercase fw-semibold" style="color: rgb(255, 255, 255);">
+                Tour Booking Ticket
+              </h6>
+
+              <span class="pnr-badge">
+                PNR : <strong>{{ booking.pnr_number }}</strong>
+              </span>
+            </div>
+
+            <!-- TOUR DETAILS -->
+            <div class="ticket-section">
+              <div class="section-label">Tour Details</div>
+
+              <table class="table table-bordered details-table">
+                <tr>
+                  <th>Tour Package</th>
+                  <td>{{ booking.dttdc_tour.tour_name }}</td>
+                </tr>
+                <tr>
+                  <th>Date of Journey</th>
+                  <td>{{ user.tour_journey_date|date:"d M Y" }}</td>
+                </tr>
+                <tr>
+                  <th>Date of Booking</th>
+                  <td>{{ booking.booking_date|date:"d M Y" }}</td>
+                </tr>
+                <tr>
+                  <th>Places Covered</th>
+                  <td>{{ booking.dttdc_tour.places_covered }}</td>
+                </tr>
+                <!-- <tr>
+                  <th>Adult Fare</th>
+                  <td>{{ booking.dttdc_tour.places_covered }}</td>
+                </tr>
+                <tr>
+                  <th>Child Fare</th>
+                  <td>{{ booking.dttdc_tour.places_covered }}</td>
+                </tr> -->
+              </table>
+            </div>
+
+            <!-- USER DETAILS -->
+            <div class="ticket-section border-top">
+              <div class="section-label">User Details</div>
+
+              <table class="table table-bordered details-table">
+                <tr>
+                  <th>Full Name</th>
+                  <td>{{ user.name }}</td>
+                </tr>
+                <tr>
+                  <th>Email</th>
+                  <td>{{ user.email }}</td>
+                </tr>
+                <tr>
+                  <th>Phone</th>
+                  <td>{{ user.phone_number }}</td>
+                </tr>
+                <tr>
+                  <th>Country</th>
+                  <td>{{ user.country }}</td>
+                </tr>
+                <tr>
+                  <th>State</th>
+                  <td>{{ user.state }}</td>
+                </tr>
+                <tr>
+                  <th>City</th>
+                  <td>{{ user.city }}</td>
+                </tr>
+              </table>
+            </div>
+
+            <!-- PASSENGER DETAILS -->
+            <div class="ticket-section border-top">
+              <div class="section-label">Passenger Details</div>
+
+              {% if cancellation %}
+                <div class="alert alert-info mt-3">
+                  <strong>Cancellation Type:</strong> 
+                  {{ cancellation.cancellation_type|title }}
+
+                  <br>
+
+                  <strong>Status:</strong> 
+                  {{ cancellation.cancellation_status|title }}
+                </div>
+              {% endif %}
+
+              <table class="table table-bordered text-center">
+                <thead class="table-light">
+                  <tr>
+                    <th>Name</th>
+                    <th>Age</th>
+                    <th>Gender</th>
+                    <th>Status</th>
+                    <th>Refund Amount Provided</th>
+                  </tr>
+                </thead>
+                <tbody>
+  {% for p in passengers %}
+  <tr>
+    <td>{{ p.name }}</td>
+    <td>{{ p.age }}</td>
+    <td>{{ p.gender|title }}</td>
+
+    <td>
+      {% if p.id in cancelled_passenger_ids %}
+        <span class="badge bg-danger">Cancelled</span>
+      {% else %}
+        <span class="badge bg-success">Booked</span>
+      {% endif %}
+    </td>
+
+    {% if forloop.first %}
+      <td rowspan="{{ passengers|length }}">
+        ₹ {{ total_refund }}
+      </td>
+    {% endif %}
+
+  </tr>
+  {% endfor %}
+</tbody>
+              </table>
+            </div>
+            <form method="post">
+              {% csrf_token %}
+              <!-- TOTAL FARE -->
+              <div class="ticket-section border-top">
+                <div class="alert alert-warning fw-bold mb-0">
+                  Total Fare Paid: Rs. {{ booking.total_fare }}/-
+                </div>
+              </div>
+
+
+
+              <!-- CONFIRMATION -->
+              <div class="ticket-footer position-relative d-flex  align-items-center w-100">
+
+                <!-- LEFT SIDE: Previous -->
+                <a href="javascript:history.back()" class="btn btn-outline-secondary px-4 me-2">
+                  Previous
+                </a>
+
+                <!-- RIGHT SIDE: Terms + Buttons -->
+                <div class="d-flex flex-column align-items-end">
+
+                  <div class="d-flex align-items-center">
+                    <button type="button" class="btn btn-primary px-4 me-2" id="initiateBtn">
+                     Initiate Cancellation Process
+                    </button>
+                  </div>
+
+                </div>
+
+              </div>
+
+
+
+            </form>
+
+            <div id="cancellationSection" style="display:none; margin-top:20px;">
+  <div class="card p-3 shadow-sm">
+
+    <div class="row mb-2">
+      <div class="col-5 fw-bold">Tour Booking ID:</div>
+      <div class="col-7">{{ booking.id }}</div>
+    </div>
+
+    <div class="row mb-2">
+      <div class="col-5 fw-bold">Cancellation Type:</div>
+      <div class="col-7">
+        {% if cancellation %}
+          {{ cancellation.cancellation_type|title }}
+        {% else %}
+          --
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="row mb-2">
+      <div class="col-5 fw-bold">User Cancellation Date:</div>
+      <div class="col-7">
+        {% if cancellation %}
+          {{ cancellation.cancellation_date|date:'d M Y' }}
+        {% else %}
+          --
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="row mb-2">
+      <div class="col-5 fw-bold">Days Since Booking:</div>
+      <div class="col-7">
+        {% if cancellation %}
+          {{ days_since_booking }} days
+        {% else %}
+          --
+        {% endif %}
+      </div>
+    </div>
+
+    <hr>
+<form method="POST">
+  {% csrf_token %}
+    <div class="mb-3">
+      <label class="form-label fw-bold">Refund Amount *</label>
+      <input type="number" class="form-control" placeholder="Enter Refund Amount" name="refund_amount">
+    </div>
+
+    <button type="submit" class="btn btn-warning">
+      Cancel Booking
+    </button>
+
+  </div>
+</div>
+
+</form>
+
+
+
+
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STYLES -->
+<style>
+  .terms-check {
+    font-size: 0.85rem;
+  }
+
+  .terms-check a {
+    color: #b8440e;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .terms-check a:hover {
+    text-decoration: underline;
+  }
+
+  #termsWarning {
+    font-size: 0.75rem;
+  }
+
+  /* Base label style */
+  .terms-check label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #495057;
+    transition: color 0.2s ease;
+    cursor: pointer;
+  }
+
+  /* Terms link */
+  .terms-check a {
+    color: #b8440e;
+    font-weight: 600;
+    text-decoration: underline;
+  }
+
+  /* Checkbox pointer */
+  .terms-check .form-check-input {
+    cursor: pointer;
+  }
+
+  /* ✅ When checked – subtle confirmation */
+  .terms-check input:checked+label {
+    color: #0f5132;
+  }
+
+  /* Optional: bold link when checked */
+  .terms-check input:checked+label a {
+    color: #198754;
+  }
+
+
+  .ticket-wrapper {
+    background: #f3f4f6;
+    padding: 6px;
+    border-radius: 10px;
+  }
+
+  .ticket-card {
+    background: #ffffff;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+  }
+
+  .ticket-header {
+    background: linear-gradient(135deg, #e75a1e, #d8844f, #e75a1e);
+    color: #fff;
+    padding: 16px 20px;
+  }
+
+  .ticket-section {
+    padding: 22px;
+  }
+
+  .section-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: #6c757d;
+    text-transform: uppercase;
+    border-bottom: 1px dashed #dee2e6;
+    padding-bottom: 8px;
+    margin-bottom: 15px;
+  }
+
+  .details-table th {
+    width: 30%;
+    background: #f8f9fa;
+    font-weight: 600;
+  }
+
+  .pnr-badge {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .ticket-footer {
+    background: #f8f9fa;
+    padding: 15px 20px;
+    border-top: 1px solid #dee2e6;
+  }
+
+  .alert-warning {
+    background-color: #ffeb7b;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #e75a1e, #77340b, #e75a1e);
+    border: none;
+    font-weight: 600;
+  }
+
+  .ticket-wrapper {
+  background: #f3f4f6;
+  padding: 20px;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+}
+
+.ticket-card {
+  width: 100%;
+  max-width: 900px; /* prevents over-stretch */
+  background: #ffffff;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+}
+
+.card {
+  border-radius: 10px;
+}
+
+.ticket-header {
+  border-radius: 8px 8px 0 0;
+}
+
+.table th, .table td {
+  vertical-align: middle;
+}
+
+@media (max-width: 768px) {
+  .ticket-section {
+    padding: 15px;
+  }
+
+  .ticket-header {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+}
+</style>
+
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const terms = document.getElementById("termsCheck");
+    const payBtn = document.getElementById("payBtn");
+    const warning = document.getElementById("termsWarning");
+
+    terms.addEventListener("change", function () {
+      if (terms.checked) {
+        warning.classList.add("d-none");
+      }
+    });
+  });
+</script>
+
+
+<script>
+  let CAPTCHA_VALUE = "{{ captcha_value|escapejs }}";
+
+  /* Draw a noisy line */
+  function drawLine(info, style = {}) {
+    const canvas = document.getElementById("captchaCanvas");
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    const { x, y, x1, y1 } = info;
+    const { color = "black", width = 1 } = style;
+
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x1, y1);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.stroke();
+  }
+
+  /* Draw captcha text + noise */
+  function drawCaptcha(value) {
+    const canvas = document.getElementById("captchaCanvas");
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Noise lines
+    drawLine({ x: 0, y: 10, x1: 50, y1: 100 });
+    drawLine({ x: 60, y: 0, x1: 100, y1: 200 }, { color: "red" });
+    drawLine({ x: 75, y: 0, x1: 200, y1: 200 }, { color: "green" });
+    drawLine({ x: 110, y: 0, x1: 150, y1: 250 }, { color: "blue" });
+
+    ctx.font = "18px Arial";
+
+    if (!value || value.length !== 6) return;
+
+    ctx.fillText(value[0], 6, 15);
+    ctx.fillText(value[1], 25, 30);
+    ctx.fillText(value[2], 50, 20);
+    ctx.fillText(value[3], 70, 40);
+    ctx.fillText(value[4], 100, 15);
+    ctx.fillText(value[5], 120, 35);
+  }
+
+  /* Initial render */
+  document.addEventListener("DOMContentLoaded", function () {
+    drawCaptcha(CAPTCHA_VALUE);
+  });
+
+  /* Reload captcha */
+  async function reloadCaptcha() {
+    try {
+      const response = await fetch("{% url 'get_captcha' %}");
+      const data = await response.json();
+
+      CAPTCHA_VALUE = data.captchaValue;
+      document.getElementById("captchaTokenField").value = data.captchaToken;
+
+      drawCaptcha(CAPTCHA_VALUE);
+    } catch (e) {
+      console.error("Captcha reload failed", e);
+    }
+  }
+</script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const form = document.querySelector("form");
+    const captchaInput = document.querySelector('input[name="user_captcha_input"]');
+    const terms = document.getElementById("termsCheck");
+    const termsWarning = document.getElementById("termsWarning");
+
+    form.addEventListener("submit", function (e) {
+
+      // 1️⃣ Terms validation
+      if (!terms.checked) {
+        e.preventDefault();
+        termsWarning.classList.remove("d-none");
+        terms.focus();
+        return;
+      }
+
+      // 2️⃣ Captcha empty validation
+      if (!captchaInput.value.trim()) {
+        e.preventDefault();
+        alert("Please enter the captcha.");
+        captchaInput.focus();
+        return;
+      }
+
+    });
+  });
+</script>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const btn = document.getElementById("initiateBtn");
+  const section = document.getElementById("cancellationSection");
+
+  btn.addEventListener("click", function () {
+    section.style.display = "block";
+
+    // Optional: scroll to section
+    section.scrollIntoView({ behavior: "smooth" });
+  });
+});
+</script>
+
+{% endblock %}

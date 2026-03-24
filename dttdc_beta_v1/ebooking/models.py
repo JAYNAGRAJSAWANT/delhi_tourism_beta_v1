@@ -1,3 +1,5 @@
+from django.utils import timezone
+
 from django.db import models
 
 from phonenumber_field.modelfields import PhoneNumberField
@@ -299,3 +301,94 @@ class DTTDCTourAvailability(models.Model):
 
     def __str__(self):
         return f"{self.tour.tour_name} | {self.available_date} | {self.available_seats}/{self.total_seats}"
+
+
+#==============================================DTTDC Tour Cancellation Model=====================================
+
+
+class DTTDCTourCancellation(models.Model):
+
+    CANCELLATION_TYPE = [
+        ("full", "Full"),
+        ("partial", "Partial"),
+    ]
+
+    CANCELLATION_STATUS = [
+        ("pending", "Pending"),
+        ("approved", "Approved"),
+        ("rejected", "Rejected"),
+    ]
+
+    tour_booking = models.OneToOneField(
+        "DTTDCTourBooking",
+        on_delete=models.CASCADE,
+        related_name="cancellation"
+    )
+
+    cancellation_type = models.CharField(
+        max_length=45,
+        choices=CANCELLATION_TYPE
+    )
+
+    cancellation_date = models.DateTimeField(auto_now_add=True)
+
+    cancellation_status = models.CharField(
+        max_length=45,
+        choices=CANCELLATION_STATUS,
+        default="pending"
+    )
+
+    admin_approval_date = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+
+
+    def __str__(self):
+        return f"{self.tour_booking.pnr_number} - {self.cancellation_type}"
+    
+
+
+
+
+
+class DTTDCCancellationHistory(models.Model):
+
+    CANCELLATION_TYPE_CHOICES = (
+        ('partial', 'Partial'),
+        ('full', 'Full'),
+    )
+
+    booking = models.ForeignKey(
+        'DTTDCTourBooking',
+        on_delete=models.CASCADE,
+        related_name='cancellation_history'
+    )
+
+    traveller = models.ForeignKey(
+        'DTTDCTraveller',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='cancellation_history'
+    )
+
+    cancellation_type = models.CharField(
+        max_length=10,
+        choices=CANCELLATION_TYPE_CHOICES
+    )
+
+    cancellation_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2
+    )
+
+    created_at = models.DateTimeField(
+        default=timezone.now
+    )
+
+    def __str__(self):
+        return f"{self.booking.pnr_number} - {self.cancellation_type} - {self.cancellation_amount}"
+
+    class Meta:
+        unique_together = ('booking', 'traveller')

@@ -5,11 +5,21 @@ from django.http import HttpResponse, JsonResponse
 from django.db import transaction
 from dttdc_admin.captcha_utility import generateCaptchaValueWithToken, validate_captcha
 from django.utils import timezone
+from django.db.models import F 
 from datetime import timedelta
-from django.db.models import F
+from django.db.models import Sum
+from django.contrib.messages import get_messages
+from django.template.loader import get_template
+from xhtml2pdf import pisa
+import os
+from django.conf import settings
+from django.http import FileResponse, Http404
+
 
 from .models import (
+    DTTDCCancellationHistory,
     DTTDCTourAvailability,
+    DTTDCTourCancellation,
     DTTDCTourCategory,
     DTTDCTour,
     DTTDCTourBooking,
@@ -25,7 +35,7 @@ from .models import (
 )
 
 import uuid
-from .forms import TravellerForm, TravellerFormSet, UserDetailsForm
+from .forms import TourCancellationForm, TravellerForm, TravellerFormSet, UserDetailsForm
 from django.contrib import messages
 import re
 from django.core.validators import validate_email
@@ -92,66 +102,82 @@ def start_booking(request, tour_id):
 
 
 # ----------------------------User Details View--------------------------------
+
 def booking_user_details(request, pnr):
     booking = get_object_or_404(DTTDCTourBooking, pnr_number=pnr)
-
     user_details = DTTDCUserDetails.objects.filter(booking=booking).first()
+    
 
-    # ==========================
-    # FIXED PRICES (TEST TOUR)
-    # ==========================
     tour = booking.dttdc_tour
     adult_price = tour.fare_adult
     child_price = tour.fare_child
-    
-    print("Adult Price : ", adult_price)
-    print("Child price : ", child_price)
 
-    CGST_RATE = Decimal("0.025")  # 2.5%
-    SGST_RATE = Decimal("0.025")  # 2.5%
+    CGST_RATE = Decimal("0.025")
+    SGST_RATE = Decimal("0.025")
 
     if request.method == "POST":
+        print("🔥 POST HIT")
+
+        print("-------------------yaha hai-------------")
         form = UserDetailsForm(request.POST, instance=user_details)
+
         if not form.is_valid():
-            print("FORM ERRORS:", form.errors)
-        else:
-            user = form.save(commit=False)
+            return render(request, "ebooking/user_details.html", {"form": form, "booking": booking})
+
+        user = form.save(commit=False)
+
+        journey_date = user.tour_journey_date
+        adults = int(user.number_of_adults)
+        children = int(user.number_of_child)
+        total_passengers = adults + children
+
+        with transaction.atomic():
+
+            availability = (
+                DTTDCTourAvailability.objects
+                .select_for_update()
+                .filter(tour=tour, available_date=journey_date)
+                .first()
+            )
+
+            if not availability:
+                form.add_error(None, "Tour is not available for the selected date.")
+                return render(request, "ebooking/user_details.html", {"form": form, "booking": booking})
+
+            print("DEBUG seats → available:", availability.available_seats)
+            print("DEBUG seats → requested:", total_passengers)
+
+            if total_passengers > availability.available_seats:
+                seat_word = "seat" if availability.available_seats == 1 else "seats"
+                verb = "is" if availability.available_seats == 1 else "are"
+
+                form.add_error(
+                    None,
+                    f"Only {availability.available_seats} {seat_word} {verb} available. "
+                    f"You selected {total_passengers} passengers."
+                )
+                return render(request, "ebooking/user_details.html", {"form": form, "booking": booking})
+
+            # ✅ SAVE EVERYTHING INSIDE SAME TRANSACTION
             user.booking = booking
             user.save()
 
-            adults = int(user.number_of_adults)
-            children = int(user.number_of_child)
-            
-            booking.number_of_passengers = adults + children
+            booking.number_of_passengers = total_passengers
 
-            # ==========================
-            # FARE CALCULATION
-            # ==========================
-            base_fare = (Decimal(adults) * adult_price) + (
-                Decimal(children) * child_price
-            )
-
+            base_fare = (Decimal(adults) * adult_price) + (Decimal(children) * child_price)
             cgst_amount = base_fare * CGST_RATE
             sgst_amount = base_fare * SGST_RATE
 
-            total_fare = base_fare + cgst_amount + sgst_amount
-            print(total_fare)
-            booking.total_fare = total_fare
+            booking.total_fare = base_fare + cgst_amount + sgst_amount
             booking.booking_status = "details_filled"
             booking.save()
 
-            return redirect("add_travellers", pnr=pnr)
-        return render(
-            request, "ebooking/user_details.html", {"form": form, "booking": booking}
-        )
+        return redirect("add_travellers", pnr=pnr)
 
     else:
         form = UserDetailsForm(instance=user_details)
 
-    return render(
-        request, "ebooking/user_details.html", {"form": form, "booking": booking}
-    )
-
+    return render(request, "ebooking/user_details.html", {"form": form, "booking": booking})
 
 # -----------------------------------Added By Jay------------------------------
 def captcha(request):
@@ -227,68 +253,94 @@ def ebooking_feedback_form(request):
 
 
 # --------------------------------------- Add Travellers View---------------------------
+from django.shortcuts import get_object_or_404, render, redirect
+from django.contrib import messages
+from django.db import transaction
+
+
 def ebooking_add_travellers(request, pnr):
     booking = get_object_or_404(DTTDCTourBooking, pnr_number=pnr)
     user_details = get_object_or_404(DTTDCUserDetails, booking=booking)
+
     existing_travellers = DTTDCTraveller.objects.filter(user=user_details)
 
-    adults = user_details.number_of_adults
-    children = user_details.number_of_child
+    adults = int(user_details.number_of_adults)
+    children = int(user_details.number_of_child)
     max_passengers = adults + children
 
     if request.method == "POST":
 
-        # Count passengers
-        passenger_count = 0
+        posted_travellers = build_posted_travellers(request.POST)
+
+        # =================================================
+        # 1. COUNT PASSENGERS (by passenger_x_name)
+        # =================================================
+        passenger_indexes = set()
         for key in request.POST:
             if key.startswith("passenger_") and key.endswith("_name"):
-                passenger_count += 1
+                passenger_indexes.add(key.split("_")[1])
+
+        passenger_count = len(passenger_indexes)
 
         if passenger_count != max_passengers:
-            messages.error(request, f"Please add exactly {max_passengers} passengers.")
-            return render(
+            messages.error(
                 request,
-                "ebooking/ebooking_add_travellers.html",
-                {
-                    "booking": booking,
-                    "adults": adults,
-                    "children": children,
-                },
+                f"Please add exactly {max_passengers} passengers "
+                f"({adults} Adult(s) + {children} Child(ren))."
             )
+            request.session["posted_travellers"] = posted_travellers
+            return redirect("add_travellers", pnr=pnr)
 
+
+        # =================================================
+        # 2. FORM VALIDATION
+        # =================================================
         travellers = []
-        errors = []
 
-        # Validate passengers
-        for key in request.POST:
-            if key.startswith("passenger_") and key.endswith("_name"):
-                index = key.split("_")[1]
+        for index in passenger_indexes:
+            form = TravellerForm({
+                "name": request.POST.get(f"passenger_{index}_name"),
+                "age": request.POST.get(f"passenger_{index}_age"),
+                "gender": request.POST.get(f"passenger_{index}_gender"),
+                "passport": request.POST.get(f"passenger_{index}_passport"),
+            })
 
-                form = TravellerForm({
-                    "name": request.POST.get(f"passenger_{index}_name"),
-                    "age": request.POST.get(f"passenger_{index}_age"),
-                    "gender": request.POST.get(f"passenger_{index}_gender"),
-                    "passport": request.POST.get(f"passenger_{index}_passport"),
-                })
+            if not form.is_valid():
+                messages.error(request, "Please correct passenger details.")
+                request.session["posted_travellers"] = posted_travellers
+                return redirect("add_travellers", pnr=pnr)
 
-                if form.is_valid():
-                    travellers.append(form.cleaned_data)
-                else:
-                    errors.append(form.errors)
+            travellers.append(form.cleaned_data)
 
-        if errors:
-            messages.error(request, "Please correct passenger details.")
-            return render(
+        # =================================================
+        # 3. AGE → ADULT / CHILD VALIDATION
+        # RULE:
+        # age > 10  = Adult
+        # age <= 10 = Child (Infant included)
+        # =================================================
+        adult_count = 0
+        child_count = 0
+
+        for t in travellers:
+            age = int(t["age"])
+            if age > 10:
+                adult_count += 1
+            else:
+                child_count += 1
+
+        if adult_count != adults or child_count != children:
+            messages.error(
                 request,
-                "ebooking/ebooking_add_travellers.html",
-                {
-                    "booking": booking,
-                    "adults": adults,
-                    "children": children,
-                },
+                f"Passenger age does not match your selection. "
+                f"You selected {adults} Adult(s) and {children} Child(ren). "
+                f"Please check passenger ages."
             )
+            request.session["posted_travellers"] = posted_travellers
+            return redirect("add_travellers", pnr=pnr)
 
-        # 🔐 ATOMIC TRANSACTION (delete + create together)
+        # =================================================
+        # 4. SAVE DATA (ATOMIC TRANSACTION)
+        # =================================================
         with transaction.atomic():
 
             DTTDCTraveller.objects.filter(user=user_details).delete()
@@ -303,27 +355,57 @@ def ebooking_add_travellers(request, pnr):
                     passport=t["passport"],
                 )
 
-                # Map traveller with booking
                 DTTDCTravellerBookingMap.objects.create(
                     booking=booking,
                     traveller=traveller_obj,
-                    
                 )
+        request.session.pop("posted_travellers", None)
+
+        list(messages.get_messages(request))
 
         return redirect("ebooking_ticket_preview", pnr=pnr)
+    
+    posted_travellers = request.session.pop("posted_travellers", None)
+    # =================================================
+    # GET REQUEST (CLEAN PAGE, NO OLD ERRORS)
+    # =================================================
+    return render(
+        request,
+        "ebooking/ebooking_add_travellers.html",
+        {
+            "booking": booking,
+            "adults": adults,
+            "children": children,
+            "existing_travellers": existing_travellers,
+            "posted_travellers": posted_travellers,
+            "existing_passengers": len(posted_travellers) if posted_travellers else existing_travellers.count(),
+        },
+    )
 
-    else:
-        return render(
-            request,
-            "ebooking/ebooking_add_travellers.html",
-            {
-                "booking": booking,
-                "adults": adults,
-                "children": children,
-                "existing_passengers": existing_travellers.count(),
-                "existing_travellers": existing_travellers,
-            },
-        )
+
+
+
+def build_posted_travellers(post_data):
+    travellers = []
+
+    passenger_indexes = sorted({
+        key.split("_")[1]
+        for key in post_data
+        if key.startswith("passenger_") and key.endswith("_name")
+    })
+
+    for index in passenger_indexes:
+        travellers.append({
+            "index": int(index),
+            "name": post_data.get(f"passenger_{index}_name"),
+            "age": post_data.get(f"passenger_{index}_age"),
+            "gender": post_data.get(f"passenger_{index}_gender"),
+            "passport": post_data.get(f"passenger_{index}_passport"),
+        })
+
+    return travellers
+
+
 # --------------------------------------Check Tour Availability View---------------------------
 def check_tour_availability(request):
 
@@ -550,7 +632,6 @@ def payu_success(request):
         )
     
     reduce_seats_after_after_payment(booking)
-    
     # ✅ Update Booking
     booking.booking_status = "paid"
     booking.save()
@@ -560,13 +641,112 @@ def payu_success(request):
         booking=booking
     ).update(booking_status="booked")
 
+    # ✅ SAVE PDF (does NOT affect download flow)
+    save_ticket_pdf(booking)
+    
     return render(
         request,
         "ebooking/payment_success.html",
         {"booking": booking, "payment": payment},
     )
+
+#### added by shubhi ########
+###### download ticket view starts here #########
+def link_callback(uri, rel):
+    # Handle STATIC files
+    if uri.startswith('/static/'):
+        # Point to app static directory
+        path = os.path.join(
+            settings.BASE_DIR,
+            'ebooking',
+            'static',
+            uri.replace('/static/', '')
+        )
+
+    elif uri.startswith('/media/'):
+        path = os.path.join(settings.MEDIA_ROOT, uri.replace('/media/', ''))
+
+    else:
+        return uri
+
+    if not os.path.isfile(path):
+        raise Exception(f"File not found: {path}")
+
+    return path
+
+def download_ticket_pdf(request, pnr):
+    booking = get_object_or_404(DTTDCTourBooking, pnr_number=pnr)
+
+    template = get_template("ebooking/ticket_pdf.html")
+
+    header_image_path = os.path.join(
+        settings.STATIC_ROOT,
+        'ebooking/images/ticket_header.png'
+    )
+   
     
-def reduce_seats_after_after_payment(booking):
+
+    print("header image path", header_image_path)
+
+    context = {
+        "booking": booking,
+        "user_details": booking.user_details,
+        "travellers": booking.passenger_map.select_related("traveller"),
+        "payment": booking.payment,
+        "header_image_path": header_image_path
+    }
+
+    html = template.render(context)
+
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="ticket_{pnr}.pdf"'
+
+    pisa.CreatePDF(
+    html,
+    dest=response,
+    link_callback=link_callback
+    )
+
+    return response
+
+################################################################################
+
+################## view ticket starts here #####################################
+def view_ticket(request, pnr):
+    booking = get_object_or_404(DTTDCTourBooking, pnr_number=pnr)
+
+    return render(request, "ebooking/view_ticket.html", {
+        "booking": booking,
+        "user_details": booking.user_details,
+        "travellers": booking.passenger_map.select_related("traveller"),
+        "payment": booking.payment
+    })
+
+
+def save_ticket_pdf(booking):
+    template = get_template("ebooking/ticket_pdf.html")
+
+    context = {
+        "booking": booking,
+        "user_details": booking.user_details,
+        "travellers": booking.passenger_map.select_related("traveller"),
+        "payment": booking.payment,
+    }
+
+    html = template.render(context)
+
+    file_name = f"ticket_{booking.pnr_number}.pdf"
+    file_path = os.path.join(settings.MEDIA_ROOT, "tickets", file_name)
+
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+
+    with open(file_path, "wb") as f:
+        pisa.CreatePDF(html, dest=f,
+        link_callback=link_callback)
+
+################################################################################
+#### shubhi code ends here ################ 
+def reduce_seats_after_after_payment(booking):                               
     """
     Docstring for reduce_seats_after_after_payment
     
@@ -597,7 +777,8 @@ def reduce_seats_after_after_payment(booking):
     
     availability.available_seats = F("available_seats") - passengers
     availability.save()
-    
+
+
 @csrf_exempt
 def payu_failure(request):
     data = request.POST
@@ -682,9 +863,169 @@ def release_seats(booking):
 
 # --------------------------------------------------- Start of Tour Cancellation ------------------------------
 
+# def ebooking_tour_cancellation(request):
+#     if request.POST:
+#         print("Inside post method ....")
+#     return render( request,"ebooking/ebooking_tour_cancellation.html")
+
 def ebooking_tour_cancellation(request):
-    print("===== Ebooking Tour Cancellation Starts =====")
-    
+    if request.method == "POST":
+        form = TourCancellationForm(request.POST)
+
+        # 1. Captcha validation
+        captcha_result = validate_captcha(
+            request.POST.get("user_captcha_input"),
+            request.POST.get("captchaToken"),
+        )
+
+        if captcha_result["status"] != "success":
+            captcha_data = generateCaptchaValueWithToken()
+            return render(
+                request,
+                "ebooking/ebooking_tour_cancellation.html",
+                {
+                    "form": form,
+                    "captcha_value": captcha_data["captchaValue"],
+                    "captcha_token": captcha_data["captchaToken"],
+                    "error_message": captcha_result["message"],
+                },
+            )
+
+        # 2. Form validation
+        if not form.is_valid():
+            captcha_data = generateCaptchaValueWithToken()
+            return render(
+                request,
+                "ebooking/ebooking_tour_cancellation.html",
+                {
+                    "form": form,
+                    "captcha_value": captcha_data["captchaValue"],
+                    "captcha_token": captcha_data["captchaToken"],
+                    "error_message": None,
+                },
+            )
+
+        # 3. SUCCESS — only valid data reaches here
+        booking = form.booking
+        return redirect("ticket_cancellation_preview", pnr=booking.pnr_number)
+
+    else:
+        captcha_data = generateCaptchaValueWithToken()
+        return render(
+            request,
+            "ebooking/ebooking_tour_cancellation.html",
+            {
+                "form": TourCancellationForm(),
+                "captcha_value": captcha_data["captchaValue"],
+                "captcha_token": captcha_data["captchaToken"],
+                "error_message": None,
+            },
+        )
+
+# --------------------------------------------------- End of Tour Cancellation ------------------------------
+def ebooking_ticket_cancellation_preview(request, pnr):
+    booking = get_object_or_404(DTTDCTourBooking, pnr_number=pnr)
+    user = get_object_or_404(DTTDCUserDetails, booking=booking)
+    passengers = DTTDCTraveller.objects.filter(user=user)
+
+    cancelled_passenger_ids = list(
+        DTTDCTravellerBookingMap.objects.filter(
+            booking=booking,
+            booking_status="cancelled"
+        ).values_list("traveller_id", flat=True)
+    )
+
+    if request.method == "POST":
+
+        #  SELECTED PASSENGERS
+        selected_passenger_ids = request.POST.getlist("selected_passengers")
+        print("selected passengers id -----jay checking-----",selected_passenger_ids)
+
+       
+
+        active_passengers = passengers.exclude(
+            id__in=cancelled_passenger_ids
+        )
+        selected_count = len(selected_passenger_ids)
+
+        if selected_count == 0:
+            messages.error(request, "Please select at least one passenger.")
+            return redirect(request.path)
+
+        
+         #  Get selected & remaining passengers
+        # selected_passengers = passengers.filter(id__in=selected_passenger_ids)
+        remaining_passengers = active_passengers.exclude(id__in=selected_passenger_ids)
+
+        # Define child/adult (based on age)
+        remaining_children = [p for p in remaining_passengers if p.age <= 10 ]
+        remaining_adults = [p for p in remaining_passengers if p.age > 10]
+
+        #  RULE: child cannot travel alone
+        if remaining_children and not remaining_adults:
+            messages.error(request, "Children cannot travel without at least one adult.")
+            return redirect(request.path)
+
+        #  FULL CANCELLATION
+        if selected_count == active_passengers.count():
+            cancellation_type = "full"
+            booking.booking_status = "cancelled"
+
+        #  PARTIAL CANCELLATION
+        else:
+            cancellation_type = "partial"
+            booking.booking_status = "partial_cancelled"
+        booking.save()
+
+        # Create cancellation record
+        DTTDCTourCancellation.objects.update_or_create(
+            tour_booking=booking,
+            defaults={
+                "cancellation_type": cancellation_type,
+                "cancellation_date": timezone.now(),
+                "cancellation_status": "pending"
+            }
+        )
+
+        
+
+        DTTDCTravellerBookingMap.objects.filter(
+            booking=booking,
+            traveller_id__in=selected_passenger_ids
+        ).update(booking_status="cancelled")
+
+
+
+        return redirect("ebooking_ticket_cancel",pnr=booking.pnr_number)
+
+    captcha_data = generateCaptchaValueWithToken()
+   
+    return render(request, "ebooking/ebooking_ticket_cancel.html", {
+        "booking": booking,
+        "user": user,
+        "passengers": passengers,
+        "captcha_value": captcha_data["captchaValue"],
+        "captcha_token": captcha_data["captchaToken"],
+        "cancelled_passenger_ids": cancelled_passenger_ids,
+    })
+
+# ---------------------------------------------------cancellation page ------------------------------
+def ebooking_ticket_cancellation_success(request, pnr):
+    booking = get_object_or_404(DTTDCTourBooking, pnr_number=pnr)
+
+    return render(
+        request,
+        "ebooking/ebooking_cancellation_page.html",
+        {"booking": booking}
+    )
+
+# --------------------------------------------------- Start of Ticket Reprint ------------------------------
+def ebooking_ticket_reprint(request):
     if request.POST:
         print("Inside post method ....")
-    return render("ebooking/ebooking_tour_cancellation.html")
+    return render( request,"ebooking/ebooking_ticket_reprint.html")
+# --------------------------------------------------- End of Ticket Reprint ------------------------------
+
+
+def ebooking_termsandconditionsforcancellation(request):
+    return render( request,"ebooking/ebooking_termsandconditionsforcancellation.html")

@@ -3,92 +3,80 @@
 
 {% block feedback_report %}
 
-<!-- Page Title & Actions -->
 <div class="container-fluid mt-3">
 
+  <!-- Header -->
   <div class="position-relative mb-3">
-
-    <!-- Back Button -->
-    <a href="{% url 'admin_home' %}" class="btn btn-danger position-absolute start-0 top-50 translate-middle-y">
+    <a href="{% url 'admin_home' %}"
+       class="btn btn-danger position-absolute start-0 top-50 translate-middle-y">
       ← Back
     </a>
 
-    <!-- Centered Title -->
     <h4 class="fw-bold text-center mb-0">
       Feedback Report
     </h4>
   </div>
 
-<form method="get" id="feedbackForm">
+  <!-- Filter -->
+  <form method="get" id="feedbackForm">
+    <div class="card p-3 mb-3">
+      <div class="row align-items-end g-3">
 
-  <div class="row mb-3">
-    <div class="col-12">
-      {% if messages %}
-  {% for message in messages %}
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-      {{ message }}
-      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-  {% endfor %}
-{% endif %}
+        <div class="col-lg-2 fw-semibold">
+          Enter Date:
+        </div>
 
-      <div class="card p-3">
+        <div class="col-lg-4 col-md-6">
+          <label class="form-label small">From</label>
+          <input type="date"
+                 name="start_date"
+                 class="form-control"
+                 value="{{ start_date }}">
+        </div>
 
-        <div class="row align-items-end g-3">
+        <div class="col-lg-4 col-md-6">
+          <label class="form-label small">To</label>
+          <input type="date"
+                 name="end_date"
+                 class="form-control"
+                 value="{{ end_date }}">
+        </div>
 
-          <!-- Label -->
-          <div class="col-lg-2 col-md-12 fw-semibold">
-            Enter Date:
-          </div>
-
-          <!-- From -->
-          <div class="col-lg-4 col-md-6 col-12">
-            <label class="form-label mb-0 small">From</label>
-            <input type="date" name="start_date" class="form-control w-100" value="{{ start_date }}">
-          </div>
-
-          <!-- To -->
-          <div class="col-lg-4 col-md-6 col-12">
-            <label class="form-label mb-0 small">To</label>
-            <input type="date" name="end_date" class="form-control w-100" value="{{ end_date }}">
-          </div>
-
-          <!-- Button -->
-          <div class="col-lg-2 col-md-12 col-12 d-flex">
-            <button type="submit" class="btn btn-primary w-100">
-              Generate Report
-            </button>
-          </div>
-
+        <div class="col-lg-2">
+          <button class="btn btn-primary w-100">
+            Generate Report
+          </button>
         </div>
 
       </div>
     </div>
-  </div>
-</form>
-  <!-- Feedback Table -->
+  </form>
+
+  <!-- Messages -->
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-danger alert-dismissible fade show">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <!-- Table -->
   <div class="card shadow-sm">
-    <div class="card-body">
+    <div class="card-body table-responsive">
 
+      <table id="feedbackTable"
+             class="table table-bordered table-hover align-middle w-100">
 
-      <table id="feedbackTable" class="table table-bordered table-hover align-middle w-100">
-
-        <thead class="table-primary text-center align-middle">
+        <thead class="table-primary text-center">
           <tr>
-            <th style="width:4%;">S No.</th>
-            <th style="width:9%;">PNR</th>
-            <th style="width:16%;">Tour Name</th>
-            <th style="width:12%;">Email</th>
-            <th style="width:8%;">Contact</th>
-            <th style="width:6%;">Passengers</th>
-            <th style="width:9%;">Booking Date</th>
-            <th style="width:8%;">Journey Date</th>
-            <th style="width:7%;">Total Fare</th>
-            <th style="width:7%;">Amount Paid</th>
-            <th style="width:7%;">Booking Status</th>
-            <th style="width:7%;">Payment Status</th>
-            <th style="width:5%;">Ticket</th>
-            <th style="width:5%;">Details</th>
+            <th style="width:5%;">S No.</th>
+            <th style="width:15%;">Name</th>
+            <th style="width:20%;">Email</th>
+            <th style="width:15%;">Phone</th>
+            <th style="width:15%;">Feedback Date</th>
+            <th style="width:30%;">Comment</th>
           </tr>
         </thead>
 
@@ -98,140 +86,106 @@
             <td class="text-center fw-semibold">
               {{ forloop.counter }}
             </td>
+
             <td>{{ fb.name }}</td>
-            <td class="text-break">{{ fb.email }}</td>
+
+            <td class="text-break">
+              {{ fb.email }}
+            </td>
+
             <td>{{ fb.phone }}</td>
+
             <td class="text-nowrap">
               {{ fb.feedback_date|date:"d/m/Y h:i A" }}
             </td>
-            <td>
-              <span class="comment-text">
-                {{ fb.comment|truncatechars:120 }}
-              </span>
+
+            <td class="text-break">
+              {{ fb.comment|truncatechars:120 }}
               {% if fb.comment|length > 120 %}
-              <a href="#" class="read-more ms-1" data-bs-toggle="modal"
-                data-bs-target="#commentModal{{ forloop.counter }}">
-                Read More
-              </a>
+                <a href="#"
+                   class="ms-1"
+                   data-bs-toggle="modal"
+                   data-bs-target="#commentModal{{ forloop.counter }}">
+                  Read More
+                </a>
               {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="6" class="text-center text-muted">
+              No feedback found.
             </td>
           </tr>
           {% endfor %}
         </tbody>
-        
-
-
       </table>
-      {% for fb in feedback_list %}
-        <div class="modal fade" id="commentModal{{ forloop.counter }}" tabindex="-1">
-          <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title">Full Feedback</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-              </div>
-              <div class="modal-body text-break">
-                {{ fb.comment }}
-              </div>
-            </div>
-          </div>
-        </div>
-        {% endfor %}
 
-
+      <!-- Total -->
       <div class="mt-3 d-flex justify-content-end">
-        <div class="px-3 py-2 border rounded fw-semibold" style="background-color: rgb(186, 216, 117);">
+        <div class="px-3 py-2 border rounded fw-semibold"
+             style="background:#bad875;">
           Total Feedback Received: {{ feedback_list|length }}
         </div>
       </div>
+
     </div>
   </div>
+</div>
 
-  <style>
-    @media (max-width: 576px) {
+<!-- Modals -->
+{% for fb in feedback_list %}
+<div class="modal fade" id="commentModal{{ forloop.counter }}" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Full Feedback</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body text-break">
+        {{ fb.comment }}
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
 
-      #feedbackTable th,
-      #feedbackTable td {
-        word-wrap: break-word;
-        word-break: break-word;
-        white-space: normal;
-      }
-    }
-
-    #feedbackTable {
-      table-layout: fixed;
-      width: 100%;
-    }
-
-    #feedbackTable td.text-break {
-      white-space: normal;
-      word-break: break-word;
-    }
-  </style>
-
-  <script>
+<!-- DataTable -->
+<script>
 $(document).ready(function () {
-  if (!$.fn.DataTable.isDataTable('#feedbackTable')) {
-
-    let table = $('#feedbackTable').DataTable({
-      dom:
-        "<'row mb-2'<'col-md-6 d-flex align-items-center'l><'col-md-6 d-flex justify-content-end'fB>>" +
-        "<'row'<'col-12'tr>>" +
-        "<'row mt-2'<'col-md-5'i><'col-md-7'p>>",
-
-      buttons: [
-        {
-          extend: 'excelHtml5',
-          text: 'Download Report',
-          className: 'btn btn-success btn-sm ms-2',
-          title: 'Feedback_Report_' + new Date().toISOString().slice(0, 10),
-          exportOptions: {
-            columns: [0, 1, 2, 3, 4, 5]
-          }
+  $('#feedbackTable').DataTable({
+    pageLength: 10,
+    lengthMenu: [10, 25, 50, 100],
+    responsive: false,
+    dom:
+      "<'row mb-2'<'col-md-6'l><'col-md-6 d-flex justify-content-end'fB>>" +
+      "<'row'<'col-12'tr>>" +
+      "<'row mt-2'<'col-md-5'i><'col-md-7'p>>",
+    buttons: [
+      {
+        extend: 'excelHtml5',
+        text: 'Download Report',
+        className: 'btn btn-success btn-sm ms-2',
+        title: 'Feedback_Report_' + new Date().toISOString().slice(0,10),
+        exportOptions: {
+          columns: [0,1,2,3,4,5]
         }
-      ],
-
-      // 🔴 FORCE THESE
-      paging: true,
-      info: true,
-      lengthChange: true,
-
-      pageLength: 10,
-      lengthMenu: [10, 25, 50, 100],
-
-      // 🔴 IMPORTANT: disable responsive (it breaks paging calc here)
-      responsive: false,
-
-      deferRender: true
-    });
-
-    // 🔥 ONE FINAL RECALC AFTER PAINT
-    requestAnimationFrame(() => {
-      table.draw(false);
-    });
-  }
+      }
+    ]
+  });
 });
-
-
 </script>
 
 <script>
 document.getElementById('feedbackForm').addEventListener('submit', function (e) {
-  const startDate = document.querySelector('input[name="start_date"]').value;
-  const endDate = document.querySelector('input[name="end_date"]').value;
+  const startDate = document.querySelector('[name="start_date"]').value;
+  const endDate = document.querySelector('[name="end_date"]').value;
 
   if (!startDate || !endDate) {
-    e.preventDefault(); // stop form submit
-    alert('Please select both From and To dates to generate the report.');
+    e.preventDefault();
+    alert('Please select both From and To dates.');
   }
 });
 </script>
-<script>
-window.addEventListener('pageshow', function () {
-  document.querySelector('input[name="start_date"]').value = '';
-  document.querySelector('input[name="end_date"]').value = '';
-});
-</script>
 
-
-  {% endblock %}
+{% endblock %}

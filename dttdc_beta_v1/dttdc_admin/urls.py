@@ -54,4 +54,21 @@ urlpatterns = [
 # -------------------------------------------------------Admin Tour Booking Report----------------------------------------------------------    
     path("admin_tour_booking_report/",views.admin_tour_booking_report,name="admin_tour_booking_report"),
 
+    # -------------------------------------------------------Admin Ticket Cancellation Requests----------------------------------------------------------    
+    path("admin_ticket_cancellation_requests/",views.admin_ticket_cancellation_requests,name="ticket_cancellation_requests"),
+
+    # -------------------------------------------------------Admin cancellation detail preview----------------------------------------------------------    
+     path("admin_cancellation_details_preview/<str:pnr>/",views.admin_cancellation_details_preview,name="admin_cancellation_details_preview"),
+    # -------------------------------------------------------Admin transaction Report----------------------------------------------------------    
+     path("admin_transaction_report",views.admin_transaction_report,name="admin_transaction_report"),
+
+    # -------------------------------------------------------Admin transaction Details Preview----------------------------------------------------------    
+      path("admin_transaction_details_preview/<str:pnr_number>/",views.admin_transaction_details_preview,name="admin_transaction_details_preview"),
+      # -------------------------------------------------------Admin ticket cancellation report----------------------------------------------------------    
+      path("admin_ticket_cancellation_report",views.admin_ticket_cancellation_report,name="admin_ticket_cancellation_report"),
+
+    ### --------------------------------- view tour booking report ------------- added by shubhi####
+    path("ticket/view/<str:pnr>/", views.admin_view_tour_ticket, name="admin_view_tour_ticket"),
+
+
 ]

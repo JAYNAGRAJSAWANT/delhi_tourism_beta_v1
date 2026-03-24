@@ -1,0 +1,71 @@
+{% extends "ebooking/base_ebooking.html" %}
+{% load static %}
+
+{% block ebooking_cancel_page %}
+
+<div class="container">
+  <div class="row m-3">
+
+    <!-- SIDEBAR -->
+    <aside class="col-12 col-md-3">
+      {% include "ebooking/components/tour_booking_sidebar.html" %}
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <div class="col-lg-9">
+      <div class="card mt-4 shadow-sm">
+
+        <!-- HEADER -->
+        <div class="card-header text-center bg-light py-4"
+          style="border-bottom: 3px solid #198754; border-radius: .5rem .5rem 0 0;">
+          <h5 class="fw-bold mb-0 text-success">
+            Cancellation Submitted
+          </h5>
+        </div>
+
+        <!-- BODY -->
+        <div class="card-body text-center d-flex flex-column justify-content-center"
+             style="min-height: 40vh;">
+
+          <!-- ICON -->
+          <div class="mb-3">
+            <i class="bi bi-check-circle-fill text-success" style="font-size: 3rem;"></i>
+          </div>
+
+          <!-- MESSAGE -->
+          <div class="fs-4 fw-bold text-primary mb-2">
+            Your tour cancellation request has been submitted.
+          </div>
+
+          <div class="fs-5 text-muted mb-4">
+            Refunds for cancellations made online will be processed
+            according to the applicable rules.
+          </div>
+
+          <!-- EXTRA INFO -->
+          <div class="alert alert-warning d-inline-block mx-auto px-4">
+            <strong>PNR:</strong> {{ booking.pnr_number }} <br>
+            <strong>Cancellation Type:</strong>
+            {% if booking.cancellation.cancellation_type == "full" %}
+              Full Cancellation
+            {% else %}
+              Partial Cancellation
+            {% endif %}
+          </div>
+
+          <!-- ACTION BUTTON -->
+          <div class="mt-4">
+            <a href="{% url 'all_tour_categories' %}" class="btn btn-primary px-4">
+              Go to Home
+            </a>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}

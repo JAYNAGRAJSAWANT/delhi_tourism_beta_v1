@@ -1,0 +1,253 @@
+{% extends "dttdc_admin/base_admin.html" %}
+{% load static %}
+
+{% block ticket_cancellation_requests %}
+
+<div class="container-fluid mt-3">
+
+  <!-- Header -->
+  <div class="position-relative mb-3">
+    <a href="{% url 'admin_home' %}" class="btn btn-danger position-absolute start-0 top-50 translate-middle-y">
+      ← Back
+    </a>
+
+    <h4 class="fw-bold text-center mb-0">
+      Ticket Cancellation Requests
+    </h4>
+  </div>
+
+  <!-- Date Filter -->
+  <form method="get" id="reportForm">
+    <div class="card p-3 mb-3">
+      <div class="row align-items-end g-3">
+
+        <div class="col-lg-2 fw-semibold">
+          Enter Date:
+        </div>
+
+        <div class="col-lg-4 col-md-6">
+          <label class="form-label small mb-0">From</label>
+          <input type="date" name="start_date" class="form-control" value="{{ start_date }}">
+        </div>
+
+        <div class="col-lg-4 col-md-6">
+          <label class="form-label small mb-0">To</label>
+          <input type="date" name="end_date" class="form-control" value="{{ end_date }}">
+        </div>
+
+        <div class="col-lg-2">
+          <button type="submit" class="btn btn-primary w-100">
+            Generate Report
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </form>
+
+  <!-- Table -->
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <div class="table-responsive">
+        <table id="cancellationTable" class="table table-bordered table-hover align-middle w-100">
+
+          <thead class="table-primary text-center">
+            <tr>
+              <th style="width:3%;">S No.</th> <!-- 3% -->
+              <th style="width:9%;">PNR</th> <!-- 9% -->
+              <th style="width:10%;">Ticket Number</th> <!-- 17% -->
+              <th style="width:13%;">Email</th> <!-- 13% -->
+              <th style="width:9%;">Booking Date</th> <!-- 9% -->
+              <th style="width:8%;">Journey Date</th> <!-- 8% -->
+              <th style="width:11%;">Cancellation Date</th> <!-- 8% -->
+              <th style="width:11%;">Cancellation Status</th> <!-- 9% -->
+              <th style="width:11%;">Cancellation Type</th> <!-- 9% -->
+              <th style="width:4%;">Details</th> <!-- 5% -->
+
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for booking in booking_list %}
+            <tr>
+
+              <!-- S No -->
+              <td class="text-center fw-semibold">
+                {{ forloop.counter }}
+              </td>
+
+              <!-- PNR -->
+              <td class="fw-semibold">
+                {{ booking.pnr_number }}
+              </td>
+
+              <!-- Ticket Number / Tour -->
+              <td class="text-wrap">
+                {{ booking.ticket_number }}
+              </td>
+
+              <!-- Email -->
+              <td>
+                {{ booking.user_details.email }}
+              </td>
+
+              <!-- Booking Date -->
+              <td class="text-nowrap text-center">
+                {{ booking.booking_date|date:"d/m/Y" }}
+              </td>
+
+              <!-- Journey Date -->
+              <td class="text-nowrap text-center">
+                {{ booking.user_details.tour_journey_date|date:"d/m/Y" }}
+              </td>
+
+              <!-- Cancellation Date -->
+              <td class="text-nowrap text-center">
+                {% if booking.cancellation %}
+                {{ booking.cancellation.cancellation_date|date:"d/m/Y" }}
+                {% else %}
+                —
+                {% endif %}
+              </td>
+
+              <!-- Cancellation Status -->
+              <td class="text-center">
+                {% if booking.cancellation %}
+                <span class="badge
+                    {% if booking.cancellation.cancellation_status == 'approved' %}
+                      bg-success
+                    {% elif booking.cancellation.cancellation_status == 'rejected' %}
+                      bg-danger
+                    {% else %}
+                      bg-warning text-dark
+                    {% endif %}
+                  ">
+                  {{ booking.cancellation.cancellation_status|title }}
+                </span>
+                {% else %}
+                <span class="badge bg-secondary">Not Requested</span>
+                {% endif %}
+              </td>
+
+
+              <td class="text-center">
+                {% if booking.cancellation %}
+                {{ booking.cancellation.cancellation_type|title }}
+                {% else %}
+                —
+                {% endif %}
+              </td>
+
+
+
+              <!-- Details -->
+              <td class="text-center">
+                <a href="{% url 'admin_cancellation_details_preview' booking.pnr_number %}"
+                  class="btn btn-sm btn-primary">
+                  View
+                </a>
+              </td>
+
+            </tr>
+            {% empty %}
+
+            {% endfor %}
+          </tbody>
+
+
+        </table>
+      </div>
+      <div class="mt-3 d-flex justify-content-end">
+        <div class="px-3 py-2 border rounded fw-semibold" style="background:#bad875;">
+          Total Cancellation Requests: {{ booking_list|length }}
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- Styles -->
+<style>
+  /* Required for percentage column widths */
+  #cancellationTable {
+    table-layout: fixed;
+  }
+
+  /* Default cell handling */
+  #cancellationTable th,
+  #cancellationTable td {
+    overflow: hidden;
+  }
+
+  /* Allow wrapping only where explicitly needed */
+  #cancellationTable td.text-wrap {
+    white-space: normal;
+  }
+</style>
+
+
+
+<!-- DataTable -->
+<!-- DataTable -->
+<script>
+  $(document).ready(function () {
+
+    $('#cancellationTable').DataTable({
+      language: {
+        emptyTable: "No cancellation requests found."
+      },
+
+
+      dom:
+        "<'row mb-2'<'col-md-6'l><'col-md-6 d-flex justify-content-end align-items-center'fB>>" +
+        "<'row'<'col-12'tr>>" +
+        "<'row mt-2'<'col-md-5'i><'col-md-7'p>>",
+
+      buttons: [
+        {
+          extend: 'excelHtml5',
+          text: 'Download Cancellation Report',
+          className: 'btn btn-success btn-sm ms-2',
+          title: 'Ticket_Cancellation_Report_' + new Date().toISOString().slice(0, 10),
+        }
+      ],
+
+      pageLength: 10,
+      lengthMenu: [10, 25, 50, 100],
+      ordering: true,
+      responsive: false,
+      autoWidth: false
+
+
+    });
+
+
+
+  });
+
+</script>
+
+<!-- Date Validation -->
+<script>
+  document.getElementById('reportForm')?.addEventListener('submit', function (e) {
+    const startDate = document.querySelector('input[name="start_date"]')?.value;
+    const endDate = document.querySelector('input[name="end_date"]')?.value;
+
+    if (!startDate || !endDate) {
+      e.preventDefault();
+      alert('Please select both From and To dates.');
+      return;
+    }
+
+    if (startDate > endDate) {
+      e.preventDefault();
+      alert('From date cannot be later than To date.');
+    }
+  });
+
+</script>
+
+
+{% endblock %}

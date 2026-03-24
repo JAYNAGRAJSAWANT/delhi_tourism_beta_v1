@@ -1,6 +1,6 @@
 import re
 from django import forms
-from .models import DTTDCTourCategory, DTTDCTour, DTTDCTraveller, DTTDCUserDetails
+from .models import DTTDCTourBooking, DTTDCTourCategory, DTTDCTour, DTTDCTraveller, DTTDCUserDetails
 from django.core.exceptions import ValidationError
 from django.core.files.images import get_image_dimensions
 import imghdr
@@ -568,11 +568,66 @@ class TourAvailabilityForm(forms.Form):
 # ----------------------------------Tour Cancellation Form---------------------------------------
 # ==================================================================================================
 
-class TourCancellationForm(forms.Form):
+class TourCancellationForm(forms.ModelForm):
     email = forms.EmailField(
-        widget=forms.EmailInput(attrs={"class": "form-control"}),
+        widget=forms.EmailInput(attrs={"class": "form-control",
+                "placeholder": "Please enter email",}),
         error_messages={
             "required": "Email address is required.",
             "invalid": "Enter a valid email address.",
         },
     )
+
+    tour_journey_date = forms.DateField(
+        widget=forms.DateInput(attrs={"type": "date", "class": "form-control"}),
+        error_messages={"required": "Journey date is required."},
+    )
+
+
+    class Meta:
+        model = DTTDCTourBooking
+        fields = ["pnr_number"]
+        widgets = {
+            "pnr_number": forms.TextInput(attrs={"class": "form-control", "placeholder": "Please enter PNR",}),
+        }
+         
+    def validate_unique(self):
+        """
+        Disable Django's unique=True validation.
+        This form is for lookup, not creation.
+        """
+        return
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        pnr = cleaned_data.get("pnr_number")
+        email = cleaned_data.get("email")
+        journey_date = cleaned_data.get("tour_journey_date")
+
+        if not pnr or not email or not journey_date:
+            return cleaned_data
+
+        try:
+            booking = DTTDCTourBooking.objects.select_related(
+                "user_details"
+            ).get(pnr_number=pnr)
+
+        except DTTDCTourBooking.DoesNotExist:
+            raise forms.ValidationError("Invalid PNR number.")
+
+        if not hasattr(booking, "user_details"):
+            raise forms.ValidationError("Passenger details not found for this booking.")
+
+        user_details = booking.user_details
+
+        if user_details.email.lower() != email.lower():
+            raise forms.ValidationError("Email does not match booking records.")
+
+        if user_details.tour_journey_date != journey_date:
+            raise forms.ValidationError("Journey date does not match booking records.")
+
+        # Attach objects for later use (ticket preview)
+        self.booking = booking
+        self.user_details = user_details
+
+        return cleaned_data

@@ -1,6 +1,6 @@
 {% load static %}
 
-<div class="container m-5">
+<div class="container">
     <div class="SideTitle d-flex align-items-center text-white justify-content-center pb-2 h1">
         Admin Panel
     </div>
@@ -30,17 +30,17 @@
 
             <li class="mt-1">
                 <i class="fa fa-caret-right m-1"></i>
-                <a href="#" class="tg">Transaction Report</a>
+                <a href="{% url 'admin_transaction_report' %}" class="tg">Transaction Report</a>
             </li>
 
             <li class="mt-1">
                 <i class="fa fa-caret-right m-1"></i>
-                <a href="#" class="tg">Ticket Cancellation Report</a>
+                <a href="{% url 'admin_ticket_cancellation_report' %}" class="tg">Ticket Cancellation Report</a>
             </li>
 
             <li class="mt-1">
                 <i class="fa fa-caret-right m-1"></i>
-                <a href="#" class="tg">
+                <a href="{% url 'ticket_cancellation_requests' %}" class="tg">
                     Ticket Cancellation Requests
                 </a>
             </li>

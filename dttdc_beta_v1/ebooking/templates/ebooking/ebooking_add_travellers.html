@@ -37,6 +37,17 @@
             <form method="post" id="passengerForm">
               {% csrf_token %}
 
+              {% if messages %}
+                <div id="django-messages">
+                  {% for message in messages %}
+                    <div class="alert alert-danger">
+                      {{ message }}
+                    </div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+
+
               <div class="ticket-section">
 
                 <!-- Passenger Count -->
@@ -52,37 +63,106 @@
 
                 <!-- Passenger Rows Container -->
                 <div id="passengerContainer">
-                  {% for traveller in existing_travellers %}
-                  <div class="passenger-row" data-index="{{ forloop.counter }}">
-                    <div class="row">
-                      <div class="col-md-4">
-                        <label class="form-label">Full Name <span class="text-danger">*</span></label>
-                        <input type="text" name="passenger_{{ forloop.counter }}_name" class="form-control"
-                          value="{{ traveller.name }}" required>
-                      </div>
-                      <div class="col-md-4">
-                        <label class="form-label">Age <span class="text-danger">*</span></label>
-                        <input type="number" name="passenger_{{ forloop.counter }}_age" class="form-control"
-                          value="{{ traveller.age }}" required>
-                      </div>
-                      <div class="col-md-3">
-                        <label class="form-label">Gender <span class="text-danger">*</span></label>
-                        <select name="passenger_{{ forloop.counter }}_gender" class="form-control" required>
-                          <option value="">Select gender</option>
-                          <option value="Male" {% if traveller.gender == "Male" %}selected{% endif %}>Male</option>
-                          <option value="Female" {% if traveller.gender == "Female" %}selected{% endif %}>Female</option>
-                          <option value="Other" {% if traveller.gender == "Other" %}selected{% endif %}>Other</option>
-                        </select>
-                      </div>
-                      <div class="col-md-4 mt-3">
-                        <label class="form-label">Passport</label>
-                        <input type="text" name="passenger_{{ forloop.counter }}_passport" class="form-control"
-                          value="{{ traveller.passport }}">
-                      </div>
-                    </div>
-                  </div>
-                  {% endfor %}
-                </div>
+
+  {# 🔥 1. ERROR CASE → show user-entered data (POST) #}
+  {% if posted_travellers %}
+    {% for traveller in posted_travellers %}
+      <div class="passenger-row" data-index="{{ traveller.index }}">
+        <div class="row">
+
+          <div class="col-md-4">
+            <label class="form-label">Full Name <span class="text-danger">*</span></label>
+            <input type="text"
+                   name="passenger_{{ traveller.index }}_name"
+                   class="form-control"
+                   value="{{ traveller.name }}"
+                   required>
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label">Age <span class="text-danger">*</span></label>
+            <input type="number"
+                   name="passenger_{{ traveller.index }}_age"
+                   class="form-control"
+                   value="{{ traveller.age }}"
+                   required>
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label">Gender <span class="text-danger">*</span></label>
+            <select name="passenger_{{ traveller.index }}_gender"
+                    class="form-control"
+                    required>
+              <option value="">Select gender</option>
+              <option value="Male" {% if traveller.gender == "Male" %}selected{% endif %}>Male</option>
+              <option value="Female" {% if traveller.gender == "Female" %}selected{% endif %}>Female</option>
+              <option value="Other" {% if traveller.gender == "Other" %}selected{% endif %}>Other</option>
+            </select>
+          </div>
+
+          <div class="col-md-4 mt-3">
+            <label class="form-label">Passport</label>
+            <input type="text"
+                   name="passenger_{{ traveller.index }}_passport"
+                   class="form-control"
+                   value="{{ traveller.passport }}">
+          </div>
+
+        </div>
+      </div>
+    {% endfor %}
+
+  {# ✅ 2. NORMAL GET CASE → show saved DB travellers #}
+  {% elif existing_travellers %}
+    {% for traveller in existing_travellers %}
+      <div class="passenger-row" data-index="{{ forloop.counter }}">
+        <div class="row">
+
+          <div class="col-md-4">
+            <label class="form-label">Full Name <span class="text-danger">*</span></label>
+            <input type="text"
+                   name="passenger_{{ forloop.counter }}_name"
+                   class="form-control"
+                   value="{{ traveller.name }}"
+                   required>
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label">Age <span class="text-danger">*</span></label>
+            <input type="number"
+                   name="passenger_{{ forloop.counter }}_age"
+                   class="form-control"
+                   value="{{ traveller.age }}"
+                   required>
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label">Gender <span class="text-danger">*</span></label>
+            <select name="passenger_{{ forloop.counter }}_gender"
+                    class="form-control"
+                    required>
+              <option value="">Select gender</option>
+              <option value="Male" {% if traveller.gender == "Male" %}selected{% endif %}>Male</option>
+              <option value="Female" {% if traveller.gender == "Female" %}selected{% endif %}>Female</option>
+              <option value="Other" {% if traveller.gender == "Other" %}selected{% endif %}>Other</option>
+            </select>
+          </div>
+
+          <div class="col-md-4 mt-3">
+            <label class="form-label">Passport</label>
+            <input type="text"
+                   name="passenger_{{ forloop.counter }}_passport"
+                   class="form-control"
+                   value="{{ traveller.passport }}">
+          </div>
+
+        </div>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+</div>
+
 
 
                 <!-- Add Passenger Button (Below rows) -->
@@ -113,7 +193,7 @@
                 </div>
 
                 <div>
-                  <button type="submit" class="btn btn-primary px-4">
+                  <button type="submit" class="btn btn-primary px-4 "onclick="clearMessages()">
                     Save & Next
                   </button>
                 </div>
@@ -129,7 +209,12 @@
     </div>
   </div>
 </div>
-
+<script>
+function clearMessages() {
+  const msg = document.getElementById("django-messages");
+  if (msg) msg.remove();
+}
+</script>
 
 <style>
   .text-muted.small {
@@ -404,6 +489,17 @@
   });
 </script>
 
+<script>
+  // 🔥 clear old messages on successful navigation
+  window.addEventListener("pageshow", function (event) {
+    if (event.persisted) {
+      const msg = document.getElementById("django-messages");
+      if (msg) {
+        msg.remove();
+      }
+    }
+  });
+</script>
 
 
 {% endblock %}
