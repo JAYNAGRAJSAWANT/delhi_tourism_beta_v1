@@ -32,3 +32,5 @@ urlpatterns = [
     path("ticket/<str:pnr>/download/", views.download_ticket_pdf, name="download_ticket_pdf"),
 
 ]
+
+

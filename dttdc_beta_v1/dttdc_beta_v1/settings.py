@@ -139,7 +139,7 @@ STATIC_URL = '/static/'
 # ]
 
 # For collectstatic (mainly for production)
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_ROOT = BASE_DIR / 'static'
 
 
 MEDIA_URL = '/media/'
