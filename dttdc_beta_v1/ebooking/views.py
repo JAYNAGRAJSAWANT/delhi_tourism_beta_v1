@@ -14,7 +14,7 @@ from xhtml2pdf import pisa
 import os
 from django.conf import settings
 from django.http import FileResponse, Http404
-
+from datetime import datetime
 
 from .models import (
     DTTDCCancellationHistory,
@@ -744,6 +744,73 @@ def save_ticket_pdf(booking):
         pisa.CreatePDF(html, dest=f,
         link_callback=link_callback)
 
+
+def ebooking_ticket_reprint(request):
+
+    if request.method == "GET":
+        data = generateCaptchaValueWithToken()
+        return render(
+            request,
+            "ebooking/ebooking_ticket_reprint.html",
+            {
+                "captcha_value": data["captchaValue"],
+                "captcha_token": data["captchaToken"],
+            },
+        )
+
+    # POST
+    pnr = request.POST.get("pnr", "").strip().upper()
+    journey_date = request.POST.get("journey_date", "").strip()
+    user_captcha_input = request.POST.get("user_captcha_input")
+    captcha_token = request.POST.get("captchaToken")
+
+    # ✅ CAPTCHA
+    captcha_result = validate_captcha(user_captcha_input, captcha_token)
+    if captcha_result["status"] != "success":
+        messages.error(request, "Invalid captcha")
+        return redirect("ebooking_ticket_reprint")
+
+    # ✅ BOOKING
+    try:
+        booking = DTTDCTourBooking.objects.select_related("user_details").get(
+            pnr_number=pnr
+        )
+    except DTTDCTourBooking.DoesNotExist:
+        messages.error(request, "Invalid PNR Number")
+        return redirect("ebooking_ticket_reprint")
+
+    # ✅ DATE
+    try:
+        input_date = datetime.strptime(journey_date, "%Y-%m-%d").date()
+    except:
+        messages.error(request, "Invalid date format")
+        return redirect("ebooking_ticket_reprint")
+    # ✅ ADD HERE
+    if input_date < input_date.today():
+        return _render_with_error(request, "Past dates are not allowed")
+    if booking.user_details.tour_journey_date != input_date:
+        messages.error(request, "Journey date does not match")
+        return redirect("ebooking_ticket_reprint")
+
+    # ✅ STATUS
+    if booking.booking_status != "paid":
+        messages.error(request, "Ticket not available")
+        return redirect("ebooking_ticket_reprint")
+
+    # ✅ SUCCESS
+    return redirect("view_ticket", pnr=booking.pnr_number)
+
+def _render_with_error(request, message):
+    data = generateCaptchaValueWithToken()
+    return render(
+        request,
+        "ebooking/ebooking_ticket_reprint.html",
+        {
+            "captcha_value": data["captchaValue"],
+            "captcha_token": data["captchaToken"],
+            "error": message,
+        },
+    )
 ################################################################################
 #### shubhi code ends here ################ 
 def reduce_seats_after_after_payment(booking):                               
@@ -1020,10 +1087,10 @@ def ebooking_ticket_cancellation_success(request, pnr):
     )
 
 # --------------------------------------------------- Start of Ticket Reprint ------------------------------
-def ebooking_ticket_reprint(request):
-    if request.POST:
-        print("Inside post method ....")
-    return render( request,"ebooking/ebooking_ticket_reprint.html")
+# def ebooking_ticket_reprint(request):
+#     if request.POST:
+#         print("Inside post method ....")
+#     return render( request,"ebooking/ebooking_ticket_reprint.html")
 # --------------------------------------------------- End of Ticket Reprint ------------------------------
 
 
