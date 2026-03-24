@@ -297,8 +297,19 @@ def admin_add_tour(request):
             # ✅ GET MULTIPLE CHECKBOX VALUES
             schedule_days = request.POST.getlist("schedule")
             tour.schedule = ",".join(schedule_days) if schedule_days else ""
+            # Timing conversion
+            timing_from = request.POST.get("timing_from")
+            timing_to = request.POST.get("timing_to")
 
+            if timing_from and timing_to:
+                from_time = datetime.strptime(timing_from, "%H:%M").strftime("%I:%M %p")
+                to_time = datetime.strptime(timing_to, "%H:%M").strftime("%I:%M %p")
+
+                tour.timing = f"{from_time} - {to_time}"
             tour.save()
+
+            print("FROM:", timing_from)
+            print("TO:", timing_to)
             messages.success(request, "Tour added successfully.")
             return redirect("add_tour")
         else:
@@ -367,6 +378,15 @@ def admin_edit_tour(request, pk):
         form = AddTourForm(request.POST, request.FILES, instance=tour)
         if form.is_valid():
             tour_obj = form.save(commit=False)
+
+            timing_from = request.POST.get("timing_from")
+        timing_to = request.POST.get("timing_to")
+
+        if timing_from and timing_to:
+            from_time = datetime.strptime(timing_from, "%H:%M").strftime("%I:%M %p")
+            to_time = datetime.strptime(timing_to, "%H:%M").strftime("%I:%M %p")
+
+            tour_obj.timing = f"{from_time} - {to_time}"
 
             # Handle multiple checkbox schedule values
             schedule_days = request.POST.getlist("schedule")
