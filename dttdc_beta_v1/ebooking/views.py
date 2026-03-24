@@ -83,7 +83,32 @@ def ebooking_all_tours(request, category_id):
 def ebooking_tour_details(request, tour_id):
     tour = get_object_or_404(DTTDCTour, id=tour_id, tour_status="active")
 
-    return render(request, "ebooking/ebooking_tour.html", {"tour": tour})
+    CGST_RATE = Decimal("0.025")
+    SGST_RATE = Decimal("0.025")
+
+    # Adult calculation
+    adult_base = Decimal(tour.fare_adult)
+    adult_cgst = adult_base * CGST_RATE
+    adult_sgst = adult_base * SGST_RATE
+    adult_total = adult_base + adult_cgst + adult_sgst
+
+    # Child calculation
+    child_base = Decimal(tour.fare_child)
+    child_cgst = child_base * CGST_RATE
+    child_sgst = child_base * SGST_RATE
+    child_total = child_base + child_cgst + child_sgst
+
+    context = {
+        "tour": tour,
+        "adult_cgst": adult_cgst,
+        "adult_sgst": adult_sgst,
+        "adult_total": adult_total,
+        "child_cgst": child_cgst,
+        "child_sgst": child_sgst,
+        "child_total": child_total,
+    }
+
+    return render(request, "ebooking/ebooking_tour.html", context)
 
 
 # -----------------------------Start Booking View-------------------------------
