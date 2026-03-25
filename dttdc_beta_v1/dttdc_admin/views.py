@@ -758,18 +758,10 @@ def admin_cancellation_details_preview(request, pnr):
                 )    
 
     total_refund = (
-        cancellation_history.first().cancellation_amount
-        if cancellation_history.exists()
+        cancellation.cancellation_amount
+        if cancellation and cancellation.cancellation_amount
         else 0
     ) 
-
-    refund_map = {
-                ch.traveller_id: ch.cancellation_amount
-                for ch in cancellation_history
-                if ch.traveller_id
-            } 
-    
-   
 
     if request.method == "POST":
         refund_amount = request.POST.get("refund_amount")
@@ -820,12 +812,12 @@ def admin_cancellation_details_preview(request, pnr):
                             booking=booking,
                             traveller=traveller,
                             cancellation_type=cancellation_type,
-                            cancellation_amount=refund_amount,
                             created_at=timezone.now()
                         )
             
             if cancellation:
              cancellation.cancellation_status = "completed"
+             cancellation.cancellation_amount = refund_amount
              cancellation.save()
 
              
@@ -845,7 +837,7 @@ def admin_cancellation_details_preview(request, pnr):
             "cancelled_passenger_ids": cancelled_passenger_ids,
             "days_since_booking": days_since_booking,
             "cancellation_history": cancellation_history, 
-            "refund_map": refund_map,
+        
             "total_refund": total_refund,
             
         }

@@ -17,24 +17,55 @@
         <div class="mt-1 px-4 h4"><div class="mb-4"><h1 class="text-dark fw-bold text-center border-bottom pb-2" style="font-size: 1.3rem;">{{ category.category_name }}</h1></div></div>
 
             <div class="row">
-            {% for t in tours %}
-                <div class="col-lg-3 col-md-6 col-sm-12 mb-4">
-                  <a href="{% url 'tour' t.id %}" class="text-decoration-none text-dark">
-                <div class="img-thumbnail">
-                    <img src="{{ t.tour_image.url }}" class="card-img-top" style="max-height:180px; object-fit:cover;"  alt="{{ t.tour_name }}">
-                    <div class="text-center mt-2">
-                    <b class="tour-name">{{ t.tour_name }}</b>
-                    </div>
-                </div></a>
-                </div>
-            {% endfor %}
-            </div>
+  {% for t in tours %}
+    <div class="col-lg-3 col-md-6 col-sm-12 mb-4">
+      <a href="{% url 'tour' t.id %}" class="text-decoration-none text-dark">
+        <div class="tour-card card shadow-sm h-100">
+          <!-- Image container respects banner aspect ratio -->
+          <div class="tour-img-wrapper">
+            <img src="{{ t.tour_image.url }}" class="card-img-top" alt="{{ t.tour_name }}">
+          </div>
+
+          <!-- Tour Name -->
+          <div class="card-body text-center py-2">
+            <b class="tour-name">{{ t.tour_name }}</b>
+          </div>
+        </div>
+      </a>
+    </div>
+  {% endfor %}
+</div>
 
       </div>
     </section>
 
   </div>
 </div>
+
+<style>
+  .tour-card {
+  border-radius: 0.5rem;
+  overflow: hidden;
+  transition: transform 0.3s;
+}
+
+.tour-card:hover {
+  transform: translateY(-5px);
+}
+
+.tour-img-wrapper {
+  width: 100%;
+  aspect-ratio: 16 / 9; /* Banner aspect ratio */
+  overflow: hidden;
+}
+
+.tour-img-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+</style>
 {% endblock %}
 
 

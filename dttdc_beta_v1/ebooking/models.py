@@ -338,6 +338,11 @@ class DTTDCTourCancellation(models.Model):
         default="pending"
     )
 
+    cancellation_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2
+    )
+
     admin_approval_date = models.DateTimeField(
         null=True,
         blank=True
@@ -378,10 +383,7 @@ class DTTDCCancellationHistory(models.Model):
         choices=CANCELLATION_TYPE_CHOICES
     )
 
-    cancellation_amount = models.DecimalField(
-        max_digits=10,
-        decimal_places=2
-    )
+   
 
     created_at = models.DateTimeField(
         default=timezone.now

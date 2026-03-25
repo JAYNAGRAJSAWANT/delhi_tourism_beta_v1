@@ -1021,6 +1021,10 @@ def ebooking_ticket_cancellation_preview(request, pnr):
     user = get_object_or_404(DTTDCUserDetails, booking=booking)
     passengers = DTTDCTraveller.objects.filter(user=user)
 
+    existing_cancellation = DTTDCTourCancellation.objects.filter(
+        tour_booking=booking
+    ).first()
+
     cancelled_passenger_ids = list(
         DTTDCTravellerBookingMap.objects.filter(
             booking=booking,
@@ -1028,6 +1032,26 @@ def ebooking_ticket_cancellation_preview(request, pnr):
         ).values_list("traveller_id", flat=True)
     )
 
+
+    if existing_cancellation:
+        messages.error(
+            request,
+            "Cancellation already done for this booking. You cannot modify it again."
+        )
+
+        captcha_data = generateCaptchaValueWithToken()
+
+        return render(request, "ebooking/ebooking_ticket_cancel.html", {
+            "booking": booking,
+            "user": user,
+            "passengers": passengers,
+            "captcha_value": captcha_data["captchaValue"],
+            "captcha_token": captcha_data["captchaToken"],
+            "cancelled_passenger_ids": cancelled_passenger_ids,
+            "existing_cancellation": existing_cancellation,
+        })
+
+    
     if request.method == "POST":
 
         #  SELECTED PASSENGERS
@@ -1076,7 +1100,7 @@ def ebooking_ticket_cancellation_preview(request, pnr):
             defaults={
                 "cancellation_type": cancellation_type,
                 "cancellation_date": timezone.now(),
-                "cancellation_status": "pending"
+                "cancellation_status": "pending","cancellation_amount": 0
             }
         )
 
@@ -1100,6 +1124,7 @@ def ebooking_ticket_cancellation_preview(request, pnr):
         "captcha_value": captcha_data["captchaValue"],
         "captcha_token": captcha_data["captchaToken"],
         "cancelled_passenger_ids": cancelled_passenger_ids,
+        "existing_cancellation": existing_cancellation,
     })
 
 # ---------------------------------------------------cancellation page ------------------------------

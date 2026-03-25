@@ -12,14 +12,14 @@
                 This payment was already confirmed earlier. No further action is required.
             </div>
             {% endif %}
-            
+
             <!-- Success Card -->
             <div class="card shadow border-0">
                 <div class="card-body text-center p-5">
 
                     <div class="mb-4">
-                        <img src="{% static 'ebooking/images/tourism_booking_success.gif' %}" 
-                             alt="Payment Success" width="150">
+                        <img src="{% static 'ebooking/images/tourism_booking_success.gif' %}" alt="Payment Success"
+                            width="150">
                     </div>
 
                     <h2 class="text-success fw-bold mb-3">
@@ -60,29 +60,31 @@
                     </div>
 
                     <!-- Status Message -->
-                    <div id="ticketStatus" class="alert alert-info mt-3">
+                    <div id="ticketStatus"
+                        class="alert {% if ticket_ready %}alert-success{% else %}alert-info{% endif %} mt-3">
+                        {% if ticket_ready %}
+                        Your ticket is ready.
+                        {% else %}
                         Preparing your ticket... Please wait ⏳
+                        {% endif %}
                     </div>
 
                     <!-- Actions -->
                     <div class="d-flex justify-content-center gap-3 mt-4">
 
                         <!-- View Ticket -->
-                        <a href="{% url 'view_ticket' booking.pnr_number %}" 
-                        id="viewTicketBtn"
-                        class="btn btn-primary px-4 disabled">
+                        <a href="{% url 'view_ticket' booking.pnr_number %}" id="viewTicketBtn"
+                            class="btn btn-primary px-4 disabled" target="_blank">
                             View Ticket
                         </a>
 
                         <!-- Download Ticket -->
-                        <a href="{% url 'download_ticket_pdf' booking.pnr_number %}" 
-                        id="downloadTicketBtn"
-                        class="btn btn-success px-4 disabled">
+                        <a href="{% url 'download_ticket_pdf' booking.pnr_number %}" id="downloadTicketBtn"
+                            class="btn btn-success px-4 disabled">
                             Download Ticket
                         </a>
 
-                        <a href="/ebooking" 
-                        class="btn btn-outline-secondary px-4">
+                        <a href="/ebooking" class="btn btn-outline-secondary px-4">
                             Back To Home
                         </a>
 
@@ -102,6 +104,24 @@
 
                         }, 5000);
                     </script>
+
+                    <!-- <script>
+                        {% if not ticket_ready %}
+                        setTimeout(function () {
+                            document.getElementById("viewTicketBtn").classList.remove("disabled");
+                            document.getElementById("downloadTicketBtn").classList.remove("disabled");
+
+                            let status = document.getElementById("ticketStatus");
+                            status.innerHTML = "✅ Your ticket is ready.";
+                            status.classList.remove("alert-info");
+                            status.classList.add("alert-success");
+                        }, 5000);
+                        {% else %}
+                        // Ticket is ready: enable buttons immediately
+                        document.getElementById("viewTicketBtn").classList.remove("disabled");
+                        document.getElementById("downloadTicketBtn").classList.remove("disabled");
+                        {% endif %}
+                    </script> -->
 
                 </div>
             </div>

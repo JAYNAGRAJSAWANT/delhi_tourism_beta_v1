@@ -2,195 +2,387 @@
 {% load static %}
 
 {% block tours %}
-<div class="container">
-  <div class="row mt-2">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+<div class="container py-5">
+  <div class="row">
 
     <!-- Sidebar -->
-    <aside class="col-12 col-md-3">
+    <aside class="col-md-3 mb-4">
       {% include "ebooking/components/tour_booking_sidebar.html" %}
     </aside>
 
     <!-- Main Section -->
-    <section class="col-12 col-md-9">
-      <div class="content-wrapper mt-3 shadow-sm rounded">
+    <section class="col-md-9">
+      <div class="tour-card">
 
-        <!-- HEADER -->
-        <div class="tour-box">
-
-          <!-- TITLE -->
-          <div class="tour-title">
-            {{ tour.tour_name }}
-          </div>
-
-          <!-- IMAGE -->
-          <div class="tour-image">
-            {% if tour.tour_image %}
-            <img src="{{ tour.tour_image.url }}">
-            {% endif %}
-          </div>
-
-          <!-- DURATION -->
-          <div class="tour-section">
-            <p><strong>Duration:</strong><br>{{ tour.tour_duration }}</p>
-
-            <p><strong>Schedule:</strong><br>{{ tour.schedule }}</p>
-
-            <p><strong>Timing:</strong><br>{{ tour.timing }}</p>
-          </div>
-
-          <!-- PLACES -->
-          <div class="tour-section white-bg">
-            <p><strong>Places Covered:</strong></p>
-            <p>{{ tour.places_covered }}</p>
-          </div>
-
-          <!-- TARIFF -->
-          <!-- TARIFF -->
-          <div class="tour-section">
-            <p><strong>Tariff:</strong></p>
-
-            <p>Adult Rs. {{ tour.fare_adult }} + 5% GST</p>
-            <p>SGST (2.5%): Rs. {{ adult_sgst|floatformat:2 }}</p>
-            <p>CGST (2.5%): Rs. {{ adult_cgst|floatformat:2 }}</p>
-            <p><strong>Total: Rs. {{ adult_total|floatformat:2 }}</strong></p>
-
-            <br>
-
-            <p>Child (between 5 to 10) Rs. {{ tour.fare_child }} + 5% GST</p>
-            <p>SGST (2.5%): Rs. {{ child_sgst|floatformat:2 }}</p>
-            <p>CGST (2.5%): Rs. {{ child_cgst|floatformat:2 }}</p>
-            <p><strong>Total: Rs. {{ child_total|floatformat:2 }}</strong></p>
-          </div>
-
-          <!-- TOUR DETAILS (separate section ✅) -->
-          {% if tour.tour_details %}
-          <div class="tour-section white-bg">
-            <p><strong>Tour Details:</strong></p>
-
-            <div class="tour-description note-red">
-              {{ tour.tour_details|linebreaks }}
-            </div>
-          </div>
+        <!-- HERO IMAGE -->
+        <div class="tour-hero">
+          {% if tour.tour_image %}
+          <img src="{{ tour.tour_image.url }}" alt="Tour Image">
           {% endif %}
+        </div>
 
-          <div class="tour-bottom">
-            <div class="tour-footer">
-              <a href="{% url 'start_booking' tour.id %}">
-                <button class="btn-book">Book Now</button>
-              </a>
+        <!-- TOUR HEADER WITH GLASSMORPH -->
+        <div class="tour-header glass-card">
+          <div class="title-group">
+            <h2>{{ tour.tour_name }}</h2>
+          </div>
+
+          <div class="quick-meta">
+            <span><i class="material-icons">schedule</i> {{ tour.tour_duration }}</span>
+            <span><i class="material-icons">event</i> {{ tour.schedule }}</span>
+            <span><i class="material-icons">access_time</i> {{ tour.timing }}</span>
+          </div>
+        </div>
+
+        <!-- PLACES COVERED -->
+        <div class="section glass-card">
+          <h6><i class="material-icons">place</i> Places Covered</h6>
+          <p>{{ tour.places_covered }}</p>
+        </div>
+
+        <!-- PRICING -->
+        <div class="section glass-card">
+          <h6><i class="material-icons">currency_rupee</i> Tariff</h6>
+
+          <div class="tariff-container">
+            <!-- Adult Pricing -->
+            <div class="tariff-card">
+              <div class="tariff-header">Adult</div>
+              <div class="tariff-row">
+                <span>Base Fare</span>
+                <span>Rs. {{ tour.fare_adult|floatformat:2 }}/-</span>
+              </div>
+              <div class="tariff-row">
+                <span>SGST (2.5%)</span>
+                <span>Rs. {{ adult_sgst|floatformat:2 }}</span>
+              </div>
+              <div class="tariff-row">
+                <span>CGST (2.5%)</span>
+                <span>Rs. {{ adult_cgst|floatformat:2 }}</span>
+              </div>
+              <div class="tariff-total">
+                <span>Total</span>
+                <span>Rs. {{ adult_total|floatformat:2 }}</span>
+              </div>
             </div>
 
-            <div class="tc">
-              T & C Applied
+            <!-- Child Pricing -->
+            <div class="tariff-card">
+              <div class="tariff-header">Child (5-10 yrs)</div>
+              <div class="tariff-row">
+                <span>Base Fare</span>
+                <span>Rs. {{ tour.fare_child|floatformat:2 }}/-</span>
+              </div>
+              <div class="tariff-row">
+                <span>SGST (2.5%)</span>
+                <span>Rs. {{ child_sgst|floatformat:2 }}</span>
+              </div>
+              <div class="tariff-row">
+                <span>CGST (2.5%)</span>
+                <span>Rs. {{ child_cgst|floatformat:2 }}</span>
+              </div>
+              <div class="tariff-total">
+                <span>Total</span>
+                <span>Rs. {{ child_total|floatformat:2 }}</span>
+              </div>
             </div>
           </div>
         </div>
+
+        <!-- TOUR DETAILS -->
+        {% if tour.tour_details %}
+        <div class="section glass-card tour-details-card">
+          <h6><i class="material-icons">explore</i> Tour Details</h6>
+          <div class="description">
+            {{ tour.tour_details|linebreaks }}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- CTA BUTTON -->
+        <div class="footer">
+          <a href="{% url 'start_booking' tour.id %}" class="btn-book">
+            Book This Tour
+          </a>
+          <p class="tc">* Terms & Conditions Apply</p>
+        </div>
+
       </div>
+    </section>
   </div>
 </div>
+
 <style>
-  .tour-box {
-    border: 1px solid #cfcfcf;
-    font-family: Arial, sans-serif;
-    font-size: 15px;
-    background: #fff;
-    border-radius: 8px;
+  /* =======================
+   TOUR CARD BASE
+======================= */
+  .tour-card {
+    background: linear-gradient(145deg, #fffea7d7, #ffe1c4);
+    border-radius: 15px;
     overflow: hidden;
-    margin-bottom: 20px;
+    box-shadow: 0 16px 35px rgba(0, 0, 0, 0.12);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    padding-bottom: 20px;
+     margin: 20px auto;          /* ✅ adds space around */
+  max-width: 900px; 
+  border: 1px solid rgba(250, 143, 3, 0.493)
   }
 
-  /* Title */
-  .tour-title {
-    color: #0d6efd;
-    font-weight: bold;
-    padding: 10px 14px;
-    border-bottom: 1px solid #cfcfcf;
-    font-size: 18px;
+  .tour-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.18);
   }
 
-  /* Image */
-  .tour-image {
-    text-align: center;
-    padding: 12px;
-    border-bottom: 1px solid #cfcfcf;
+  /* =======================
+   HERO IMAGE
+======================= */
+  .tour-hero {
+    position: relative;
+    height: 280px;
+    overflow: hidden;
+    border-bottom-left-radius: 15px;
+    border-bottom-right-radius: 15px;
   }
 
-  .tour-image img {
-    height: 150px;
-    border-radius: 6px;
+  .tour-hero img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease, filter 0.5s ease;
+    filter: brightness(0.95);
   }
 
-  /* Sections */
-  .tour-section {
-    padding: 12px 14px;
-    border-bottom: 1px solid #cfcfcf;
-    background: #f3efe4;
+  .tour-hero:hover img {
+    transform: scale(1.07);
+    filter: brightness(1);
   }
 
-  .white-bg {
-    background: #fff;
+  /* =======================
+   GLASSMORPH SECTIONS
+======================= */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.35);
+    backdrop-filter: blur(15px);
+    border-radius: 12px;
+    padding: 20px 25px;
+    margin-bottom: 22px;
+    border: 1px solid rgba(255, 255, 255, 0.65);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s ease;
   }
 
-  /* Text */
-  .tour-section p {
-    margin: 4px 0;
-    line-height: 1.6;
-    font-size: 15px;
+  .glass-card:hover {
+    transform: translateY(-3px);
   }
 
-  /* Tour Details in Red */
-  .note-red,
-  .note-red p {
-    color: rgb(146, 11, 11);
-    margin-top: 8px;
-    font-weight: 500;
+  /* =======================
+   TOUR HEADER
+======================= */
+  .title-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
   }
 
+  .title-group h2 {
+    font-size: 26px;
+    font-weight: 700;
+    color: #1c1c1c;
+    margin: 0;
+    transition: color 0.3s ease;
+  }
 
+  .title-group h2:hover {
+    color: #fda90d;
+  }
 
-  /* Button */
-  .btn-book {
-    background: linear-gradient(135deg, #f3a023, #b83a14);
-    border: none;
-    padding: 10px 24px;
+  .quick-meta {
+    display: flex;
+    gap: 28px;
+    margin-top: 12px;
+    color: #555;
+    font-size: 14px;
+    flex-wrap: wrap;
+  }
+
+  .quick-meta i {
+    vertical-align: middle;
+    margin-right: 5px;
+    color: #fd790d;
+  }
+
+  /* =======================
+   SECTION HEADINGS
+======================= */
+  .section h6 {
+    font-weight: 600;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #e74d06;
     font-size: 16px;
-    font-weight: bold;
-    color: #fff;
-    border-radius: 25px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  }
+
+  .section p,
+  .description {
+    font-size: 14px;
+    color: #333;
+    line-height: 1.8;
+    margin-bottom: 0;
+  }
+
+  /* =======================
+   TARFF CARDS
+======================= */
+  .tariff-container {
+    display: flex;
+    gap: 20px;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  .tariff-card {
+    flex: 1 1 48%;
+    background: rgba(255, 255, 255, 0.45);
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin-bottom: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.65);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .tariff-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+  }
+
+  .tariff-header {
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 10px;
+    color: #f57c00;
+  }
+
+  .tariff-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 7px 0;
+    font-size: 14px;
+    color: #333;
+    border-bottom: 1px dashed rgba(0, 0, 0, 0.1);
+  }
+
+  .tariff-row:last-child {
+    border-bottom: none;
+  }
+
+  .tariff-total {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 600;
+    font-size: 15px;
+    padding-top: 10px;
+    color: #198754;
+  }
+
+  /* =======================
+   CTA BUTTON
+======================= */
+  .footer {
+    text-align: center;
+    margin-top: 30px;
+  }
+
+  .btn-book {
+    display: inline-block;
+    background: linear-gradient(135deg, #df7c0a, #be5814);
+    color: #fafafa;
+    padding: 14px 36px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 600;
+    box-shadow: 0 8px 22px rgba(219, 26, 26, 0.25);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
   }
 
   .btn-book:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
-    background: linear-gradient(135deg, #ff5722, #e64a19);
+    transform: scale(1.08);
+    box-shadow: 0 14px 32px rgba(207, 162, 11, 0.3);
   }
 
-  .tour-bottom {
-    border-top: 1px solid #cfcfcf;
-    padding-top: 8px;
-  }
-
-  /* Move button slightly upward */
-  .tour-footer {
-    padding: 6px 0 4px 0;
-    /* reduced bottom padding */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-
-  /* Reduce gap so T&C sits closer */
   .tc {
+    margin-top: 10px;
     font-size: 12px;
-    color: red;
-    text-align: right;
-    padding: 4px 14px 8px 14px;
-    /* less top padding */
+    color: #666;
   }
+
+  /* =======================
+   RESPONSIVE
+======================= */
+  @media (max-width: 992px) {
+    .quick-meta {
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .tariff-card {
+      flex: 1 1 100%;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .tour-hero {
+      height: 220px;
+    }
+
+    .title-group h2 {
+      font-size: 22px;
+    }
+  }
+
+  /* TOUR DETAILS ENHANCED */
+.tour-details-card {
+  background: rgba(255, 255, 255, 0.45);
+  border: 1px solid rgba(255,255,255,0.65);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  border-radius: 12px;
+  padding: 25px 28px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.tour-details-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.12);
+}
+
+.tour-details-card h6 {
+  font-size: 17px;
+  font-weight: 700;
+  color: #ff6a00;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tour-details-card .description {
+  font-size: 14.5px;
+  line-height: 1.8;
+  color: #333;
+  background: rgb(255, 255, 255);
+  border-radius: 10px;
+  padding: 12px 16px;
+  border-left: 3px solid #ff6a00; /* accent line */
+}
+
+.tour-details-card .description p {
+  margin-bottom: 12px;
+}
 </style>
-
-
 {% endblock %}
