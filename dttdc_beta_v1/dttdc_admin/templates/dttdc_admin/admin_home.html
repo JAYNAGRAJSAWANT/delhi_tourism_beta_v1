@@ -2,7 +2,7 @@
 {% load static %}
 {% block content %}
 {% load tz %}
-
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <div class="container-fluid py-3">
   <div class="row g-3">
 
@@ -34,76 +34,124 @@
     <main class="col-md-9">
 
       <!-- Banner -->
-      <div class="banner-card mb-3">
-        <img src="{% static 'dttdc_admin/images/about_delhi.jpg' %}" class="img-fluid rounded-4 w-100">
+      <div class="banner-card text-center">
+        <img src="{% static 'dttdc_admin/images/delhi_skyline_image.jpg' %}" class="banner-img">
       </div>
 
       <!-- Welcome Section (FIXED) -->
       <div class="welcome-card">
-        <h2 class="mb-1">Welcome Back, Admin</h2>
-        <p class="mb-0 text-muted">Manage bookings & stay updated</p>
-      </div>
+  <div class="welcome-content">
+    <h2> Welcome Back, Admin </h2>
+    <p>Here’s what’s happening with your bookings today</p>
+  </div>
+</div>
       <div class="alerts-wrapper">
 
-        <div class="section-title mb-3">
-          🔔 Alerts & Notifications
-        </div>
+        <!-- Top Stats -->
+        <!-- <div class="row g-3 mb-3">
 
-        <!-- Booking Alerts -->
-        <div class="card modern-card booking-card mb-4">
-          <div class="card-header d-flex justify-content-between align-items-center">
-            <span><i class="fa fa-ticket-alt me-2"></i> Booking Alerts</span>
+          <div class="col-md-6">
+            <div class="stat-card">
+              <div>
+                <p>Total Bookings </p>
+                <h3>{{ total_bookings }}</h3>
+              </div>
+              <i class="fa fa-cube"></i>
+            </div>
           </div>
 
-          <ul class="list-group list-group-flush">
-            {% for alert in booking_alerts %}
-            <a href="{% url 'admin_view_booking_details' alert.booking_id %}" class="text-decoration-none">
-              <li class="list-group-item alert-item-modern booking">
-                <div>
-                  <div class="alert-title">
-                    {{ alert.message|safe }}
-                  </div>
-                  <small class="text-muted">
-                    {{ alert.date|date:"d M Y, h:i A" }}
-                  </small>
-                </div>
-                <i class="fa fa-chevron-right"></i>
-              </li>
-            </a>
-            {% endfor %}
-          </ul>
-        </div>
+          <div class="col-md-6">
+            <div class="stat-card">
+              <div>
+                <p>Total Cancellations</p>
+                <h3>{{ total_cancellations }}</h3>
+              </div>
+              <i class="fa fa-times-circle text-danger"></i>
+            </div>
+          </div>
+        </div> -->
 
-        <!-- Cancellation Alerts -->
-        <div class="card modern-card cancel-card">
-          <div class="card-header d-flex justify-content-between align-items-center">
-            <span><i class="fa fa-times-circle me-2"></i> Cancellation Alerts</span>
+        
+
+        <!-- Alerts Title -->
+        <!-- <div class="section-title text-center mb-3">
+  🔔 Alerts & Notifications
+  <small class="text-muted d-block">Stay updated with latest activities</small>
+</div> -->
+
+        <!-- ALERT CARDS -->
+        <div class="row g-3">
+
+          <!-- Booking -->
+          <div class="col-md-6">
+            <div class="card modern-card">
+              <div class="card-header booking-header">
+                <span><i class="fa fa-cube me-2"></i> Booking Alerts</span>
+              </div>
+
+              <ul class="list-group list-group-flush">
+                {% for alert in booking_alerts %}
+                <a href="{% url 'admin_view_booking_details' alert.booking_id %}" class="text-decoration-none">
+                  <li class="list-group-item alert-item booking">
+                    <div class="alert-icon">
+                      <i class="fa fa-cube"></i>
+                    </div>
+
+                    <div class="flex-grow-1 ms-2">
+                      <div class="alert-title">
+                        {{ alert.message }}
+                      </div>
+                      <small class="text-muted">
+                        {{ alert.date|date:"d M Y, h:i A" }}
+                      </small>
+                    </div>
+
+
+                  </li>
+                </a>
+                {% endfor %}
+              </ul>
+            </div>
           </div>
 
-          <ul class="list-group list-group-flush">
-            {% for alert in cancellation_alerts %}
-            <a href="{% url 'admin_view_booking_details' alert.booking_id %}" class="text-decoration-none">
-              <li class="list-group-item alert-item-modern cancellation">
-                <div>
-                  <div class="alert-title text-danger">
-                    {{ alert.message|safe }}
-                  </div>
-                  <small class="text-muted">
-                    {{ alert.date|date:"d M Y, h:i A" }}
-                  </small>
-                </div>
-                <i class="fa fa-chevron-right"></i>
-              </li>
-            </a>
-            {% endfor %}
-          </ul>
-        </div>
+          <!-- Cancellation -->
+          <div class="col-md-6">
+            <div class="card modern-card">
+              <div class="card-header cancel-header">
+                <span><i class="fa fa-times-circle me-2"></i> Cancellation Alerts</span>
+              </div>
 
+              <ul class="list-group list-group-flush">
+                {% for alert in cancellation_alerts %}
+                <a href="{% url 'admin_view_booking_details' alert.booking_id %}" class="text-decoration-none">
+                  <li class="list-group-item alert-item cancellation">
+                    <div class="alert-icon">
+                      <i class="fa fa-times"></i>
+                    </div>
+
+                    <div class="flex-grow-1 ms-2">
+                      <div class="alert-title">
+                        {{ alert.message }}
+                      </div>
+                      <small class="text-muted">
+                        {{ alert.date|date:"d M Y, h:i A" }}
+                      </small>
+                    </div>
+
+
+                  </li>
+                </a>
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
+
+        </div>
       </div>
     </main>
   </div>
 </div>
-
+<!-- 
 <style>
   /* Sidebar */
   .sidebar-modern {
@@ -148,12 +196,12 @@
   }
 
   .booking-card .card-header {
-    background: linear-gradient(45deg, #0d6efd, #4dabf7);
+    background: linear-gradient(45deg, #bb5c03, #f7a84d);
     color: white;
   }
 
   .cancel-card .card-header {
-    background: linear-gradient(45deg, #dc3545, #ff6b6b);
+    background: linear-gradient(45deg, #bb5c03, #f7a84d);
     color: white;
   }
 
@@ -162,17 +210,17 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px;
+    
     transition: all 0.25s ease;
     border-left: 2px solid transparent;
   }
 
   .alert-item-modern.booking {
-    border-left-color: #0d6efd;
+    border-left-color: #bb5c03;
   }
 
   .alert-item-modern.cancellation {
-    border-left-color: #dc3545;
+    border-left-color: #bb5c03;
   }
 
   .alert-item-modern:hover {
@@ -205,6 +253,121 @@
 .welcome-card p {
   font-size: 14px;
 }
-</style>
+</style> -->
 
+<style>
+  /* STAT CARDS */
+.welcome-card {
+  background: linear-gradient(135deg,#f0de7a, #ff99006c);
+  color: #fff;
+  padding: 20px 25px;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+}
+
+.welcome-content h2 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin-bottom: 5px;
+}
+
+.welcome-content p {
+  font-size: 0.95rem;
+  opacity: 0.9;
+  margin: 0;
+}
+  .welcome-card {
+  text-align: center;
+}
+
+.section-title {
+  text-align: center;
+}
+  .stat-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px;
+    border-radius: 12px;
+    background: linear-gradient(45deg, #fffebe, #ffe60057);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  }
+
+  .stat-card.total {
+    background: linear-gradient(45deg, #ff6a00, #ff3d00);
+    color: white;
+  }
+
+  .stat-card h3 {
+    margin: 0;
+    font-weight: 700;
+  }
+
+  .stat-card i {
+    font-size: 22px;
+  }
+
+  /* CARDS */
+  .modern-card {
+    border-radius: 14px;
+    border: none;
+    overflow: hidden;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+  }
+
+  /* HEADERS */
+  .booking-header {
+    background: linear-gradient(45deg, #ff7a00, #ff99006c);
+    color: white;
+  }
+
+  .cancel-header {
+    background: linear-gradient(45deg, #ff7a00, #ff99006c);
+    color: white;
+  }
+
+  /* ALERT ITEM */
+  .alert-item {
+    display: flex;
+    align-items: center;
+    padding: 14px;
+    transition: 0.25s ease;
+  }
+
+  .alert-item:hover {
+    background: #fff3cd;
+    transform: translateX(5px);
+  }
+
+  /* ICON */
+  .alert-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: #ff7a00;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* TEXT */
+  .alert-title {
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  /* BADGES */
+  .badge {
+    font-size: 11px;
+    padding: 5px 8px;
+  }
+  .banner-img {
+  max-width: 800px;   /* adjust as needed */
+  width: 100%;
+  
+ 
+}
+</style>
 {% endblock %}

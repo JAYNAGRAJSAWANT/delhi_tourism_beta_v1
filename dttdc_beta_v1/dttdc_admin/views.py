@@ -17,8 +17,8 @@ from ebooking.models import DTTDCCancellationHistory, DTTDCTourAvailability, DTT
 from ebooking.models import Feedback
 from django.db.models import Sum
 from django.utils.dateparse import parse_date
-from django.db.models.functions import Coalesce
-
+from django.db.models.functions import Coalesce, ExtractYear
+from django.db.models.expressions import RawSQL
 import os
 from django.http import FileResponse, Http404
 from ebooking.views import save_ticket_pdf  
@@ -121,20 +121,34 @@ def check_captcha(request):
         return JsonResponse(result)
     return JsonResponse({"detail": "Invalid method"}, status=405)
 
-
+# --------------------------------- Admin Home Page----------------------------------------
 @admin_jwt_required
 def admin_home(request):
+
+        bookings_qs = (
+            DTTDCTourBooking.objects
+            .filter(booking_status="paid")
+        )
+
+        cancellations_qs = (
+            DTTDCTourCancellation.objects.all()
+        )
+
+        # 🔢 Total counts
+        total_bookings = bookings_qs.count()
+        total_cancellations = cancellations_qs.count()
         bookings = (
                 DTTDCTourBooking.objects
+                .filter(booking_status="paid")
                 .select_related("dttdc_tour", "user_details")
-                .order_by("-booking_date")[:10]
+                .order_by("-booking_date")[:6]
             )
 
             # 🔴 Latest Cancellations
         cancellations = (
                 DTTDCTourCancellation.objects
                 .select_related("tour_booking", "tour_booking__dttdc_tour")
-                .order_by("-cancellation_date")[:10]
+                .order_by("-cancellation_date")[:6]
             )
 
             # -------- BOOKING ALERTS --------
@@ -163,7 +177,9 @@ def admin_home(request):
 
         return render(request, "dttdc_admin/admin_home.html", {
                 "booking_alerts": booking_alerts,
-                "cancellation_alerts": cancellation_alerts
+                "cancellation_alerts": cancellation_alerts,
+                "total_bookings": total_bookings,
+        "total_cancellations": total_cancellations,
             })
 
 def booking_detail(request, id):
@@ -583,17 +599,23 @@ def get_last_available_date(request):
 def check_tour_availability_status(request):
     tour_id = request.GET.get("tour")
     selected_tour = None
-    available_dates = []
+    availability_data = {}
 
     if tour_id:
         selected_tour = DTTDCTour.objects.filter(id=tour_id).first()
 
         if selected_tour:
-            available_dates = list(
-                DTTDCTourAvailability.objects.filter(tour=selected_tour).values_list(
-                    "available_date", flat=True
-                )
-            )
+            availability_qs = DTTDCTourAvailability.objects.filter(tour=selected_tour)
+
+            for obj in availability_qs:
+                date_str = obj.available_date.strftime("%Y-%m-%d")
+
+                availability_data[date_str] = {
+                    "total_seats": obj.total_seats,
+                    "available_seats": obj.available_seats
+                }
+
+                
 
     return render(
         request,
@@ -601,7 +623,7 @@ def check_tour_availability_status(request):
         {
             "tours": DTTDCTour.objects.filter(tour_status="active"),
             "selected_tour": selected_tour,
-            "available_dates": [d.strftime("%Y-%m-%d") for d in available_dates],
+            "availability_data": availability_data,  # ✅ NEW
         },
     )
 
@@ -959,22 +981,29 @@ def admin_ticket_cancellation_report(request):
     total_amount = 0
 
     for booking in booking_list:
-        first_record = booking.cancellation_history.first()
+        if booking.cancellation and booking.cancellation.cancellation_amount:
+         booking.total_refund = booking.cancellation.cancellation_amount
+        else:
+         booking.total_refund = 0
 
-        booking.total_refund = (
-            first_record.cancellation_amount if first_record else 0
-        )
-
-        total_amount += booking.total_refund
+         total_amount += booking.total_refund
 
     # -------- DROPDOWN DATA --------
     categories = DTTDCTourCategory.objects.all()
     tours = DTTDCTour.objects.all()
 
     years = (
-        DTTDCTourBooking.objects
-        .dates("booking_date", "year", order="DESC")
-    )
+    DTTDCTourCancellation.objects
+    .annotate(year=RawSQL("YEAR(cancellation_date)", []))
+    .values_list("year", flat=True)
+    .distinct()
+    .order_by("-year")
+)
+
+    print(list(years))
+    # yer=DTTDCTourCancellation.objects.values("cancellation_date")
+    # print("years print ho raha hai---------------",years)
+   
 
     months = [
         (1, "January"), (2, "February"), (3, "March"),
@@ -993,7 +1022,7 @@ def admin_ticket_cancellation_report(request):
             # filters
             "categories": categories,
             "tours": tours,
-            "years": [y.year for y in years],
+             "years": years,
             "months": months,
 
             # selected values
