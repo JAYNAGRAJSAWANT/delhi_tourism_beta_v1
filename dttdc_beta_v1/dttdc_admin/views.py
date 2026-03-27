@@ -15,13 +15,19 @@ from django.utils.timezone import localtime, make_aware
 from ebooking.forms import AddTourCategoryForm, AddTourForm, TourAvailabilityForm
 from ebooking.models import DTTDCCancellationHistory, DTTDCTourAvailability, DTTDCTourBooking, DTTDCTourCancellation, DTTDCTourCategory, DTTDCTour, DTTDCTourPaymentDetails, DTTDCTraveller, DTTDCTravellerBookingMap, DTTDCUserDetails
 from ebooking.models import Feedback
-from django.db.models import Sum
+from django.db.models import Count, Sum
 from django.utils.dateparse import parse_date
-from django.db.models.functions import Coalesce, ExtractYear
+from django.db.models.functions import Coalesce, ExtractYear, TruncDate, TruncMonth
 from django.db.models.expressions import RawSQL
 import os
 from django.http import FileResponse, Http404
-from ebooking.views import save_ticket_pdf  
+from ebooking.views import save_ticket_pdf
+from django.utils import timezone
+from django.conf import settings
+from django.db.models import Count, Sum, F, DateTimeField
+from django.db.models.functions import TruncMonth, TruncDate
+from datetime import timedelta
+
 def admin_login(request):
 
     token = request.COOKIES.get("admin_access_token")
@@ -213,15 +219,221 @@ def admin_logout(request):
     return response
 
 
+
 @admin_jwt_required
 def admin_hub(request):
     now = timezone.now()
+
+    # ---------------- SAFE BASE QUERYSETS ----------------
+    bookings = (
+        DTTDCTourBooking.objects
+        .select_related("dttdc_tour")
+        .exclude(booking_date__isnull=True)
+    )
+
+    payments = (
+        DTTDCTourPaymentDetails.objects
+        .exclude(addedon__isnull=True)
+    )
+
+    cancellations = (
+        DTTDCTourCancellation.objects
+        .exclude(cancellation_date__isnull=True)
+    )
+
+    categories = DTTDCTourCategory.objects.all()
+    tours = DTTDCTour.objects.all()
+
+    # ---------------- KPI METRICS ----------------
+    total_bookings = bookings.count()
+
+    total_revenue = (
+        payments.filter(status__iexact="success")
+        .aggregate(total=Sum("amount"))["total"] or 0
+    )
+
+    bookings_today = bookings.filter(
+        booking_date__date=now.date()
+    ).count()
+
+    cancelled_bookings = bookings.filter(
+        booking_status="cancelled"
+    ).count()
+
+    cancellation_rate = (
+        (cancelled_bookings / total_bookings) * 100
+        if total_bookings else 0
+    )
+
+    # ---------------- ACTIVE ----------------
+    active_categories = categories.count()
+    active_tours = tours.filter(tour_status="active").count()
+
+    # ---------------- MONTHLY DATA (SAFE FIX) ----------------
+    last_6_months = now - timedelta(days=180)
+
+    monthly_bookings_qs = (
+    bookings
+    .annotate(month=RawSQL("DATE_FORMAT(booking_date, '%%Y-%%m-01')", []))
+    .values("month")
+    .annotate(count=Count("id"))
+    .order_by("month")
+)
+
+    monthly_revenue_qs = (
+        payments.filter(status__iexact="success")
+        .annotate(month=RawSQL("DATE_FORMAT(addedon, '%%Y-%%m-01')", []))
+        .values("month")
+        .annotate(total=Sum("amount"))
+        .order_by("month")
+    )
+
+    monthly_cancel_qs = (
+    cancellations
+    .annotate(month=RawSQL("DATE_FORMAT(cancellation_date, '%%Y-%%m-01')", []))
+    .values("month")
+    .annotate(count=Count("id"))
+    .order_by("month")
+)
+
+    # ✅ SAFE DATA EXTRACTION (FIXES YOUR ERROR)
+    months = []
+    bookings_data = []
+    revenue_data = []
+    cancel_data = []
+
+    for m in monthly_bookings_qs:
+        if m["month"]:
+            
+            months.append(datetime.strptime(m["month"], "%Y-%m-%d").strftime("%b"))
+            bookings_data.append(m["count"])
+
+    for r in monthly_revenue_qs:
+        if r["month"]:
+            revenue_data.append(float(r["total"] or 0))
+
+    for c in monthly_cancel_qs:
+        if c["month"]:
+            cancel_data.append(c["count"])
+
+    # ---------------- STATUS DISTRIBUTION ----------------
+    status_qs = bookings.values("booking_status").annotate(count=Count("id"))
+
+    status_labels = [s["booking_status"] or "Unknown" for s in status_qs]
+    status_data = [s["count"] for s in status_qs]
+
+    # ---------------- DAILY TREND ----------------
+    last_7_days = now - timedelta(days=7)
+
+    daily_qs = (
+    bookings
+    .annotate(day=RawSQL("DATE(booking_date)", []))
+    .values("day")
+    .annotate(count=Count("id"))
+    .order_by("day")
+)
+
+    days = []
+    daily_bookings = []
+
+    for d in daily_qs:
+        if d["day"]:
+            days.append(d["day"].strftime("%d %b"))
+            daily_bookings.append(d["count"])
+
+    # ---------------- POPULAR TOURS ----------------
+    popular_qs = (
+        bookings.values("dttdc_tour__tour_name")
+        .annotate(count=Count("id"))
+        .order_by("-count")[:5]
+    )
+
+    destinations = [p["dttdc_tour__tour_name"] or "Unknown" for p in popular_qs]
+    destination_counts = [p["count"] for p in popular_qs]
+
+    # ---------------- TOP PERFORMING TOURS ----------------
+    top_qs = (
+        bookings.values("dttdc_tour__tour_name")
+        .annotate(
+            bookings=Count("id"),
+            revenue=Sum("total_fare")
+        )
+        .order_by("-revenue")[:5]
+    )
+
+    top_tours = [
+        {
+            "name": t["dttdc_tour__tour_name"],
+            "bookings": t["bookings"],
+            "revenue": float(t["revenue"] or 0),
+        }
+        for t in top_qs
+    ]
+
+    # ---------------- ADVANCED METRICS ----------------
+    total_passengers = bookings.aggregate(
+        total=Sum("number_of_passengers")
+    )["total"] or 0
+
+    avg_passengers = (
+        total_passengers / total_bookings
+        if total_bookings else 0
+    )
+
+    availability = DTTDCTourAvailability.objects.all()
+
+    total_seats = availability.aggregate(
+        total=Sum("total_seats")
+    )["total"] or 0
+
+    booked_seats = availability.aggregate(
+        total=Sum(F("total_seats") - F("available_seats"))
+    )["total"] or 0
+
+    seat_utilization = (
+        (booked_seats / total_seats) * 100
+        if total_seats else 0
+    )
+    months_count=len(months)
+
+    # ---------------- FINAL CONTEXT ----------------
     context = {
-        "categories_count": DTTDCTourCategory.objects.count(),
         "now": now,
         "MEDIA_URL": settings.MEDIA_URL,
+
+        # KPI
+        "total_revenue": total_revenue,
+        "total_bookings": total_bookings,
+        "bookings_today": bookings_today,
+        "cancellation_rate": round(cancellation_rate, 2),
+        "cancelled_bookings": cancelled_bookings,
+        "active_categories": active_categories,
+        "active_tours": active_tours,
+
+        # Advanced
+        "total_passengers": total_passengers,
+        "avg_passengers": round(avg_passengers, 2),
+        "seat_utilization": round(seat_utilization, 2),
+
+        # Charts
+        "months": months,
+        "months_count":months_count,
+        "bookings_data": bookings_data,
+        "revenue_data": revenue_data,
+        "cancel_data": cancel_data,
+        "status_labels": status_labels,
+        "status_data": status_data,
+        "destinations": destinations,
+        "destination_counts": destination_counts,
+        "days": days,
+        "daily_bookings": daily_bookings,
+
+        # Tables
+        "top_tours": top_tours,
+
         "show_dashboard": True,
     }
+
     return render(request, "dttdc_admin/admin_hub.html", context)
 
 
@@ -1039,3 +1251,57 @@ def admin_ticket_cancellation_report(request):
 
 def admin_view_tour_ticket(request, pnr):
     return redirect('view_ticket', pnr=pnr)
+
+
+###-------------- shubhi views ends here-------##########
+
+######----------- admin rebook failed ticket-------------#########
+
+from django.shortcuts import render
+from django.db.models import Q
+from datetime import datetime
+
+
+def admin_rebook_failed_ticket(request):
+    start_date = request.GET.get("start_date")
+    end_date = request.GET.get("end_date")
+
+    booking_list = DTTDCTourBooking.objects.select_related(
+        "payment", "dttdc_tour"
+    ).filter(
+        booking_status__in=[
+            "payment_pending",
+            "payment_failed",
+            "payment_timeout",
+        ]
+    )
+
+    # ✅ Apply date filter (if provided)
+    if start_date and end_date:
+        try:
+         start = datetime.strptime(start_date, "%Y-%m-%d")
+         end = datetime.strptime(end_date, "%Y-%m-%d") + timedelta(days=1)
+
+         booking_list = booking_list.filter(
+            booking_date__gte=start,
+            booking_date__lt=end
+         )
+        except ValueError:
+         pass
+
+    # ✅ OPTIONAL: Filter by payment status also (recommended)
+    booking_list = booking_list.filter(
+        Q(payment__status__in=["failure", "failed", "pending", "timeout"]) |
+        Q(payment__status__isnull=True)
+    )
+
+    # ✅ Order latest first
+    booking_list = booking_list.order_by("-booking_date")
+
+    context = {
+        "booking_list": booking_list,
+        "start_date": start_date,
+        "end_date": end_date,
+    }
+
+    return render(request, "dttdc_admin/admin_rebook_failed_ticket.html", context)

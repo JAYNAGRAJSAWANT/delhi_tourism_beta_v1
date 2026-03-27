@@ -71,7 +71,10 @@ urlpatterns = [
     path("ticket/view/<str:pnr>/", views.admin_view_tour_ticket, name="admin_view_tour_ticket"),
 
      # ---------------------------------View Booking Detail ------------- 
-    path('admin_view_booking_details/<int:id>/', views.booking_detail, name='admin_view_booking_details')
+    path('admin_view_booking_details/<int:id>/', views.booking_detail, name='admin_view_booking_details'),
+
+         # ---------------------------------Rebook Failed Ticket------------- 
+    path('admin_rebook_failed_ticket/', views.admin_rebook_failed_ticket, name='admin_rebook_failed_ticket')
 
 
 ]
