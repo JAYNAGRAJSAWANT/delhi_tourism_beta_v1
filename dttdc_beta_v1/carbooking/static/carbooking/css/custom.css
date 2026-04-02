@@ -1,0 +1,348 @@
+/*--------------------------------------------------------------
+# General
+--------------------------------------------------------------*/
+body {
+  font-size: 100%;
+  /* text-align: justify; */
+  /* font-family: "Montserrat", "Roboto", sans-serif; */
+  /* font-family: "Open Sans", sans-serif; */
+  font-family: "Roboto", sans-serif !important;
+  font-weight: 500;
+  line-height: 1.7142857em;
+  /* line-break: anywhere; */
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+/* div {
+  font-family: "Roboto", sans-serif, "Montserrat";
+} */
+
+/*--------------------------------------------------------------
+# Header
+--------------------------------------------------------------*/
+
+/* Navbar */
+.menufont {
+  color: #000000;
+  font-size: 14px; 
+  /* text-align: center; */
+}
+.menubg {
+  /* background-color: #e71e25; */
+  
+  background-color: #c46907;
+
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 20px 25px -5px, rgba(0, 0, 0, 0.04) 0px 10px 10px -5px;
+}
+.fontwhite {
+  color: #ffffff;
+}
+.h-icon {
+  margin-top: 10px;
+}
+
+.header-img {
+  width: 100%;
+  object-fit: contain;
+}
+/*--------------------------------------------------------------
+#  Left sidebar
+--------------------------------------------------------------*/
+.tab {
+  background-color: #4aa42b;
+  text-align: center;
+  font-weight: bold;
+  padding-top: px;
+  color: #fff;
+  font-size: 14px;
+}
+.hindi_phrases {
+  width: 200px;
+  height: auto;
+  float: left;
+  margin-top: 5px 0px 0px 10px;
+}
+
+/*--------------------------------------------------------------
+#  /Left sidebar
+--------------------------------------------------------------*/
+
+/*--------------------------------------------------------------
+#  Section footer
+--------------------------------------------------------------*/
+.fontblack {
+  color: #373435;
+}
+
+.navbar-bg {
+  background-color: #ff4e02;
+  /* border-radius: 15px 15px 15px 15px; */
+}
+
+#templatemo_footer {
+  width: 100%;
+  border-top: 0px solid #507f9a;
+  height: auto;
+  background: #aa1616;
+  float: left;
+}
+#templatemo_footer p {
+  padding-top: 4px;
+  color: #fff;
+  text-align: center;
+  font-size: 11px;
+  line-height: 20px;
+}
+#templatemo_footer a {
+  color: #fff;
+  text-decoration: none;
+}
+
+#templatemo_footer a:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+.black {
+  color: #222222;
+  text-decoration: none;
+}
+
+.list-styled li {
+  list-style-type: none;
+  background-image: url("../images/arrow_b.jpg");
+  background-position: 0px 7px;
+  background-repeat: no-repeat;
+  padding-left: 12px;
+  margin: 5px;
+}
+div a {
+  text-decoration: none;
+}
+
+.skiptranslate > iframe {
+  display: none !important;
+}   
+body {
+  top: 0px !important; 
+  }
+
+.react-calendar__month-view__days__day--weekend{
+  color: black                !important;
+}
+.highlight {
+  color:red;
+}
+
+ul.list-unstyled {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+ul.list-unstyled li {
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  background-color: #f8f9fa; /* Light background color */
+  border-bottom: 1px solid #9ed1d9;
+  padding: 0.5rem;
+  border-radius: 5px; /* Optional: rounded corners */
+}
+
+ul.list-unstyled li i {
+  color: #007bff; /* Preferred icon color */
+  margin-right: 0.5rem;
+}
+
+ul.list-unstyled li a {
+  text-decoration: none;
+  color: #333; /* Preferred link color */
+  font-weight: 500;
+  line-height: normal;
+  font-size: 1.0rem; /* Increased font size */
+  transition: color 0.3s ease;
+}
+
+ul.list-unstyled li a:hover {
+  color: #007bff; /* Preferred hover color */
+}
+
+ul.list-unstyled li a.text-danger {
+  color: #dc3545; /* Custom color for logout */
+}
+
+ul.list-unstyled li a.text-danger:hover {
+  color: #c82333; /* Darker color on hover */
+}
+
+.SideTitle {
+  padding: 1rem !important;
+  margin-top: 1rem;
+  background: linear-gradient(135deg, #e75a1e, #ac4708, #e75a1e) !important;
+  font-size: 1.2rem !important; /* Increased font size */
+  font-weight: bold;
+  color: #555; /* Preferred title color */
+  border-top: 1px solid #ddd; /* Optional: top border for separation */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100% !important;
+}
+.pl_left_arrow {
+  padding: 5px 5px 7px 0px !important;
+  font-size:1.2rem;
+  width: 100% !important;
+}
+.nav-link.text-white {
+  font-size: 1.2rem;
+}
+
+/* BookingDelhiLocalTour.css */
+.table-row-even {
+  background-color: #faf8ee; /* Light pastel blue */
+}
+
+.table-row-odd {
+  background-color: #f8fafa; /* Light pastel green */
+}
+.img-thumbnail {
+  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+  opacity: 1; /* Initial opacity */
+  box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
+  width: 100%;
+  height:100% ;
+}
+
+.img-thumbnail:hover {
+   transform: scale(.90); 
+  opacity: 0.9; /* Full opacity on hover */
+ 
+}
+
+
+.days-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px; /* Space between checkboxes */
+  width: 100%;
+  overflow: hidden;
+}
+
+.days-cell {
+  display: flex;
+  align-items: center;
+}
+
+@media (max-width: 600px) {
+
+  
+  .days-cell {
+    font-size: 14px;
+  }
+}
+
+
+.pr-2 {
+  margin-right: 0.5rem;
+}
+
+.ds1 .row {
+  display: flex;
+}
+
+.ds1 .row.border {
+  border: 1px solid #ddd;
+  margin-bottom: -1px; /* to compensate for border collapsing */
+}
+
+.ds1 .row.odd {
+  background-color: #f9f9f9; /* light color for odd rows */
+}
+
+.ds1 .row.even {
+  background-color: #ffffff; /* white or default color for even rows */
+}
+
+.table-container {
+  width: 100%;
+  overflow: hidden;
+}
+
+.table-wrapper {
+  display: table;
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.table-header {
+  display: table-row;
+}
+
+.header-column {
+  display: table-cell;
+  padding: 8px;
+  border: 1px solid #ddd;
+  background-color: #f2f2f2; /* Light background for header columns */
+}
+
+.table-row {
+  display: table-row;
+}
+
+.table-row.header {
+  background-color: #e0e0e0; /* Header row background color */
+}
+
+.table-row:nth-child(even) > div {
+  background-color: #f9f9f9; /* Even row background color */
+}
+
+.table-row:nth-child(odd) > div {
+  background-color: #ffffff; /* Odd row background color */
+}
+
+.table-row > div {
+  display: table-cell;
+  padding: 8px;
+  border: 1px solid #ddd;
+}
+
+.table-body {
+  display: table-row-group;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 600px) {
+  .table-row {
+    display: flex;
+    flex-wrap: wrap;
+    border: 1px solid #ddd;
+  }
+  
+  .table-row > div {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px;
+    text-align: center;
+    border: none;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .table-header {
+    display: none;
+  }
+}
+
+
+
+
+
+
+

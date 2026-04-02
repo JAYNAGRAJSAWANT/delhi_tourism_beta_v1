@@ -1,0 +1,98 @@
+{% extends "dttdc_car_admin/carbooking_admin_hub.html" %}
+{% load static %}
+
+{% block add_vehicle_package %}
+
+<div class="container mt-4">
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <div class="card shadow-sm">
+
+    <div class="card-header">
+      <h5>Add Vehicle Package</h5>
+    </div>
+
+    <div class="card-body">
+
+      <form method="post">
+        {% csrf_token %}
+
+        <!-- Package -->
+        <div class="mb-3">
+          <label>Package</label>
+          {{ form.package }}
+        </div>
+
+        <!-- Vehicle -->
+        <div class="mb-3">
+          <label>Vehicle</label>
+          {{ form.vehicle }}
+        </div>
+
+        <!-- Capacity -->
+        <div class="mb-3">
+          <label>Vehicle Capacity Details</label>
+          {{ form.vehicle_capacity }}
+        </div>
+
+        <!-- Description -->
+        <div class="mb-3">
+          <label>Tour Description</label>
+          {{ form.tour_description }}
+        </div>
+
+        <!-- Base Fare -->
+        <div class="mb-3">
+          <label>Base Fare</label>
+          {{ form.base_fare }}
+        </div>
+
+        <!-- GST -->
+        <div class="mb-3">
+          <label>GST</label>
+          {{ form.gst }}
+        </div>
+
+        <!-- Extra Per KM -->
+        <div class="mb-3">
+          <label>Extra Per KM</label>
+          {{ form.extra_per_km }}
+        </div>
+
+        <!-- Extra Per Hour -->
+        <div class="mb-3">
+          <label>Extra Per Hour</label>
+          {{ form.extra_per_hour }}
+        </div>
+
+        <!-- Per Night -->
+        <div class="mb-3">
+          <label>Per Night Charge</label>
+          {{ form.per_night_charge }}
+        </div>
+
+        <!-- Status -->
+        <div class="mb-3">
+          <label>Status</label>
+          {{ form.status }}
+        </div>
+
+        <button type="submit" class="btn btn-danger">
+          Add Vehicle Package
+        </button>
+
+      </form>
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}

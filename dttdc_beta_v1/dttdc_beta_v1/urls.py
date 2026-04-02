@@ -7,7 +7,9 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include("core.urls")),
     path('ebooking/',include("ebooking.urls")),
+    path('carbooking/',include("carbooking.urls")),
     path('dttdc_admin/',include('dttdc_admin.urls')),
+    path('dttdc_car_admin/',include('dttdc_car_admin.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 

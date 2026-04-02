@@ -1,6 +1,6 @@
-{% extends "dttdc_admin/base_admin.html" %}
+{% extends "dttdc_car_admin/base_car_admin.html" %}
 {% load static %}
-{% block content %}
+{% block car_admin_home_page %}
 {% load tz %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <div class="container-fluid py-3">
@@ -21,12 +21,12 @@
           <button class="btn-close" data-bs-dismiss="offcanvas"></button>
         </div>
         <div class="offcanvas-body p-0">
-          {% include "dttdc_admin/components/sidebar_content.html" %}
+          {% include "dttdc_car_admin/components/sidebar_content.html" %}
         </div>
       </div>
 
       <div class="d-none d-md-block sidebar-modern">
-        {% include "dttdc_admin/components/sidebar.html" %}
+        {% include "dttdc_car_admin/components/sidebar.html" %}
       </div>
     </aside>
 
@@ -35,13 +35,13 @@
 
       <!-- Banner -->
       <div class="banner-card text-center">
-        <img src="{% static 'dttdc_admin/images/delhi_skyline_image.jpg' %}" class="banner-img">
+        <img src="{% static 'dttdc_car_admin/images/carbooking_Admin_panel.png' %}" class="banner-img">
       </div>
 
       <!-- Welcome Section (FIXED) -->
       <div class="welcome-card">
         <div class="welcome-content">
-          <h2> Welcome Back, Tour-Admin </h2>
+          <h2> Welcome Back, Car-Admin </h2>
           <p>Here’s what’s happening with your bookings today</p>
         </div>
       </div>

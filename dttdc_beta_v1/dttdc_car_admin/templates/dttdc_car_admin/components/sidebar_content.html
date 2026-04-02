@@ -1,0 +1,88 @@
+{% load static %}
+
+<div class="p-3">
+  <!-- Keep the title here for the static sidebar view (md+) -->
+  <div
+    class="SideTitle d-flex align-items-center justify-content-center text-white mb-3 d-none d-md-flex"
+  >
+    Admin Panel
+  </div>
+
+  <ul class="list-unstyled">
+    <li class="mt-1">
+      <i class="fa fa-caret-right m-1"></i>
+      <a href="#" class="tg">Home</a>
+    </li>
+
+    <li class="mt-1">
+        <i class="fa fa-caret-right m-1"></i>
+        <a href="#" class="tg">Admin Hub</a>
+    </li>
+
+    <li class="mt-1">
+      <i class="fa fa-caret-right m-1"></i>
+      <a href="#" class="tg">Feedback Report</a>
+    </li>
+
+    <li class="mt-1">
+      <i class="fa fa-caret-right m-1"></i>
+      <a href="#" class="tg">Tour Booking Report</a>
+    </li>
+
+    <li class="mt-1">
+      <i class="fa fa-caret-right m-1"></i>
+      <a href="#" class="tg">Transaction Report</a>
+    </li>
+
+    <li class="mt-1">
+      <i class="fa fa-caret-right m-1"></i>
+      <a href="#" class="tg">Ticket Cancellation Report</a>
+    </li>
+
+    <li class="mt-1">
+      <i class="fa fa-caret-right m-1"></i>
+      <a href="#" class="tg">Ticket Cancellation Requests</a>
+    </li>
+
+    <li class="mt-1">
+      <i class="fa fa-caret-right m-1"></i>
+      <a href="#" class="tg">Re-Book Failed Ticket</a>
+    </li>
+
+    <li class="mt-1">
+      <i class="fa fa-caret-right m-1"></i>
+      <a href="{% url 'admin_logout' %}" class="tg text-danger fw-bold">
+        Logout
+      </a>
+    </li>
+
+    <li class="mt-3">
+      <div class="SideTitle pt-1 mt-2 text-white d-inline-block w-100">
+        Old Report (Till May 2024)
+      </div>
+    </li>
+
+    <li class="mt-1">
+      <i class="fa fa-caret-right m-1"></i>
+      <a href="#" class="tg">Booking Report</a>
+    </li>
+
+    <li class="mt-1">
+      <i class="fa fa-caret-right m-1"></i>
+      <a href="#" class="tg">Transaction Report</a>
+    </li>
+
+    <li class="mt-1">
+      <i class="fa fa-caret-right m-1"></i>
+      <a href="#" class="tg">Online CCD Report</a>
+    </li>
+  </ul>
+
+  <div class="mt-3">
+    <img
+      src="{% static 'dttdc_car_admin/images/8cities_banner.png' %}"
+      class="img-fluid w-100"
+      alt="banner"
+    />
+  </div>
+</div>

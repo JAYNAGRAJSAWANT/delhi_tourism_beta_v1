@@ -1,0 +1,90 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+
+    <link rel="icon" href="{% static 'booking/favicon.ico' %}" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+
+    <link rel="apple-touch-icon" href="{% static 'booking/logo192.png' %}" />
+    <link rel="manifest" href="{% static 'booking/manifest.json' %}" />
+
+    <!-- Font Awesome (local version) -->
+    <link
+      rel="stylesheet"
+      href="{% static 'carbooking/css/all.css' %}"
+      crossorigin="anonymous"
+    />
+
+    <!-- Bootstrap -->
+    <link
+      rel="stylesheet"
+      href="{% static 'carbooking/css/bootstrap.min.css' %}"
+      crossorigin="anonymous"
+    />
+
+    <!-- Google Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;1,100&display=swap"
+      rel="stylesheet"
+    />
+
+<link rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/css/intlTelInput.css" />
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/intlTelInput.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js"></script>
+
+    
+    <!-- Bootstrap Icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.5.0/font/bootstrap-icons.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+    <!-- Datatables Responsive -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.datatables.net/responsive/3.0.2/css/responsive.bootstrap.css"
+    />
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'carbooking/css/custom.css' %}" />
+     
+    <title>Delhi Tourism</title>
+
+    
+  </head>
+
+  <body>
+    {% include 'carbooking/components/header.html' %}
+    {% include 'carbooking/components/menu.html' %}
+    <div id="root">
+      {% block car_content %}{% endblock %}
+      
+
+    </div>
+    {% include 'carbooking/components/footer.html' %}
+    <!-- Bootstrap JS -->
+    <script
+      src="{% static 'carbooking/js/bootstrap.bundle.min.js' %}"
+      crossorigin="anonymous"
+    ></script>
+
+    <!-- Datatables -->
+    <script src="https://cdn.datatables.net/responsive/3.0.2/js/dataTables.responsive.js"></script>
+
+    
+
+    <!-- Google Translate -->
+    <script src="{% static 'carbooking/js/googleTranslate.js' %}"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  </body>
+</html>

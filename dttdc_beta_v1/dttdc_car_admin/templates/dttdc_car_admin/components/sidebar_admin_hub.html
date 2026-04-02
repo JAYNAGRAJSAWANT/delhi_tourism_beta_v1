@@ -1,0 +1,71 @@
+{% load static %}
+
+<div class="container mt-5">
+    <div class="SideTitle d-flex align-items-center text-white justify-content-center pb-2 h1">
+        Admin Hub
+    </div>
+
+    <div class="pl_left_arrow">
+        <ul class="list-unstyled">
+
+            <li class="mt-1">
+                <i class="fa fa-caret-right m-1"></i>
+                <a href="{% url 'admin_hub' %}" class="tg">Home</a>
+            </li>
+
+            <!--Added by Jay start-->
+            <li class="mt-1">
+                <i class="fa fa-caret-right m-1"></i>
+                <a href="{% url 'add_package_category' %}" class="tg">Add Package Category</a>
+            </li>
+            <li class="mt-1">
+                <i class="fa fa-caret-right m-1"></i>
+                <a href="{% url 'select_package_category' %}" class="tg">Edit Package Category</a>
+            </li>
+            <li class="mt-1">
+                <i class="fa fa-caret-right m-1"></i>
+                <a href="{% url 'add_package' %}" class="tg">Add Package</a>
+            </li>
+           <!--Added by Jay end-->
+
+            <li class="mt-1">
+                <i class="fa fa-caret-right m-1"></i>
+                <a href="{% url 'add_tour_category' %}" class="tg">Edit Package</a>
+            </li>
+
+            <li class="mt-1">
+                <i class="fa fa-caret-right m-1"></i>
+                <a href="{% url 'add_vehicle' %}" class="tg">Add Vehicle</a>
+            </li>
+
+            <li class="mt-1">
+                <i class="fa fa-caret-right m-1"></i>
+                <a href="{% url 'delete_tour_category_select' %}" class="tg">Edit Vehicle</a>
+            </li>
+            <li class="mt-1">
+                <i class="fa fa-caret-right m-1"></i>
+                <a href="{% url 'add_vehicle_package' %}" class="tg">Add Car Package</a>
+            </li>
+            <li class="mt-1">
+                <i class="fa fa-caret-right m-1"></i>
+                <a href="{% url 'update_tour_availability' %}" class="tg">Edit Car Package</a>
+            </li>
+            <li class="mt-1">
+                <i class="fa fa-caret-right m-1"></i>
+                <a href="{% url 'admin_home' %}" class="tg">Back to Admin Panel</a>
+            </li>
+
+            <li class="mt-1">
+                <i class="fa fa-caret-right m-1"></i>
+                <a href="{% url 'admin_logout' %}" class="tg text-danger fw-bold">
+                    Logout
+                </a>
+            </li>
+
+        </ul>
+
+        <div>
+            <img src="{% static 'dttdc_car_admin/images/8cities_banner.png' %}" class="img-fluid w-100" alt="banner">
+        </div>
+    </div>
+</div>

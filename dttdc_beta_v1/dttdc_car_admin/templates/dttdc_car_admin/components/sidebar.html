@@ -1,0 +1,71 @@
+{% load static %}
+
+<div class="container">
+    <div class="SideTitle d-flex align-items-center text-white justify-content-center pb-2 h1">
+        Admin Panel
+    </div>
+
+    <div class="pl_left_arrow">
+        <ul class="list-unstyled">
+
+            <li class="mt-1">
+                <i class="fa fa-caret-right m-1"></i>
+                <a href="#" class="tg">Home</a>
+            </li>
+
+            <li class="mt-1">
+                <i class="fa fa-caret-right m-1"></i>
+                <a href=" {% url 'admin_hub_carbooking' %}" class="tg">Admin Hub</a>
+            </li>
+
+            <li class="mt-1">
+                <i class="fa fa-caret-right m-1"></i>
+                <a href="#" class="tg">Car Tour Booking Details</a>
+            </li>
+
+            <li class="mt-1">
+                <i class="fa fa-caret-right m-1"></i>
+                <a href="#" class="tg">Car Tour Transaction Details</a>
+            </li>
+
+            <li class="mt-1">
+                <i class="fa fa-caret-right m-1"></i>
+                <a href="#" class="tg">Cancellation Requests</a>
+            </li>
+
+            <li class="mt-1">
+                <i class="fa fa-caret-right m-1"></i>
+                <a href="#" class="tg">Package Categories</a>
+            </li>
+
+            <li class="mt-1">
+                <i class="fa fa-caret-right m-1"></i>
+                <a href="#" class="tg">Package Details</a>
+            </li>
+
+            <li class="mt-1">
+                <i class="fa fa-caret-right m-1"></i>
+                <a href="#" class="tg">
+                    Vehicles
+                </a>
+            </li>
+
+            <li class="mt-1">
+                <i class="fa fa-caret-right m-1"></i>
+                <a href="#" class="tg">Vehicle Packages</a>
+            </li>
+
+            <li class="mt-1">
+                <i class="fa fa-caret-right m-1"></i>
+                <a href="#" class="tg text-danger fw-bold">
+                    Logout
+                </a>
+            </li>
+
+        </ul>
+
+        <div>
+            <img src="{% static 'dttdc_car_admin/images/8cities_banner.png' %}" class="img-fluid w-100" alt="banner">
+        </div>
+    </div>
+</div>
