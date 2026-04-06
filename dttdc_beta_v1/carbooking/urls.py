@@ -18,24 +18,24 @@ urlpatterns = [
    path("add_package",views.add_package,name="add_package"),
 
    #==================================Edit package========================================
-   # path("select_package",views.select_package,name="select_package"),
-   # path("edit_package",views.edit_package,name="edit_package"),
+    path("select_package",views.select_package,name="select_package"),
+    path("edit_package/<int:pk>/",views.edit_package,name="edit_package"),
 
    #==================================Add Vehicle========================================
 
    path("add_vehicle",views.add_vehicle,name="add_vehicle"),
 
    #==================================Edit Vehicle========================================
-   # path("select_vehicle",views.select_vehicle,name="select_vehicle"),
-   # path("edit_vehicle",views.edit_vehicle,name="edit_vehicle"),
+    path("select_vehicle",views.select_vehicle,name="select_vehicle"),
+    path("edit_vehicle/<int:pk>/",views.edit_vehicle,name="edit_vehicle"),
 
    #==================================Add vehicle package========================================
 
    path("add_vehicle_package",views.add_vehicle_package,name="add_vehicle_package"),
 
    #==================================Edit vehicle package========================================
-   # path("select_vehicle_package",views.select_vehicle_package,name="select_vehicle_package"),
-   # path("edit_vehicle_package",views.edit_vehicle_package,name="edit_vehicle_package"),
+    path("select_vehicle_package",views.select_vehicle_package,name="select_vehicle_package"),
+    path("edit_vehicle_package/<int:pk>/",views.edit_vehicle_package,name="edit_vehicle_package"),
 
   
    

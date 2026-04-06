@@ -43,43 +43,45 @@
           </label>
 
           <div class="col-md-9">
-            {{ form.vehicle_name }}
+            {{ form.vehicleName }}
 
-            {% if form.vehicle_name.errors %}
-              <div class="invalid-feedback d-block">
-                {{ form.vehicle_name.errors|striptags }}
-              </div>
-            {% endif %}
+{% if form.vehicleName.errors %}
+  <div class="invalid-feedback d-block">
+    {{ form.vehicleName.errors|striptags }}
+  </div>
+{% endif %}
           </div>
         </div>
 
         <!-- Vehicle Image -->
-        <div class="mb-3">
-          <label class="form-label">
-            Vehicle Image <span class="text-danger">*</span>
-          </label>
+        <div class="row mb-3">
+  <label class="col-md-3 col-form-label">
+    Vehicle Image
+  </label>
 
-          <input type="file"
-                 name="{{ form.vehicle_image.name }}"
-                 id="id_vehicle_image"
-                 class="form-control"
-                 accept="image/jpeg,image/png,image/webp">
+  <div class="col-md-9">
+    
+    <!-- Input -->
+    {{ form.vehicleImage }}
 
-          {% if form.vehicle_image.errors %}
-            <div class="invalid-feedback d-block">
-              {{ form.vehicle_image.errors|striptags }}
-            </div>
-          {% endif %}
+    <!-- Errors -->
+    {% if form.vehicleImage.errors %}
+      <div class="invalid-feedback d-block">
+        {{ form.vehicleImage.errors|striptags }}
+      </div>
+    {% endif %}
 
-          <div class="form-text">
-            Allowed types: jpeg, png, webp. Max size: 2 MB.
-          </div>
+    <!-- Preview (ONLY if image exists AND has URL) -->
+    {% if form.instance and form.instance.vehicleImage %}
+      <div class="mt-2">
+        <img src="{{ form.instance.vehicleImage.url }}" 
+             class="img-fluid rounded border"
+             style="max-height:150px;">
+      </div>
+    {% endif %}
 
-          <!-- Preview -->
-          <div class="mt-3">
-            <img id="imagePreview" class="img-fluid rounded" style="max-height:200px; display:none;">
-          </div>
-        </div>
+  </div>
+</div>
 
         <!-- Submit -->
         <div class="text-end">

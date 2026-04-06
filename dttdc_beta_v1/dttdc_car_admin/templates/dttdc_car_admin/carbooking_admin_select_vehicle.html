@@ -1,0 +1,49 @@
+{% extends "dttdc_car_admin/carbooking_admin_hub.html" %}
+
+{% block select_vehicle %}
+
+<div class="container mt-4">
+
+  <div class="card shadow-sm">
+    <div class="card-header text-center">
+      <h5>Select Vehicle to Edit</h5>
+    </div>
+
+    <div class="card-body">
+
+      <div class="mb-3">
+        <label>Select Vehicle</label>
+
+        <select id="vehicleSelect" class="form-control">
+          <option value="">-- Select Vehicle --</option>
+
+          {% for v in vehicles %}
+            <option value="{{ v.id }}">{{ v.vehicleName }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="text-end">
+        <button type="button" class="btn btn-primary" onclick="goToEdit()">
+          Edit Vehicle
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+function goToEdit() {
+    var id = document.getElementById("vehicleSelect").value;
+
+    if (id) {
+        var url = "{% url 'edit_vehicle' 0 %}";
+        window.location.href = url.replace('0', id);
+    } else {
+        alert("Please select a vehicle");
+    }
+}
+</script>
+
+{% endblock %}

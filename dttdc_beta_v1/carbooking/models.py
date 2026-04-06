@@ -3,205 +3,245 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 import uuid
 
 
-#  VEHICLE
+# VEHICLES
 class CarBookingVehicle(models.Model):
-    vehicle_name = models.CharField(max_length=255)
-    vehicle_image = models.ImageField(upload_to="vehicles/")
+    vehicleName = models.CharField(max_length=255)
+    vehicleImage = models.ImageField(
+    upload_to="vehicles/%Y/%m/",
+    blank=True,
+    null=True
+)
+
+    createdAt = models.DateTimeField(auto_now_add=True)
+    updatedAt = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.vehicle_name
+        return self.vehicleName
+    
+# PACKAGE CATEGORY
+class CarBookingPackageCategory(models.Model):
+    packageCategoryName = models.CharField(max_length=255)
+    status = models.BooleanField(default=True)
+
+    createdAt = models.DateTimeField(auto_now_add=True)
+    updatedAt = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+     return self.packageCategoryName
+
+# PACKAGE
+class CarBookingPackage(models.Model):
+    packageName = models.CharField(max_length=255)
+    status = models.BooleanField(default=True)
+
+    createdAt = models.DateTimeField(auto_now_add=True)
+    updatedAt = models.DateTimeField(auto_now=True)
+
+    carPackageCategory = models.ForeignKey(
+        CarBookingPackageCategory,
+        on_delete=models.CASCADE
+    )
+
+    def __str__(self):
+     return self.packageName
 
 
-#  VEHICLE DETAILS
+# VEHICLE DETAILS
 class CarBookingVehicleDetails(models.Model):
-    vehicle = models.OneToOneField(CarBookingVehicle, on_delete=models.CASCADE, related_name="details")
+    vehicleCapacity = models.CharField(max_length=255)
+    tourDescription = models.TextField()
 
-    vehicle_capacity = models.CharField(max_length=50)
-    tour_description = models.TextField()
+    baseFare = models.FloatField()
+    GST = models.FloatField()
 
-    base_fare = models.FloatField(validators=[MinValueValidator(0)])
-    gst = models.FloatField(validators=[MinValueValidator(0), MaxValueValidator(100)])
-
-    extra_per_km = models.FloatField(validators=[MinValueValidator(0)])
-    extra_per_hour = models.FloatField(validators=[MinValueValidator(0)])
-    per_night_charge = models.FloatField(validators=[MinValueValidator(0)])
+    extraPerKM = models.FloatField()
+    extraPerHour = models.FloatField()
+    perNightCharge = models.FloatField()
 
     status = models.BooleanField(default=True)
 
+    vehicle = models.ForeignKey(
+        CarBookingVehicle,
+        on_delete=models.CASCADE
+    )
 
-#  PACKAGE
-class CarBookingPackage(models.Model):
-    package_name = models.CharField(max_length=255)
-    status = models.BooleanField(default=False)
+    package = models.ForeignKey(
+        CarBookingPackage,
+        on_delete=models.CASCADE
+    )
 
-    def __str__(self):
-        return self.package_name 
-
-
-#  PACKAGE CATEGORY
-class CarBookingPackageCategory(models.Model):
-    package_category_name = models.CharField(max_length=255)
-    status = models.BooleanField(default=False)
+    createdAt = models.DateTimeField(auto_now_add=True)
+    updatedAt = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.package_category_name 
+     return f"{self.vehicle.vehicleName} - {self.package.packageName} - {self.package.carPackageCategory.packageCategoryName}"
 
 
-#  AVAILABILITY
+
+
+# AVAILABILITY
 class CarBookingAvailability(models.Model):
-    vehicle = models.ForeignKey(CarBookingVehicle, on_delete=models.CASCADE, related_name="availability")
+    totalSeats = models.IntegerField()
+    availableSeats = models.IntegerField()
 
-    total_seats = models.PositiveIntegerField(validators=[MinValueValidator(1)])
-    available_seats = models.PositiveIntegerField(validators=[MinValueValidator(0)])
+    availableDate = models.DateField()
 
-    available_date = models.DateField()
+    vehicleDetails = models.ForeignKey(
+        CarBookingVehicleDetails,
+        on_delete=models.CASCADE
+    )
 
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        unique_together = ("vehicle", "available_date")
+    createdAt = models.DateTimeField(auto_now_add=True)
+    updatedAt = models.DateTimeField(auto_now=True)
 
 
-#  BOOKING
+# BOOKING DETAILS
 class CarBookingBookingDetails(models.Model):
-    BOOKING_STATUS = [
-        ("initiated", "Initiated"),
-        ("confirmed", "Confirmed"),
-        ("cancelled", "Cancelled"),
-        ("completed", "Completed"),
-        ("payment_failed", "Payment Failed"),
-    ]
+    journeyDate = models.DateField()
+    bookingStatus = models.CharField(max_length=255)
 
-    vehicle = models.ForeignKey(CarBookingVehicle, on_delete=models.PROTECT)
-
-    journey_date = models.DateField()
-
-    booking_status = models.CharField(max_length=50, choices=BOOKING_STATUS)
-
-    email = models.EmailField()
-    full_name = models.CharField(max_length=255)
+    email = models.CharField(max_length=255)
+    fullName = models.CharField(max_length=255)
 
     address = models.TextField()
-    city = models.CharField(max_length=100)
-    state = models.CharField(max_length=100)
-    country = models.CharField(max_length=100)
+    city = models.CharField(max_length=255)
+    state = models.CharField(max_length=255)
+    country = models.CharField(max_length=255)
 
-    phone_number = models.CharField(max_length=20)
-    passport_number = models.CharField(max_length=50, blank=True, null=True)
+    phoneNumber = models.CharField(max_length=255)
+    passportNumber = models.CharField(max_length=255)
 
-    pickup_place = models.CharField(max_length=255)
-    pickup_time = models.TimeField()
+    pickUpPlace = models.CharField(max_length=255)
+    pickUpTime = models.TimeField()
 
-    total_fare = models.FloatField(validators=[MinValueValidator(0)])
+    totalFare = models.FloatField()
 
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    vehicle = models.ForeignKey(
+        CarBookingVehicle,
+        on_delete=models.PROTECT
+    )
+
+    createdAt = models.DateTimeField(auto_now_add=True)
+    updatedAt = models.DateTimeField(auto_now=True)
 
 
-#  CANCELLATION
+# CANCELLATION
 class CarBookingCancellation(models.Model):
-    booking = models.OneToOneField(CarBookingBookingDetails, on_delete=models.CASCADE, related_name="cancellation")
+    cancellationStatus = models.CharField(max_length=255)
 
-    cancellation_status = models.CharField(max_length=100)
+    bookingDetails = models.ForeignKey(
+        CarBookingBookingDetails,
+        on_delete=models.CASCADE
+    )
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    createdAt = models.DateTimeField(auto_now_add=True)
 
-
-#  PAYMENT DETAILS (RAW RESPONSE)
-class CarBookingPaymentDetails(models.Model):
-    booking = models.OneToOneField(CarBookingBookingDetails, on_delete=models.CASCADE, related_name="payment")
-
-    payment_response = models.JSONField()
-
-    created_at = models.DateTimeField(auto_now_add=True)
-
-
-#  TRANSACTION
+# TRANSACTION
 class CarBookingTransaction(models.Model):
-    booking = models.ForeignKey(CarBookingBookingDetails, on_delete=models.CASCADE, related_name="transactions")
-
     txnid = models.CharField(max_length=255)
-    amount = models.FloatField(validators=[MinValueValidator(0)])
+    amount = models.FloatField()
+    paymentStatus = models.CharField(max_length=255)
 
-    payment_status = models.CharField(max_length=100)
+    bookingDetails = models.ForeignKey(
+        CarBookingBookingDetails,
+        on_delete=models.CASCADE
+    )
 
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    createdAt = models.DateTimeField(auto_now_add=True)
+    updatedAt = models.DateTimeField(auto_now=True)
 
 
-#  REFUND
+# PAYMENT DETAILS
+class CarBookingPaymentDetails(models.Model):
+    paymentResponse = models.TextField()
+
+    transactionData = models.ForeignKey(
+        CarBookingTransaction,
+        on_delete=models.CASCADE
+    )
+
+    createdAt = models.DateTimeField(auto_now_add=True)
+
+
+
+
+
+# REFUND
 class CarBookingRefund(models.Model):
-    booking = models.OneToOneField(CarBookingBookingDetails, on_delete=models.CASCADE, related_name="refund")
+    refundAmount = models.FloatField()
+    refundStatus = models.CharField(max_length=255)
 
-    refund_amount = models.FloatField(validators=[MinValueValidator(0)])
-    refund_status = models.CharField(max_length=100)
+    cancellation = models.ForeignKey(
+        CarBookingCancellation,
+        on_delete=models.CASCADE
+    )
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    createdAt = models.DateTimeField(auto_now_add=True)
 
 
-#  TICKET
+# TICKET DETAILS
 class CarBookingTicketDetails(models.Model):
-    booking = models.OneToOneField(CarBookingBookingDetails, on_delete=models.CASCADE, related_name="ticket")
+    pnrNumber = models.CharField(max_length=255)
+    invoiceNumber = models.CharField(max_length=255)
 
-    pnr_number = models.CharField(max_length=100)
-    invoice_number = models.CharField(max_length=100)
+    bookingDetails = models.ForeignKey(
+        CarBookingBookingDetails,
+        on_delete=models.CASCADE
+    )
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    createdAt = models.DateTimeField(auto_now_add=True)
 
 
-#  CAPTCHA
+
+# CAPTCHA
 class CarBookingCaptcha(models.Model):
-    captcha_value = models.CharField(max_length=100)
-    captcha_token = models.CharField(max_length=255, unique=True)
+    captchaValue = models.CharField(max_length=255)
+    captchaToken = models.CharField(max_length=255)
 
-    attempts = models.IntegerField(default=5)
-    validate_status = models.BooleanField(default=False)
+    attempts = models.IntegerField()
+    validateStatus = models.BooleanField()
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    createdAt = models.DateTimeField(auto_now_add=True)
 
-
-#  FEEDBACK
+# FEEDBACK
 class Feedback(models.Model):
     name = models.CharField(max_length=255)
-    email = models.EmailField()
-    phone_number = models.CharField(max_length=20)
+    email = models.CharField(max_length=255)
+    phoneNumber = models.CharField(max_length=255)
     comment = models.TextField()
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    createdAt = models.DateTimeField(auto_now_add=True)
 
 
-#  HOLIDAY
+# HOLIDAY
 class Holiday(models.Model):
     date = models.DateField()
     name = models.CharField(max_length=255)
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    createdAt = models.DateTimeField(auto_now_add=True)
 
 
-#  OTP
+# OTP
 class OTP(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
-    otp = models.CharField(max_length=10)
-    email = models.EmailField()
+    OTP = models.CharField(max_length=255)
+    email = models.CharField(max_length=255)
 
-    verified = models.BooleanField(default=False)
+    verified = models.BooleanField()
+    attempts = models.IntegerField()
+    OTPSentCount = models.IntegerField()
 
-    generation_time = models.DateTimeField(auto_now_add=True)
-
-    attempts = models.IntegerField(default=5)
-    otp_sent_count = models.IntegerField(default=5)
-
-    created_at = models.DateTimeField(auto_now_add=True)
+    generationTime = models.DateTimeField()
+    createdAt = models.DateTimeField(auto_now_add=True)
 
 
-#  USER (CUSTOM SIMPLE)
+# USER
 class User(models.Model):
-    email = models.EmailField(unique=True)
+    email = models.CharField(max_length=255)
     password = models.CharField(max_length=255)
 
-    active = models.BooleanField(default=True)
+    active = models.BooleanField()
 
-    def __str__(self):
-        return self.email
+    createdAt = models.DateTimeField(auto_now_add=True)
+    updatedAt = models.DateTimeField(auto_now=True)

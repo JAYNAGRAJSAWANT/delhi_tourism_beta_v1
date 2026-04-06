@@ -1,33 +1,33 @@
 {% extends "dttdc_car_admin/carbooking_admin_hub.html" %}
 {% load static %}
 
-{% block add_package %}
+{% block edit_package %}
 
 <div class="container mt-4">
 
   <!-- Global Errors -->
   {% if form.non_field_errors %}
-    <div class="alert alert-danger">
-      {{ form.non_field_errors }}
-    </div>
+  <div class="alert alert-danger">
+    {{ form.non_field_errors }}
+  </div>
   {% endif %}
 
   <!-- Messages -->
   {% if messages %}
-    {% for message in messages %}
-      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-        {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-      </div>
-    {% endfor %}
+  {% for message in messages %}
+  <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+    {{ message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+  {% endfor %}
   {% endif %}
 
   <div class="card shadow-sm">
-    
+
     <!-- Header -->
     <div class="card-header text-center">
       <h5 class="mb-0" style="color:rgb(170, 22, 22);">
-        Add Package
+        Edit Package
       </h5>
     </div>
 
@@ -46,28 +46,28 @@
           <div class="col-md-9">
             {{ form.packageName }}
 
-{% if form.packageName.errors %}
-  <div class="invalid-feedback d-block">
-    {{ form.packageName.errors|striptags }}
-  </div>
-{% endif %}
+            {% if form.packageName.errors %}
+            <div class="invalid-feedback d-block">
+              {{ form.packageName.errors|striptags }}
+            </div>
+            {% endif %}
           </div>
         </div>
 
         <!-- Package Category -->
         <div class="row mb-3">
           <label class="col-md-3 col-form-label">
-            Package Category <span class="text-danger">*</span>
+            Package Category
           </label>
 
           <div class="col-md-9">
             {{ form.carPackageCategory }}
 
-{% if form.carPackageCategory.errors %}
-  <div class="invalid-feedback d-block">
-    {{ form.carPackageCategory.errors|striptags }}
-  </div>
-{% endif %}
+            {% if form.carPackageCategory.errors %}
+            <div class="invalid-feedback d-block">
+              {{ form.carPackageCategory.errors|striptags }}
+            </div>
+            {% endif %}
           </div>
         </div>
 
@@ -81,17 +81,21 @@
             {{ form.status }}
 
             {% if form.status.errors %}
-              <div class="invalid-feedback d-block">
-                {{ form.status.errors|striptags }}
-              </div>
+            <div class="invalid-feedback d-block">
+              {{ form.status.errors|striptags }}
+            </div>
             {% endif %}
           </div>
         </div>
 
-        <!-- Submit -->
+        <!-- Buttons -->
         <div class="text-end">
+          <a href="{% url 'select_package' %}" class="btn btn-secondary me-2">
+            Cancel
+          </a>
+
           <button type="submit" class="btn btn-primary px-4">
-            Save Package
+            Update Package
           </button>
         </div>
 
@@ -100,5 +104,12 @@
     </div>
   </div>
 </div>
+
+<!-- Optional: Auto-hide messages -->
+<script>
+  setTimeout(() => {
+    document.querySelectorAll('.alert').forEach(el => el.remove());
+  }, 3000);
+</script>
 
 {% endblock %}

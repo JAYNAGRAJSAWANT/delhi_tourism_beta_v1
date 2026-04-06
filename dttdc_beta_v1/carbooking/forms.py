@@ -1,33 +1,38 @@
 from django import forms
-from .models import CarBookingPackage, CarBookingPackageCategory, CarBookingVehicle, CarBookingVehicleDetails
+from .models import (
+    CarBookingPackage,
+    CarBookingPackageCategory,
+    CarBookingVehicle,
+    CarBookingVehicleDetails
+)
 
-# ====================================Package Category Form=========================================
+# ==================================== Package Category Form =========================================
 
 class CarBookingPackageCategoryForm(forms.ModelForm):
 
     STATUS_CHOICES = [
-        (True, "Active"),
-        (False, "Inactive"),
+        (1, "Active"),
+        (0, "Inactive"),
     ]
 
-    status = forms.ChoiceField(
+    status = forms.TypedChoiceField(
         choices=STATUS_CHOICES,
+        coerce=lambda x: bool(int(x)),
         widget=forms.Select(attrs={'class': 'form-control'})
     )
 
     class Meta:
         model = CarBookingPackageCategory
-        fields = ['package_category_name', 'status']
+        fields = ['packageCategoryName', 'status']
+
         widgets = {
-            'package_category_name': forms.TextInput(attrs={
-                'class': 'form-control'
+            'packageCategoryName': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter category name'
             }),
         }
 
-    def clean_status(self):
-        value = self.cleaned_data['status']
-        return value == 'True'  # convert string → boolean
-    
+
 # ==================================== Package Form =========================================
 
 class CarBookingPackageForm(forms.ModelForm):
@@ -43,54 +48,56 @@ class CarBookingPackageForm(forms.ModelForm):
         widget=forms.Select(attrs={'class': 'form-control'})
     )
 
-    # ✅ EXTRA FIELD (not in model)
-    category = forms.ModelChoiceField(
-        queryset=CarBookingPackageCategory.objects.all(),
+    carPackageCategory = forms.ModelChoiceField(
+        queryset=CarBookingPackageCategory.objects.filter(status=True),  # ✅ only active categories
         widget=forms.Select(attrs={'class': 'form-control'}),
-        empty_label="Select Category",
-        required=True
+        empty_label="Select Category"
     )
 
     class Meta:
         model = CarBookingPackage
-        fields = ['package_name', 'status']  # ❗ category NOT here
+        fields = ['packageName', 'status', 'carPackageCategory']
 
         widgets = {
-            'package_name': forms.TextInput(attrs={
+            'packageName': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Enter package name'
             }),
         }
-# ====================================  Vehicle Form =========================================
+
+
+# ==================================== Vehicle Form =========================================
 
 class CarBookingVehicleForm(forms.ModelForm):
 
     class Meta:
         model = CarBookingVehicle
-        fields = ['vehicle_name', 'vehicle_image']
+        fields = ['vehicleName', 'vehicleImage']
 
         widgets = {
-            'vehicle_name': forms.TextInput(attrs={
+            'vehicleName': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Enter vehicle name'
             }),
+            'vehicleImage': forms.ClearableFileInput(attrs={
+    'class': 'form-control'
+})
         }
 
 
-#======================================== Vehicle Packages ============================================
+# ==================================== Vehicle Details Form ============================================
 
 class CarBookingVehicleDetailsForm(forms.ModelForm):
 
-    # Dropdowns
     package = forms.ModelChoiceField(
-        queryset=CarBookingPackage.objects.all(),
-        empty_label="Please Select",
+        queryset=CarBookingPackage.objects.filter(status=True),  # ✅ only active packages
+        empty_label="Select Package",
         widget=forms.Select(attrs={'class': 'form-control'})
     )
 
     vehicle = forms.ModelChoiceField(
         queryset=CarBookingVehicle.objects.all(),
-        empty_label="Please Select",
+        empty_label="Select Vehicle",
         widget=forms.Select(attrs={'class': 'form-control'})
     )
 
@@ -108,22 +115,31 @@ class CarBookingVehicleDetailsForm(forms.ModelForm):
     class Meta:
         model = CarBookingVehicleDetails
         fields = [
-            'vehicle_capacity',
-            'tour_description',
-            'base_fare',
-            'gst',
-            'extra_per_km',
-            'extra_per_hour',
-            'per_night_charge',
-            'status'
+            'vehicleCapacity',
+            'tourDescription',
+            'baseFare',
+            'GST',
+            'extraPerKM',
+            'extraPerHour',
+            'perNightCharge',
+            'status',
+            'vehicle',
+            'package'
         ]
 
         widgets = {
-            'vehicle_capacity': forms.TextInput(attrs={'class': 'form-control'}),
-            'tour_description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
-            'base_fare': forms.NumberInput(attrs={'class': 'form-control'}),
-            'gst': forms.NumberInput(attrs={'class': 'form-control'}),
-            'extra_per_km': forms.NumberInput(attrs={'class': 'form-control'}),
-            'extra_per_hour': forms.NumberInput(attrs={'class': 'form-control'}),
-            'per_night_charge': forms.NumberInput(attrs={'class': 'form-control'}),
+            'vehicleCapacity': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter capacity'
+            }),
+            'tourDescription': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 4,
+                'placeholder': 'Enter tour description'
+            }),
+            'baseFare': forms.NumberInput(attrs={'class': 'form-control'}),
+            'GST': forms.NumberInput(attrs={'class': 'form-control'}),
+            'extraPerKM': forms.NumberInput(attrs={'class': 'form-control'}),
+            'extraPerHour': forms.NumberInput(attrs={'class': 'form-control'}),
+            'perNightCharge': forms.NumberInput(attrs={'class': 'form-control'}),
         }
