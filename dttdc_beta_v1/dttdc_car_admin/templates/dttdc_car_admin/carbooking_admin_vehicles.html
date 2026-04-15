@@ -1,0 +1,71 @@
+{% extends "dttdc_car_admin/base_car_admin.html" %}
+
+{% block carbooking_admin_vehicles %}
+
+<div class="container mt-4">
+
+  <div class="mb-2 mt-2">
+
+  <a href="{% url 'carbooking_admin_home' %}"
+     class="btn btn-danger
+            d-inline-flex align-items-center
+            position-static position-md-absolute
+            start-md-0 top-md-50 translate-middle-md-y">
+    ← Back
+  </a>
+
+</div>
+
+  <div class="card shadow-sm">
+    <div class="card-header text-center">
+      <h5>All Vehicles</h5>
+    </div>
+
+    <div class="card-body">
+
+      <table class="table table-bordered">
+  <thead>
+    <tr>
+      <th>S No.</th>
+      <th>Vehicle Name</th>
+      <th>Vehicle Image</th>
+      <!-- <th>Action</th> -->
+    </tr>
+  </thead>
+
+  <tbody>
+  {% for vp in vehicle_packages %}
+  <tr>
+    <!-- S No -->
+    <td>{{ forloop.counter }}</td>
+
+    <!-- Vehicle Name -->
+    <td>{{ vp.vehicle.vehicleName }}</td>
+
+    <!-- Vehicle Image -->
+    <td>
+      {% if vp.vehicle.vehicleImage %}
+        <img src="{{ vp.vehicle.vehicleImage.url }}" 
+             alt="Vehicle Image" 
+             style="width: 80px; height: 50px; object-fit: cover; border-radius: 5px;">
+      {% else %}
+        <span class="text-muted">No Image</span>
+      {% endif %}
+    </td>
+  </tr>
+  {% empty %}
+  <tr>
+    <td colspan="3" class="text-center text-muted">
+      No vehicles found.
+    </td>
+  </tr>
+  {% endfor %}
+</tbody>
+</table>
+
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}

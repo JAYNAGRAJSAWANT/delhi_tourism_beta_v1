@@ -101,7 +101,7 @@ def admin_login(request):
     print("If User is Valid ---")
     print("Generating Access Token : ", access_token)
 
-    response = redirect("admin_home")  # change to your dashboard URL name
+    response = redirect("admin_selection")  # change to your dashboard URL name
     response.set_cookie(
         "admin_access_token",
         access_token,
@@ -1305,3 +1305,19 @@ def admin_rebook_failed_ticket(request):
     }
 
     return render(request, "dttdc_admin/admin_rebook_failed_ticket.html", context)
+
+
+# ------------------------------------------------------Admin selection page----------------------------------
+def admin_selection(request):
+    return render(request, 'dttdc_admin/admin_selection.html')
+
+
+#-------------------------------------------------------Holiday List-------------------------------------------------
+
+def holiday_list(request):
+    return render(request, 'dttdc_admin/admin_holiday_list.html')
+
+#-------------------------------------------------------Change Password-----------------------------------------------
+
+def change_password(request):
+    return render(request, 'dttdc_admin/admin_change_password.html')

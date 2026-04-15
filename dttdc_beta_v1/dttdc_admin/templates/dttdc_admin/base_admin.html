@@ -58,6 +58,9 @@
   {% include 'dttdc_admin/components/menu.html' %}
   <div id="root">
     {% block content %}{% endblock %}
+    {% block admin_selection %}{% endblock %}
+    {% block holiday_list %}{% endblock %}
+    {% block change_password %}{% endblock %}
     {% block feedback_report %}{% endblock %}
     {% block tour_booking_report %}{% endblock %}
     {% block ticket_cancellation_requests %}{% endblock %}

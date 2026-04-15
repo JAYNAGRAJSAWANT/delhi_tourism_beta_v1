@@ -8,6 +8,8 @@ urlpatterns = [
     path("logout", views.admin_logout, name="admin_logout"),
     path("get_captcha",views.get_captcha,name="get_captcha"),
     path("admin_hub",views.admin_hub,name="admin_hub"),
+        # ----------------------------------------Admin selection page-----------------------------------------
+    path('admin-selection/', views.admin_selection, name='admin_selection'),
 
 # ----------------------------------------- Add tour ------------------------------------------------------------------------
     
@@ -73,8 +75,16 @@ urlpatterns = [
      # ---------------------------------View Booking Detail ------------- 
     path('admin_view_booking_details/<int:id>/', views.booking_detail, name='admin_view_booking_details'),
 
-         # ---------------------------------Rebook Failed Ticket------------- 
-    path('admin_rebook_failed_ticket/', views.admin_rebook_failed_ticket, name='admin_rebook_failed_ticket')
+         # ---------------------------------Rebook Failed Ticket------------------------------------
+    path('admin_rebook_failed_ticket/', views.admin_rebook_failed_ticket, name='admin_rebook_failed_ticket'),
+
+    #---------------------------------------Admin Holiday List------------------------------------------
+     path('holiday_list/', views.holiday_list, name='holiday_list'),
+
+    #---------------------------------------Admin Change Password------------------------------------------
+     path('change_password/', views.change_password, name='change_password'),
+
+    
 
 
 ]

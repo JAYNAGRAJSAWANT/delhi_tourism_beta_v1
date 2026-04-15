@@ -8,25 +8,25 @@
 
     <!-- Mobile Toggle -->
     <div class="col-12 d-md-none">
-      <button class="btn btn-primary w-100 shadow-sm" data-bs-toggle="offcanvas" data-bs-target="#adminSidebar">
+      <button class="btn btn-primary w-100 shadow-sm" data-bs-toggle="offcanvas" data-bs-target="#admincarSidebar">
         <i class="fa fa-bars me-2"></i> Menu
       </button>
     </div>
 
     <!-- Sidebar -->
     <aside class="col-md-3">
-      <div class="offcanvas offcanvas-start d-md-none" id="adminSidebar">
+      <div class="offcanvas offcanvas-start d-md-none" id="admincarSidebar">
         <div class="offcanvas-header">
           <h5>Admin Panel</h5>
           <button class="btn-close" data-bs-dismiss="offcanvas"></button>
         </div>
         <div class="offcanvas-body p-0">
-          {% include "dttdc_car_admin/components/sidebar_content.html" %}
+          {% include "dttdc_car_admin/components/sidebar_content_car.html" %}
         </div>
       </div>
 
       <div class="d-none d-md-block sidebar-modern">
-        {% include "dttdc_car_admin/components/sidebar.html" %}
+        {% include "dttdc_car_admin/components/sidebar_car.html" %}
       </div>
     </aside>
 

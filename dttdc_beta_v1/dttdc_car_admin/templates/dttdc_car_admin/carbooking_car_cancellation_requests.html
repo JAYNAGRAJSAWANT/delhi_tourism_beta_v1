@@ -1,0 +1,270 @@
+{% extends "dttdc_car_admin/base_car_admin.html" %}
+{% load static %}
+
+{% block carbooking_car_cancellation_requests %}
+
+<div class="container-fluid mt-3">
+
+  <!-- Header -->
+  <div class="mb-2 mt-2">
+
+  <a href="{% url 'carbooking_admin_home' %}"
+     class="btn btn-danger
+            d-inline-flex align-items-center
+            position-static position-md-absolute
+            start-md-0 top-md-50 translate-middle-md-y">
+    ← Back
+  </a>
+
+</div>
+
+
+  <div class="position-relative mb-2 mt-2">
+    <h4 class="fw-bold text-center mb-0">
+      Ticket Cancellation Requests
+    </h4>
+  </div>
+
+
+  <!-- Date Filter -->
+
+<div  class="row g-3">
+  
+
+<div class="d-flex justify-content-between gap-2">
+      <div class="px-3 py-2 border rounded fw-semibold text-center"
+           style="background:#A3D9A5; min-width: 100px;">
+          Total Amount: ₹{{ total_amount }}
+      </div>
+      <div class="px-3 py-2 border rounded fw-semibold text-center"
+           style="background:#B8E986; min-width: 100px;">
+           Total Cancellations: {{ booking_list|length }}
+      </div>
+</div>
+
+
+  <!-- Table -->
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <div class="table-responsive">
+      <table id="#carTourBookingDetails"
+             class="table table-bordered table-hover align-middle w-100">
+
+        <thead class="table-primary text-center">
+          <tr>
+            <th style="width:3%;">S No.</th>
+            <th style="width:10%;">PNR</th>
+            <th style="width:16%;">Email</th>
+            <th style="width:12%;">Booking Date</th>
+            <th style="width:8%;">Cancellation Date</th>
+            <th style="width:6%;">Total Fare</th>
+            <th style="width:9%;">Cancellation Status</th>
+            <th style="width:8%;">Refund Status</th>
+            <th style="width:7%;">Refund Amount</th>
+            <th style="width:7%;">Refund Date</th>
+            <th style="width:7%;">View Details</th>
+            <!-- <th style="width:7%;">Payment Status</th>
+            <th style="width:5%;">Ticket</th>
+            <th style="width:5%;">Details</th> -->
+          </tr>
+        </thead>
+
+        <tbody>
+  {% for booking in booking_list %}
+  <tr>
+
+    <!-- 1. S No -->
+    <td class="text-center fw-semibold">{{ forloop.counter }}</td>
+
+    <!-- 2. PNR -->
+    <td>{{ booking.pnr_number }}</td>
+
+    <!-- 3. Email -->
+    <td class="text-break">{{ booking.user_details.email }}</td>
+
+    <!-- 4. Booking Date -->
+    <td class="text-nowrap">
+      {{ booking.booking_date|date:"d/m/Y H:i" }}
+    </td>
+
+    <!-- 5. Cancellation Date -->
+    <td class="text-nowrap">
+      {{ booking.cancellation_date|date:"d/m/Y H:i"|default:"-" }}
+    </td>
+
+    <!-- 6. Total Fare -->
+    <td class="fw-semibold">
+      ₹ {{ booking.total_fare }}
+    </td>
+
+    <!-- 7. Cancellation Status -->
+    <td>
+      {% if booking.cancellation_status %}
+        <span class="badge bg-warning text-dark">
+          {{ booking.cancellation_status|title }}
+        </span>
+      {% else %}
+        <span class="badge bg-secondary">Not Cancelled</span>
+      {% endif %}
+    </td>
+
+    <!-- 8. Refund Status -->
+    <td>
+      {% if booking.refund_status %}
+        {% if booking.refund_status|lower == "success" %}
+          <span class="badge bg-success">Success</span>
+        {% elif booking.refund_status|lower == "failed" %}
+          <span class="badge bg-danger">Failed</span>
+        {% else %}
+          <span class="badge bg-warning text-dark">Pending</span>
+        {% endif %}
+      {% else %}
+        <span class="badge bg-secondary">N/A</span>
+      {% endif %}
+    </td>
+
+    <!-- 9. Refund Amount -->
+    <td class="fw-semibold">
+      ₹ {{ booking.refund_amount|default:"0.00" }}
+    </td>
+
+    <!-- 10. Refund Date -->
+    <td class="text-nowrap">
+      {{ booking.refund_date|date:"d/m/Y H:i"|default:"-" }}
+    </td>
+
+    <!-- 11. View Details -->
+    <td class="text-center">
+      <a href="{% url 'admin_view_tour_ticket' booking.pnr_number %}"
+         target="_blank"
+         class="btn btn-sm btn-primary">
+        View
+      </a>
+    </td>
+
+  </tr>
+
+  {% empty %}
+  <tr>
+    <td colspan="11" class="text-center text-muted">
+      No bookings found.
+    </td>
+  </tr>
+  {% endfor %}
+</tbody>
+
+      </table>
+     </div>
+      
+  </div>
+  </div>
+
+</div>
+
+<!-- Styles -->
+<style>
+/* 🔑 REQUIRED FOR % WIDTHS */
+#carTourBookingDetails {
+  table-layout: fixed;
+}
+
+/* Wrap only where needed */
+#carTourBookingDetails td {
+
+  overflow: hidden;
+ 
+}
+
+#carTourBookingDetails td.text-wrap {
+  white-space: normal;
+}
+
+.custom{
+  width: 300px;     
+  height: 1px;      
+  background-color: #a4a19f;   
+  margin-top: 1px ;
+  border-radius: 50px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+}
+
+</style>
+
+
+<!-- DataTable -->
+<script>
+$(document).ready(function () {
+
+  $('#carTourBookingDetails').DataTable({
+    dom:
+      "<'row mb-2'<'col-md-6'l><'col-md-6 d-flex justify-content-end align-items-center'fB>>" +
+  "<'row'<'col-12'tr>>" +
+  "<'row mt-2'<'col-md-5'i><'col-md-7'p>>",
+
+    buttons: [
+      {
+        extend: 'excelHtml5',
+        text: 'Download Report',
+        className: 'btn btn-success btn-sm ms-2',
+        title: 'Tour_Booking_Report_' + new Date().toISOString().slice(0,10),
+      }
+    ],
+
+    pageLength: 10,
+    lengthMenu: [10, 25, 50, 100],
+    responsive: false
+  });
+
+});
+</script>
+
+<!-- Date Validation -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  const monthSelect = document.getElementById("month");
+  const yearSelect  = document.getElementById("year");
+  const daySelect   = document.getElementById("day");
+
+  function updateDays(restoreDay = null) {
+    const month = parseInt(monthSelect.value);
+    const year  = parseInt(yearSelect.value) || new Date().getFullYear();
+
+    daySelect.innerHTML = '<option value="">Select Date</option>';
+    daySelect.disabled  = true;
+
+    if (!month) return;
+
+    const totalDays = new Date(year, month, 0).getDate();
+
+    for (let d = 1; d <= totalDays; d++) {
+      const opt   = document.createElement("option");
+      opt.value   = d;
+      opt.text    = d < 10 ? "0" + d : String(d);
+      daySelect.appendChild(opt);
+    }
+
+    daySelect.disabled = false;
+
+    if (restoreDay && parseInt(restoreDay) <= totalDays) {
+      daySelect.value = restoreDay;
+    }
+  }
+
+  monthSelect.addEventListener("change", function () {
+    updateDays();
+  });
+
+  yearSelect.addEventListener("change", function () {
+    updateDays(daySelect.value || null);
+  });
+
+  {% if selected_month %}
+    updateDays("{{ selected_day|default:'' }}");
+  {% endif %}
+
+});
+
+</script>
+
+{% endblock %}
