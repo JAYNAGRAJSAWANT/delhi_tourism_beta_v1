@@ -23,12 +23,15 @@ class CarBookingPackageCategoryForm(forms.ModelForm):
 
     class Meta:
         model = CarBookingPackageCategory
-        fields = ['packageCategoryName', 'status']
+        fields = ['packageCategoryName','categoryImage', 'status']
 
         widgets = {
             'packageCategoryName': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Enter category name'
+            }),
+            'categoryImage': forms.ClearableFileInput(attrs={   # ✅ file input
+                'class': 'form-control'
             }),
         }
 

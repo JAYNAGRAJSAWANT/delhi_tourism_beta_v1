@@ -3,7 +3,7 @@ from datetime import date, datetime, timedelta
 from decimal import Decimal
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
-from django.contrib.auth import authenticate, get_user_model
+from django.contrib.auth import authenticate, get_user_model, login
 from django.conf import settings
 from django.utils import timezone
 from django.contrib import messages
@@ -27,6 +27,10 @@ from django.conf import settings
 from django.db.models import Count, Sum, F, DateTimeField
 from django.db.models.functions import TruncMonth, TruncDate
 from datetime import timedelta
+from django.shortcuts import render, redirect
+from carbooking.models import Holiday
+from django.contrib import messages
+from datetime import datetime
 
 def admin_login(request):
 
@@ -95,7 +99,7 @@ def admin_login(request):
                 "error_message": "Invalid email or password",
             },
         )
-
+    login(request, user)
     # 3. Create JWT and set in HttpOnly cookie
     access_token = create_access_token(user, minutes=30)
     print("If User is Valid ---")
@@ -1313,11 +1317,76 @@ def admin_selection(request):
 
 
 #-------------------------------------------------------Holiday List-------------------------------------------------
-
 def holiday_list(request):
-    return render(request, 'dttdc_admin/admin_holiday_list.html')
 
+    # 🔹 Add Holiday
+    if request.method == "POST":
+        date = request.POST.get("date")
+        name = request.POST.get("name")
+
+        if date and name:
+            Holiday.objects.create(date=date, name=name)
+            messages.success(request, "Holiday added successfully!")
+            return redirect(request.path + f"?year={request.GET.get('year', datetime.now().year)}")
+        else:
+            messages.error(request, "All fields are required")
+
+    # 🔹 Get selected year
+    year = request.GET.get("year")
+
+    if year:
+        selected_year = int(year)   # ✅ convert to int
+        holidays = Holiday.objects.filter(date__year=selected_year).order_by("date")
+    else:
+        selected_year = datetime.now().year
+        holidays = Holiday.objects.filter(date__year=selected_year).order_by("date")
+
+    # 🔹 Debug (VERY IMPORTANT)
+    print("Selected Year:", selected_year)
+    print("Total Holidays:", holidays.count())
+
+    # 🔹 Years dropdown
+    years = Holiday.objects.dates('date', 'year')
+
+    return render(request, 'dttdc_admin/admin_holiday_list.html', {
+        "holidays": holidays,
+        "years": years,
+        "selected_year": selected_year
+    })
 #-------------------------------------------------------Change Password-----------------------------------------------
 
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.contrib.auth import update_session_auth_hash
+
 def change_password(request):
+    if request.method == "POST":
+        current_password = request.POST.get("current_password")
+        new_password = request.POST.get("new_password")
+        confirm_password = request.POST.get("confirm_password")
+
+        user = request.user
+
+        # Check current password
+        if not user.check_password(current_password):
+            messages.error(request, "Current password is incorrect.")
+            return redirect("change_password")
+
+        # Check new password match
+        if new_password != confirm_password:
+            messages.error(request, "New passwords do not match.")
+            return redirect("change_password")
+
+        # Optional: add custom validation here (length, special chars, etc.)
+
+        # Set new password (IMPORTANT: use set_password)
+        user.set_password(new_password)
+        user.save()
+
+        # Keep user logged in after password change
+        update_session_auth_hash(request, user)
+
+        messages.success(request, "Password changed successfully.")
+        return redirect("change_password")
+
     return render(request, 'dttdc_admin/admin_change_password.html')

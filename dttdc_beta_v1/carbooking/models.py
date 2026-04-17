@@ -23,6 +23,13 @@ class CarBookingPackageCategory(models.Model):
     packageCategoryName = models.CharField(max_length=255)
     status = models.BooleanField(default=True)
 
+    # ✅ Add image field
+    categoryImage = models.ImageField(
+        upload_to="package_categories/%Y/%m/",
+        null=True,
+        blank=True
+    )
+
     createdAt = models.DateTimeField(auto_now_add=True)
     updatedAt = models.DateTimeField(auto_now=True)
 

@@ -34,7 +34,7 @@
     <!-- Body -->
     <div class="card-body">
 
-      <form method="post" novalidate>
+      <form method="post" enctype="multipart/form-data" novalidate>
         {% csrf_token %}
 
         <!-- Category Name -->
@@ -46,11 +46,42 @@
           <div class="col-md-9">
             {{ form.packageCategoryName }}
 
-{% if form.packageCategoryName.errors %}
-  <div class="invalid-feedback d-block">
-    {{ form.packageCategoryName.errors|striptags }}
-  </div>
-{% endif %}
+            {% if form.packageCategoryName.errors %}
+              <div class="invalid-feedback d-block">
+                {{ form.packageCategoryName.errors|striptags }}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- ✅ Current Image Preview -->
+        {% if form.instance.categoryImage %}
+        <div class="row mb-3">
+          <label class="col-md-3 col-form-label">
+            Current Image
+          </label>
+
+          <div class="col-md-9">
+            <img src="{{ form.instance.categoryImage.url }}"
+                 style="max-height:120px; border-radius:6px;">
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- ✅ Upload New Image -->
+        <div class="row mb-3">
+          <label class="col-md-3 col-form-label">
+            Change Image
+          </label>
+
+          <div class="col-md-9">
+            {{ form.categoryImage }}
+
+            {% if form.categoryImage.errors %}
+              <div class="invalid-feedback d-block">
+                {{ form.categoryImage.errors|striptags }}
+              </div>
+            {% endif %}
           </div>
         </div>
 
@@ -83,6 +114,7 @@
         </div>
 
       </form>
+
 
     </div>
   </div>

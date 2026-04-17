@@ -14,24 +14,44 @@
     <section class="col-12 col-md-9">
       <div class="content-wrapper mt-3">
 
-        <div class="mt-1 px-4 h4"><div class="mb-4"><h1 class="text-dark fw-bold text-center border-bottom pb-2" style="font-size: 1.3rem;">Online Car Booking</h1></div></div>
+        <div class="mt-1 px-4 h4">
+          <div class="mb-4">
+            <h1 class="text-dark fw-bold text-center border-bottom pb-2" style="font-size: 1.3rem;">Online Car Booking
+            </h1>
+          </div>
+        </div>
 
-            <div class="row">
-{% for cat in categories %}
-    <div class="col-lg-3 col-md-6 col-sm-12 mb-4">
-        <a href="#" class="text-decoration-none text-dark">
-            <div class="img-thumbnail">
-                <img src="#"
-                     class="card-img-top"
-                     style="max-height:180px; object-fit:cover;"
-                     alt="#">
-                <div class="text-center mt-2">
-                    <b class="tour-name">{{ cat.category_name }}</b>
-                </div>
-            </div>
-        </a>
-    </div>
-{% endfor %}
+        <div class="row justify-content-center">
+  {% for cat in categories %}
+  
+  <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
+    
+    <a href="{% url 'all_packages' cat.id %}" class="text-decoration-none text-dark">
+      <div class="img-thumbnail text-center p-2 shadow-sm">
+
+        <!-- ✅ Image from DB -->
+        {% if cat.categoryImage %}
+          <img src="{{ cat.categoryImage.url }}"
+               class="card-img-top"
+               style="object-fit:cover;"
+               alt="{{ cat.packageCategoryName }}">
+        {% else %}
+          <!-- fallback image -->
+          <img src="{% static 'images/default.jpg' %}"
+               class="card-img-top"
+               style="object-fit:cover;">
+        {% endif %}
+
+        <!-- Category Name -->
+        <div class="mt-3">
+          <b class="tour-name">{{ cat.packageCategoryName }}</b>
+        </div>
+
+      </div>
+    </a>
+
+  </div>
+  {% endfor %}
 </div>
 
 
@@ -45,11 +65,10 @@
 {% block extra_js %}
 <script>
 
-function handleSelect(itemId, category) {
+  function handleSelect(itemId, category) {
 
     const detailUrl = `/tour/${itemId}/`;
     window.location.href = detailUrl;
-}
+  }
 </script>
 {% endblock %}
-

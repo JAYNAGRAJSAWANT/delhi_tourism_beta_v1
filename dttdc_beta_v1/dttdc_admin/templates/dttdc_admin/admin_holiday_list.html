@@ -31,128 +31,157 @@
 
         <div class="container">
 
-  <!-- Add Holiday Card -->
-  <div class="card shadow-sm mb-4">
-    <div class="card-header text-center bg-light">
-      <h4 class="text-danger mb-0">Add Holiday</h4>
-    </div>
+          {% if messages %}
+          {% for message in messages %}
+          <div class="alert alert-success">{{ message }}</div>
+          {% endfor %}
+          {% endif %}
 
-    <div class="card-body">
-      <form method="POST">
-        {% csrf_token %}
-        <div class="row align-items-end">
+          <!-- Add Holiday Card -->
+          <div class="card shadow-sm mb-4">
+            <div class="card-header text-center bg-light">
+              <h4 class="text-danger mb-0">Add Holiday</h4>
+            </div>
 
-          <div class="col-md-4">
-            <label class="form-label">Date</label>
-            <input type="date" name="date" class="form-control">
+            <div class="card-body">
+              <form method="POST">
+                {% csrf_token %}
+                <div class="row align-items-end">
+
+                  <div class="col-md-4">
+                    <label class="form-label">Date</label>
+                    <input type="date" name="date" class="form-control">
+                  </div>
+
+                  <div class="col-md-6">
+                    <label class="form-label">Holiday Name</label>
+                    <input type="text" name="name" class="form-control">
+                  </div>
+
+                  <div class="col-md-2 text-end">
+                    <button type="submit" class="btn btn-danger w-100">Add</button>
+                  </div>
+
+                </div>
+              </form>
+            </div>
           </div>
 
-          <div class="col-md-6">
-            <label class="form-label">Holiday Name</label>
-            <input type="text" name="name" class="form-control">
-          </div>
+          <!-- Holiday List Card -->
+          <div class="card shadow-sm">
+            <div class="card-header text-center bg-light">
+              <h4 class="text-danger mb-0">Holiday List</h4>
+            </div>
 
-          <div class="col-md-2 text-end">
-            <button type="submit" class="btn btn-danger w-100">Add</button>
+            <div class="card-body">
+
+              <div class="d-flex align-items-center mb-3">
+                <label class="me-2 fw-bold">Select Year:</label>
+                <select class="form-select w-auto"
+        onchange="window.location.href='?year=' + this.value;">
+
+  {% for y in years %}
+    <option value="{{ y.year }}" {% if y.year == selected_year %}selected{% endif %}>
+      {{ y.year }}
+    </option>
+  {% endfor %}
+
+</select>
+              </div>
+
+              {% if holidays %}
+              <table class="table table-bordered">
+                <thead class="table-light">
+                  <tr>
+                    <th>Date</th>
+                    <th>Holiday Name</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for holiday in holidays %}
+                  <tr>
+                    <td>{{ holiday.date }}</td>
+                    <td>{{ holiday.name }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+              {% else %}
+              <div class="text-center text-muted fw-bold py-4">
+                No Data Found!
+              </div>
+              {% endif %}
+
+            </div>
           </div>
 
         </div>
-      </form>
-    </div>
-  </div>
 
-  <!-- Holiday List Card -->
-  <div class="card shadow-sm">
-    <div class="card-header text-center bg-light">
-      <h4 class="text-danger mb-0">Holiday List</h4>
-    </div>
 
-    <div class="card-body">
 
-      <div class="d-flex align-items-center mb-3">
-        <label class="me-2 fw-bold">Select Year:</label>
-        <select class="form-select w-auto">
-          <option>2026</option>
-          <option>2025</option>
-          <option>2024</option>
-        </select>
       </div>
-
-      <!-- No Data -->
-      <div class="text-center text-muted fw-bold py-4">
-        No Data Found!
-      </div>
-
-    </div>
-  </div>
-
-</div>
-
-  
-
-</div>
 
     </div>
   </div>
 </div>
 
 <style>
-.panel-card {
-  cursor: pointer;
-  border-radius: 10px;
-  transition: all 0.3s ease;
-}
+  .panel-card {
+    cursor: pointer;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+  }
 
-.panel-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-}
+  .panel-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  }
 
-.custom-card {
-  transition: box-shadow 0.3s;
-  box-shadow: none;
-  padding: 20px;
-  margin: 10px;
-  border: 1px solid #ddd;
-  border-radius: 7px;
-}
+  .custom-card {
+    transition: box-shadow 0.3s;
+    box-shadow: none;
+    padding: 20px;
+    margin: 10px;
+    border: 1px solid #ddd;
+    border-radius: 7px;
+  }
 
-.custom-card:hover {
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-}
+  .custom-card:hover {
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  }
 
-.card-link {
-  text-decoration: none;
-  color: inherit;
-  display: block;
-}
+  .card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
 
-.header-img {
+  .header-img {
 
-  
-  object-fit: contain;
-}
 
-.card {
-  border-radius: 10px;
-}
+    object-fit: contain;
+  }
 
-.card-header {
-  border-bottom: 1px solid #ddd;
-}
+  .card {
+    border-radius: 10px;
+  }
 
-.btn-danger {
-  background-color: #dc3545;
-  border: none;
-}
+  .card-header {
+    border-bottom: 1px solid #ddd;
+  }
 
-.btn-danger:hover {
-  background-color: #c82333;
-}
+  .btn-danger {
+    background-color: #dc3545;
+    border: none;
+  }
 
-h4 {
-  font-weight: 600;
-}
+  .btn-danger:hover {
+    background-color: #c82333;
+  }
+
+  h4 {
+    font-weight: 600;
+  }
 </style>
 
 {% endblock %}

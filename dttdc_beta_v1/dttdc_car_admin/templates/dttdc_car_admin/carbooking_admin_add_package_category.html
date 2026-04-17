@@ -34,7 +34,7 @@
     <!-- Body -->
     <div class="card-body">
 
-      <form method="post" novalidate>
+      <form method="post" enctype="multipart/form-data" novalidate>
         {% csrf_token %}
 
         <!-- Category Name -->
@@ -47,29 +47,46 @@
             {{ form.packageCategoryName }}
 
             {% if form.packageCategoryName.errors %}
-  <div class="invalid-feedback d-block">
-    {{ form.packageCategoryName.errors|striptags }}
-  </div>
-{% endif %}
+              <div class="invalid-feedback d-block">
+                {{ form.packageCategoryName.errors|striptags }}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- ✅ NEW: Category Image -->
+        <div class="row mb-3">
+          <label class="col-md-3 col-form-label">
+            Category Image
+          </label>
+
+          <div class="col-md-9">
+            {{ form.categoryImage }}
+
+            {% if form.categoryImage.errors %}
+              <div class="invalid-feedback d-block">
+                {{ form.categoryImage.errors|striptags }}
+              </div>
+            {% endif %}
           </div>
         </div>
 
         <!-- Status -->
         <div class="row mb-4">
-  <label class="col-md-3 col-form-label">
-    Status
-  </label>
+          <label class="col-md-3 col-form-label">
+            Status
+          </label>
 
-  <div class="col-md-9">
-    {{ form.status }}
+          <div class="col-md-9">
+            {{ form.status }}
 
-    {% if form.status.errors %}
-      <div class="invalid-feedback d-block">
-        {{ form.status.errors|striptags }}
-      </div>
-    {% endif %}
-  </div>
-</div>
+            {% if form.status.errors %}
+              <div class="invalid-feedback d-block">
+                {{ form.status.errors|striptags }}
+              </div>
+            {% endif %}
+          </div>
+        </div>
 
         <!-- Submit -->
         <div class="text-end">
