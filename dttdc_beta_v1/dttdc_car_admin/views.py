@@ -175,7 +175,7 @@ def add_vehicle(request):
 def add_vehicle_package(request):
 
     if request.method == "POST":
-        form = CarBookingPackageCategoryForm(request.POST, request.FILES)
+        form = CarBookingVehicleDetailsForm(request.POST, request.FILES)
 
         if form.is_valid():
             form.save()  #  vehicle + package already included

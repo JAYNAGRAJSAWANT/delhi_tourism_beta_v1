@@ -5,6 +5,7 @@ urlpatterns = [
 
    path("",views.carbooking_all_categories,name="all_car_categories"),
    path("all_packages/<int:package_id>/",views.carbooking_all_packages,name="all_packages"),
+   path("vehicle_details/<int:vehicle_id>/",views.vehicle_details,name="vehicle_details"),
 
    
 
