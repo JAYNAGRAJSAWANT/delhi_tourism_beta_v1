@@ -500,6 +500,17 @@ def ebooking_termsandconditions(request):
 
 # ----------------------------------- Payu Payment Initiated -------------------------
 # ---------------------- ADDED BY ABHIJEET THORAT ------------------------------------
+
+## FINANCIAL YEAR HELPER CODE ##
+
+def get_financial_year(date):
+    year = date.year
+    if date.month >= 4:
+        return f"{year}-{str(year+1)[-2:]}"
+    else:
+        return f"{year}-{str(year)[-2:]}"
+
+
 def verify_payu_hash(response_data):
     hash_seq = (
         settings.PAYU_MERCHANT_SALT + "|" +
@@ -814,6 +825,8 @@ def _render_with_error(request, message):
     )
 ################################################################################
 #### shubhi code ends here ################ 
+
+
 def reduce_seats_after_after_payment(booking):                               
     """
     Docstring for reduce_seats_after_after_payment
