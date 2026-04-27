@@ -13,7 +13,7 @@
 
                     <div class="mb-4">
                         <img src="{% static 'ebooking/images/failure.png' %}" 
-                             alt="Payment Failed" width="90">
+                             alt="Payment Failed" width="90" style="height: 320px; width: 400px; object-fit: contain;">
                     </div>
 
                     <h2 class="text-danger fw-bold mb-3">
@@ -55,10 +55,10 @@
 
                     <!-- Actions -->
                     <div class="d-flex justify-content-center gap-3 mt-4">
-                        <a href="{% url 'payu_payment_init' booking.pnr_number %}" 
+                        {% comment %} <a href="{% url 'payu_payment_init' booking.pnr_number %}" 
                            class="btn btn-danger px-4">
                             Retry Payment
-                        </a>
+                        </a> {% endcomment %}
 
                         <a href="#" 
                            class="btn btn-outline-secondary px-4">

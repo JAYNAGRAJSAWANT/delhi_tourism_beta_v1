@@ -535,6 +535,7 @@ def get_financial_year(date):
     else:
         return f"{year}-{str(year)[-2:]}"
 
+## Verify PayU hash to ensure response integrity
 
 def verify_payu_hash(response_data):
     hash_seq = (
@@ -550,6 +551,14 @@ def verify_payu_hash(response_data):
 
     calculated_hash = hashlib.sha512(hash_seq.encode()).hexdigest().lower()
     return calculated_hash == response_data.get("hash")
+
+## Payment expiry Check Function
+
+PAYMENT_TIMEOUT = timedelta(minutes=5)
+
+def is_payment_expired(payment):
+    return timezone.now() > payment.addedon + PAYMENT_TIMEOUT
+
 
 def payu_payment_init(request, pnr):
     booking = get_object_or_404(DTTDCTourBooking, pnr_number=pnr)
@@ -643,6 +652,25 @@ def payu_success(request):
         payment.error_Message = "Hash verification failed"
         payment.save()
         return HttpResponse("Invalid payment response")
+    
+    # ❌ Payment expired
+    if is_payment_expired(payment):
+        payment.status = "session_timeout"
+        payment.error_Message = "Payment session expired (5 Minutes limit)"
+        payment.save()
+        
+        booking.booking_status = "payment_failed"
+        booking.save()
+        
+        return render(
+            request,
+            "ebooking/payment_failure.html",
+            {
+                "booking": booking,
+                "payment": payment,
+                "timeout": True,
+            },
+        )
 
     # ✅ Update Payment Details
     payment.status = data.get("status")
