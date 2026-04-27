@@ -1,0 +1,94 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+
+  <link rel="icon" href="{% static 'dttdc_admin/favicon.ico' %}" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#000000" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="apple-touch-icon" href="{% static 'dttdc_car_admin/logo192.png' %}" />
+  <link rel="manifest" href="{% static 'dttdc_car_admin/manifest.json' %}" />
+
+  <!-- Font Awesome (local version) -->
+  <link rel="stylesheet" href="{% static 'dttdc_car_admin/css/all.css' %}" crossorigin="anonymous" />
+  <link rel="stylesheet" href="{% static 'dttdc_car_admin/css/sidebar.css' %}">
+
+  <!-- Bootstrap -->
+  <link rel="stylesheet" href="{% static 'dttdc_car_admin/css/bootstrap.min.css' %}" crossorigin="anonymous" />
+
+  <!-- Google Fonts -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;1,100&display=swap"
+    rel="stylesheet" />
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.5.0/font/bootstrap-icons.min.css" />
+
+  <!-- Datatables Responsive -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/responsive/3.0.2/css/responsive.bootstrap.css" />
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{% static 'dttdc_car_admin/css/custom.css' %}" />
+   
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.bootstrap5.min.css">
+  <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.bootstrap5.min.js"></script>
+
+  <!-- DataTables JS -->
+  <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+  <title>Delhi Tourism</title>
+
+  {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+  {% include 'dttdc_car_admin/components/header.html' %}
+  {% include 'dttdc_car_admin/components/menu.html' %}
+  <div id="root">
+    {% block car_admin_home_page %}{% endblock %}
+    {% block carbooking_admin_hub %}{% endblock %}
+    {% block carbooking_car_tour_booking_details %}{% endblock %}
+    {% block carbooking_car_cancellation_requests %}{% endblock %}
+    {% block carbooking_car_tour_transaction_details %}{% endblock %}
+    {% block carbooking_admin_package_categories %}{% endblock %}
+    {% block carbooking_admin_package_details %}{% endblock %}
+    {% block carbooking_admin_vehicle_packages %}{% endblock %}
+    {% block carbooking_admin_vehicles %}{% endblock %}
+  </div>
+  {% include 'dttdc_car_admin/components/footer.html' %}
+  <!-- Bootstrap JS -->
+  <script src="{% static 'dttdc_car_admin/js/bootstrap.bundle.min.js' %}" crossorigin="anonymous"></script>
+
+  <!-- Datatables -->
+  <script src="https://cdn.datatables.net/responsive/3.0.2/js/dataTables.responsive.js"></script>
+
+<!-- Buttons -->
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+
+<!-- Excel dependency -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+
+
+  <!-- Google Translate -->
+  <script src="{% static 'dttdc_car_admin/js/googleTranslate.js' %}"></script>
+
+
+
+</body>
+
+</html>

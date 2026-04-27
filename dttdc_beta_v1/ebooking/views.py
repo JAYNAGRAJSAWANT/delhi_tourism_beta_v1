@@ -84,7 +84,32 @@ def ebooking_all_tours(request, category_id):
 def ebooking_tour_details(request, tour_id):
     tour = get_object_or_404(DTTDCTour, id=tour_id, tour_status="active")
 
-    return render(request, "ebooking/ebooking_tour.html", {"tour": tour})
+    CGST_RATE = Decimal("0.025")
+    SGST_RATE = Decimal("0.025")
+
+    # Adult calculation
+    adult_base = Decimal(tour.fare_adult)
+    adult_cgst = adult_base * CGST_RATE
+    adult_sgst = adult_base * SGST_RATE
+    adult_total = adult_base + adult_cgst + adult_sgst
+
+    # Child calculation
+    child_base = Decimal(tour.fare_child)
+    child_cgst = child_base * CGST_RATE
+    child_sgst = child_base * SGST_RATE
+    child_total = child_base + child_cgst + child_sgst
+
+    context = {
+        "tour": tour,
+        "adult_cgst": adult_cgst,
+        "adult_sgst": adult_sgst,
+        "adult_total": adult_total,
+        "child_cgst": child_cgst,
+        "child_sgst": child_sgst,
+        "child_total": child_total,
+    }
+
+    return render(request, "ebooking/ebooking_tour.html", context)
 
 
 # -----------------------------Start Booking View-------------------------------
@@ -1009,6 +1034,10 @@ def ebooking_ticket_cancellation_preview(request, pnr):
     user = get_object_or_404(DTTDCUserDetails, booking=booking)
     passengers = DTTDCTraveller.objects.filter(user=user)
 
+    existing_cancellation = DTTDCTourCancellation.objects.filter(
+        tour_booking=booking
+    ).first()
+
     cancelled_passenger_ids = list(
         DTTDCTravellerBookingMap.objects.filter(
             booking=booking,
@@ -1016,6 +1045,26 @@ def ebooking_ticket_cancellation_preview(request, pnr):
         ).values_list("traveller_id", flat=True)
     )
 
+
+    if existing_cancellation:
+        messages.error(
+            request,
+            "Cancellation already done for this booking. You cannot modify it again."
+        )
+
+        captcha_data = generateCaptchaValueWithToken()
+
+        return render(request, "ebooking/ebooking_ticket_cancel.html", {
+            "booking": booking,
+            "user": user,
+            "passengers": passengers,
+            "captcha_value": captcha_data["captchaValue"],
+            "captcha_token": captcha_data["captchaToken"],
+            "cancelled_passenger_ids": cancelled_passenger_ids,
+            "existing_cancellation": existing_cancellation,
+        })
+
+    
     if request.method == "POST":
 
         #  SELECTED PASSENGERS
@@ -1064,7 +1113,7 @@ def ebooking_ticket_cancellation_preview(request, pnr):
             defaults={
                 "cancellation_type": cancellation_type,
                 "cancellation_date": timezone.now(),
-                "cancellation_status": "pending"
+                "cancellation_status": "pending","cancellation_amount": 0
             }
         )
 
@@ -1088,6 +1137,7 @@ def ebooking_ticket_cancellation_preview(request, pnr):
         "captcha_value": captcha_data["captchaValue"],
         "captcha_token": captcha_data["captchaToken"],
         "cancelled_passenger_ids": cancelled_passenger_ids,
+        "existing_cancellation": existing_cancellation,
     })
 
 # ---------------------------------------------------cancellation page ------------------------------

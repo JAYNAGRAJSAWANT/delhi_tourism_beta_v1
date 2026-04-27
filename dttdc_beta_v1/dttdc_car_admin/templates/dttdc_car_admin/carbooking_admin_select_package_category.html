@@ -1,0 +1,53 @@
+{% extends "dttdc_car_admin/carbooking_admin_hub.html" %}
+
+{% block select_package_category %}
+
+<div class="container mt-4">
+
+  <div class="card shadow-sm">
+    <div class="card-header text-center">
+      <h5>Select Package Category to Edit</h5>
+    </div>
+
+    <div class="card-body">
+
+      <form method="get" id="categoryForm">
+
+        <div class="mb-3">
+          <label>Select Category</label>
+
+          <select id="categorySelect" class="form-control">
+            <option value="">-- Select Category --</option>
+
+            {% for cat in categories %}
+              <option value="{{ cat.id }}">{{ cat.packageCategoryName }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="text-end">
+          <button type="button" class="btn btn-primary" onclick="goToEdit()">
+            Edit Category
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+</div>
+
+<script>
+function goToEdit() {
+    var id = document.getElementById("categorySelect").value;
+
+    if (id) {
+        var url = "{% url 'edit_package_category' 0 %}";
+        window.location.href = url.replace('0', id);
+    } else {
+        alert("Please select a category");
+    }
+}
+</script>
+
+{% endblock %}

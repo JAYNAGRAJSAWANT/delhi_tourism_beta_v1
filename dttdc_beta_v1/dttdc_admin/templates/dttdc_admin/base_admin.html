@@ -58,6 +58,9 @@
   {% include 'dttdc_admin/components/menu.html' %}
   <div id="root">
     {% block content %}{% endblock %}
+    {% block admin_selection %}{% endblock %}
+    {% block holiday_list %}{% endblock %}
+    {% block change_password %}{% endblock %}
     {% block feedback_report %}{% endblock %}
     {% block tour_booking_report %}{% endblock %}
     {% block ticket_cancellation_requests %}{% endblock %}
@@ -66,6 +69,7 @@
     {% block transaction_details_preview %}{% endblock %}
     {% block ticket_cancellation_report %}{% endblock %}
     {% block admin_booking_detail%}{% endblock %}
+    {% block admin_rebook_failed_ticket %}{% endblock %}
   </div>
   {% include 'dttdc_admin/components/footer.html' %}
   <!-- Bootstrap JS -->

@@ -41,7 +41,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'core',
     'ebooking',
+    'carbooking',
     'dttdc_admin',
+    'dttdc_car_admin',
     'phonenumber_field',
 
 ]

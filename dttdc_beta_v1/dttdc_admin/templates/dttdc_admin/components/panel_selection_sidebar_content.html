@@ -1,0 +1,35 @@
+{% load static %}
+
+<div class="container">
+    <div class="SideTitle d-flex align-items-center text-white justify-content-center pb-2 h1">
+        Admin Panel
+    </div>
+
+    <div class="pl_left_arrow">
+        <ul class="list-unstyled">
+
+            <li class="mt-1">
+                <i class="fa fa-caret-right m-1"></i>
+                <a href="#" class="tg">Home</a>
+            </li>
+
+            <li class="mt-1">
+                <i class="fa fa-caret-right m-1"></i>
+                <a href="{% url 'admin_hub' %}" class="tg">Holiday List</a>
+            </li>
+
+            <li class="mt-1">
+                <i class="fa fa-caret-right m-1"></i>
+                <a href="{% url 'feedback_report' %}" class="tg">Change Password</a>
+            </li>
+
+            <li class="mt-1">
+                <i class="fa fa-caret-right m-1"></i>
+                <a href="{% url 'admin_tour_booking_report' %}" class="tg">Logout</a>
+            </li>
+
+        <div>
+            <img src="{% static 'dttdc_admin/images/8cities_banner.png' %}" class="img-fluid w-100" alt="banner">
+        </div>
+    </div>
+</div>

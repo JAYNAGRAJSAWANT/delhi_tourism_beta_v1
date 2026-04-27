@@ -1,0 +1,76 @@
+{% extends "dttdc_car_admin/base_car_admin.html" %}
+
+{% block carbooking_admin_vehicle_packages %}
+
+<div class="container mt-4">
+
+  <div class="mb-2 mt-2">
+
+  <a href="{% url 'carbooking_admin_home' %}"
+     class="btn btn-danger
+            d-inline-flex align-items-center
+            position-static position-md-absolute
+            start-md-0 top-md-50 translate-middle-md-y">
+    ← Back
+  </a>
+
+</div>
+
+  <div class="card shadow-sm">
+    <div class="card-header text-center">
+      <h5>All Car Packages</h5>
+    </div>
+
+    <div class="card-body">
+
+      <table class="table table-bordered">
+  <thead>
+    <tr>
+      <th>Sr.No</th>
+      <th>Package Name</th>
+      <th>Package Category</th>
+      <th>Vehicle</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+
+  <tbody>
+  {% for vp in vehicle_packages %}
+  <tr>
+    <!-- Sr.No -->
+    <td>{{ forloop.counter }}</td>
+
+    <!-- Package Name -->
+    <td>{{ vp.package.packageName }}</td>
+
+    <!-- Package Category -->
+    <td>{{ vp.package.carPackageCategory.packageCategoryName }}</td>
+
+    <!-- Vehicle -->
+    <td>{{ vp.vehicle.vehicleName }}</td>
+
+    <!-- Status -->
+    <td>
+      {% if vp.package.is_active %}
+        <span class="badge bg-success">Active</span>
+      {% else %}
+        <span class="badge bg-danger">Inactive</span>
+      {% endif %}
+    </td>
+  </tr>
+  {% empty %}
+  <tr>
+    <td colspan="5" class="text-center text-muted">
+      No data available.
+    </td>
+  </tr>
+  {% endfor %}
+</tbody>
+</table>
+
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}

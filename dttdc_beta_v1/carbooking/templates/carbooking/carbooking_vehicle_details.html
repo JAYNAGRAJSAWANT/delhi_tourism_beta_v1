@@ -1,0 +1,266 @@
+{% extends "carbooking/base_carbooking.html" %}
+{% load static %}
+
+{% block car_vehicle_content %}
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+<div class="container py-5">
+  <div class="row">
+
+    <!-- Sidebar -->
+    <aside class="col-md-3 mb-4">
+      {% include "carbooking/components/car_booking_sidebar.html" %}
+    </aside>
+
+    <!-- Main -->
+    <section class="col-md-9">
+
+      <div class="car-card">
+
+        <!-- HERO -->
+        <div class="car-hero">
+          {% if vehicle_detail.vehicle.vehicleImage %}
+            <img src="{{ vehicle_detail.vehicle.vehicleImage.url }}">
+          {% else %}
+            <img src="{% static 'images/default.jpg' %}">
+          {% endif %}
+        </div>
+
+        <!-- HEADER -->
+        <div class="car-header glass-card">
+          <h2>{{ vehicle_detail.vehicle.vehicleName }}</h2>
+
+          <div class="quick-meta">
+            <span><i class="material-icons">people</i> {{ vehicle_detail.vehicleCapacity }} Seats</span>
+            <span><i class="material-icons">local_taxi</i> Driver Included</span>
+            <span><i class="material-icons">route</i> {{ vehicle_detail.package.packageName }}</span>
+          </div>
+        </div>
+
+        <!-- DESCRIPTION -->
+        <div class="section glass-card">
+          <h6><i class="material-icons">description</i> Trip Description</h6>
+
+          <p>{{ vehicle_detail.tourDescription }}</p>
+
+          <div class="note-box mt-2">
+            ⚠️ Parking, toll & permit charges are extra
+          </div>
+        </div>
+
+        <!-- TARIFF -->
+        <div class="section glass-card">
+          <h6><i class="material-icons">currency_rupee</i> Pricing Details</h6>
+
+          <div class="tariff-card">
+
+            <div class="tariff-row">
+              <span>Base Fare</span>
+              <span>₹ {{ vehicle_detail.baseFare }}</span>
+            </div>
+
+            <div class="tariff-row">
+              <span>GST ({{ vehicle_detail.GST }}%)</span>
+              <span>₹ {{ vehicle_detail.baseFare|floatformat:2 }}</span>
+            </div>
+
+            <div class="tariff-total">
+              <span>Total Payable</span>
+              <span>₹ {{ vehicle_detail.baseFare }}</span>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- EXTRA CHARGES -->
+        <div class="section glass-card">
+          <h6><i class="material-icons">bolt</i> Additional Charges</h6>
+
+          <div class="charges-grid">
+
+            <div class="charge-box">
+              <div>Per KM</div>
+              <strong>₹ {{ vehicle_detail.extraPerKM }}</strong>
+            </div>
+
+            <div class="charge-box">
+              <div>Per Hour</div>
+              <strong>₹ {{ vehicle_detail.extraPerHour }}</strong>
+            </div>
+
+            <div class="charge-box">
+              <div>Night Charges</div>
+              <strong>₹ {{ vehicle_detail.perNightCharge }}</strong>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- CTA -->
+        <div class="footer">
+          <a href="#" class="btn-book">Book This Vehicle</a>
+          <p class="tc">* Terms & Conditions Apply</p>
+        </div>
+
+      </div>
+
+    </section>
+  </div>
+</div>
+
+<style>
+
+/* MAIN CARD */
+.car-card {
+  background: linear-gradient(145deg, #fff6e9, #ffe0c4);
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 16px 35px rgba(0, 0, 0, 0.12);
+  padding-bottom: 20px;
+  max-width: 900px;
+  margin: auto;
+  border: 1px solid rgba(255, 140, 0, 0.3);
+}
+
+/* HERO */
+.car-hero {
+  height: 260px;
+  overflow: hidden;
+}
+
+.car-hero img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: 0.5s;
+}
+
+.car-hero:hover img {
+  transform: scale(1.08);
+}
+
+/* GLASS EFFECT */
+.glass-card {
+  background: rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(15px);
+  border-radius: 12px;
+  padding: 20px 25px;
+  margin: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+}
+
+/* HEADER */
+.car-header h2 {
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.quick-meta {
+  display: flex;
+  gap: 25px;
+  margin-top: 10px;
+  font-size: 14px;
+  color: #555;
+  flex-wrap: wrap;
+}
+
+.quick-meta i {
+  color: #ff6a00;
+  margin-right: 5px;
+}
+
+/* SECTION */
+.section h6 {
+  color: #ff6a00;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+/* NOTE */
+.note-box {
+  border: 1px dashed #ff6a00;
+  padding: 8px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+/* TARIFF */
+.tariff-card {
+  background: rgba(255,255,255,0.5);
+  border-radius: 10px;
+  padding: 15px;
+}
+
+.tariff-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px dashed #ccc;
+}
+
+.tariff-total {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+  padding-top: 10px;
+  color: green;
+}
+
+/* CHARGES */
+.charges-grid {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.charge-box {
+  flex: 1 1 30%;
+  background: rgba(255,255,255,0.5);
+  padding: 12px;
+  border-radius: 10px;
+  text-align: center;
+}
+
+/* BUTTON */
+.footer {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.btn-book {
+  display: inline-block;
+  background: linear-gradient(135deg, #ff6a00, #ff3c00);
+  color: #fff;
+  padding: 14px 36px;
+  border-radius: 50px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: 0.3s;
+}
+
+.btn-book:hover {
+  transform: scale(1.08);
+}
+
+.tc {
+  font-size: 12px;
+  color: #666;
+  margin-top: 8px;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .quick-meta {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .charge-box {
+    flex: 1 1 100%;
+  }
+}
+
+</style>
+
+{% endblock %}

@@ -1,0 +1,85 @@
+{% extends "dttdc_car_admin/base_car_admin.html" %}
+{% load static %}
+
+{% block carbooking_admin_hub %}
+<div class="container-fluid">
+  <div class="row">
+
+    <!-- Offcanvas toggle button (visible only on small screens) -->
+    <div class="col-12 d-md-none my-2">
+      <button class="btn btn-outline-primary" type="button"
+              data-bs-toggle="offcanvas" data-bs-target="#admincarSidebar"
+              aria-controls="admincarSidebar" aria-expanded="false" aria-label="Toggle menu">
+        <i class="fa fa-bars" aria-hidden="true"></i>
+        <span class="visually-hidden">Menu</span>
+      </button>
+    </div>
+
+    <!-- Sidebar (offcanvas for small, static for md+) -->
+    <aside class="col-md-3 ">
+      <!-- Offcanvas wrapper (Bootstrap) -->
+      <div class="offcanvas offcanvas-start d-md-none" tabindex="-1" id="admincarSidebar" aria-labelledby="admincarSidebarLabel">
+        <div class="offcanvas-header">
+          <h5 class="offcanvas-title" id="admincarSidebarLabel">Admin Hub</h5>
+          <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <!-- Offcanvas body includes the same sidebar component as the static view -->
+        <div class="offcanvas-body p-0">
+          {% include "dttdc_car_admin/components/sidebar_admin_hub.html" %}
+        </div>
+      </div>
+
+      <!-- Static sidebar for md+ -->
+      <div class="d-none d-md-block">
+        {% include "dttdc_car_admin/components/sidebar_admin_hub.html" %}
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="col-12 col-md-9 col-lg-9" role="main" aria-label="Admin content">
+      <div class="d-flex flex-column align-items-center justify-content-center mt-2">
+        <div class="d-flex justify-content-center mt-4">
+  <div class="dashboard-welcome shadow-sm">
+  
+  <!-- <h4 class="title mb-1">
+    Welcome to Admin Hub
+  </h4> -->
+
+  <!-- <p class="subtitle mb-0">
+    Manage bookings, cancellations, and users efficiently
+  </p> -->
+
+</div>
+</div>
+      </div>
+
+      <!-- Area for page-specific content.
+           Note: keep this block empty in base. Pages override only the block they need. -->
+      <div>
+         {% block admin_hub %}
+              {% if show_dashboard_carbooking %}
+                  {% include "dttdc_car_admin/partials/admin_dashboard_carbooking.html" %}
+              {% endif %}
+         {% endblock %}
+         {% block add_package_category %}{% endblock %}
+         {% block add_package %}{% endblock %}
+         {% block add_vehicle %}{% endblock %}
+         {% block add_vehicle_package %}{% endblock %}
+         {% block select_package_category %}{% endblock %}
+         {% block edit_package_category %}{% endblock %}
+         {% block select_package %}{% endblock %}
+         {% block edit_package %}{% endblock %}
+         {% block select_vehicle %}{% endblock %}
+         {% block edit_vehicle %}{% endblock %}
+         {% block select_vehicle_package %}{% endblock %}
+         {% block edit_vehicle_package %}{% endblock %}
+
+      
+      </div>
+    </main>
+
+  </div>
+</div>
+{% endblock %}
+
+

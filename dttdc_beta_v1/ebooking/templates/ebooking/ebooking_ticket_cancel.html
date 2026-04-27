@@ -25,7 +25,7 @@
           </h5>
         </div>
 
-         
+
 
         <!-- TOUR NAME STRIP -->
         <div class="SideTitle p-2 text-center bg-light my-2 text-white">
@@ -107,24 +107,13 @@
               <!-- PASSENGER DETAILS -->
               <div class="ticket-section border-top">
                 <div class="section-label">Passenger Details for Cancellation</div>
-                   {% if messages %}
-  <div class="p-3">
-    {% for message in messages %}
-      <div class="alert 
-        {% if message.tags == 'success' %}alert-success
-        {% elif message.tags == 'error' %}alert-danger
-        {% else %}alert-info
-        {% endif %}
-        alert-dismissible fade show"
-        role="alert">
+                
 
-        {{ message }}
-
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-      </div>
-    {% endfor %}
-  </div>
-{% endif %}
+                {% if existing_cancellation %}
+                <div class="alert alert-danger">
+                  Cancellation already processed. You cannot modify it again.
+                </div>
+                {% endif %}
 
                 <table class="table table-bordered text-center">
                   <thead class="table-light">
@@ -143,9 +132,15 @@
                       <td>{{ p.gender|title }}</td>
                       <td>
                         {% if p.id in cancelled_passenger_ids %}
-                          <span class="text-danger fw-semibold">Cancelled</span>
+                        <span class="text-danger fw-semibold">Cancelled</span>
+
+                        {% elif existing_cancellation %}
+                        <!-- Disable selection after any cancellation -->
+                        <input type="checkbox" disabled>
+
                         {% else %}
-                          <input type="checkbox" name="selected_passengers" value="{{ p.id }}">
+                        <!-- Normal selection -->
+                        <input type="checkbox" name="selected_passengers" value="{{ p.id }}">
                         {% endif %}
                       </td>
                     </tr>
@@ -193,7 +188,7 @@
                   </small>
 
                   <div class="d-flex align-items-center">
-                    <button type="submit" class="btn btn-primary px-4 me-2" id="payBtn">
+                    <button type="submit" class="btn btn-primary px-4 me-2" id="payBtn" {% if existing_cancellation %}disabled{% endif %}>
                       Cancel Booking
                     </button>
 
@@ -447,16 +442,16 @@
 </script>
 
 <script>
-document.querySelector("form").addEventListener("submit", function (e) {
-  const checked = document.querySelectorAll(
-    'input[name="selected_passengers"]:checked'
-  );
+  document.querySelector("form").addEventListener("submit", function (e) {
+    const checked = document.querySelectorAll(
+      'input[name="selected_passengers"]:checked'
+    );
 
-  if (checked.length === 0) {
-    e.preventDefault();
-    alert("Please select at least one passenger for cancellation.");
-  }
-});
+    if (checked.length === 0) {
+      e.preventDefault();
+      alert("Please select at least one passenger for cancellation.");
+    }
+  });
 </script>
 
 {% endblock %}

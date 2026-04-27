@@ -1,0 +1,213 @@
+{% extends "dttdc_admin/base_admin.html" %}
+{% load static %}
+
+{% block admin_rebook_failed_ticket %}
+
+<div class="container-fluid mt-3">
+
+  <!-- Header -->
+  <div class="position-relative mb-3">
+    <a href="{% url 'admin_home' %}" class="btn btn-danger position-absolute start-0 top-50 translate-middle-y">
+      ← Back
+    </a>
+
+    <h4 class="fw-bold text-center mb-0">
+      Rebook Failed Ticket
+    </h4>
+  </div>
+
+  <!-- Date Filter -->
+  <form method="get" id="reportForm">
+    <div class="card p-3 mb-3">
+      <div class="row align-items-end g-3">
+
+        <div class="col-lg-2 fw-semibold">
+           Enter Booking Date:
+        </div>
+
+        <div class="col-lg-4 col-md-6">
+          <label class="form-label small mb-0">From</label>
+          <input type="date" name="start_date" class="form-control" value="{{ start_date }}">
+        </div>
+
+        <div class="col-lg-4 col-md-6">
+          <label class="form-label small mb-0">To</label>
+          <input type="date" name="end_date" class="form-control" value="{{ end_date }}">
+        </div>
+
+        <div class="col-lg-2">
+          <button type="submit" class="btn btn-primary w-100">
+            Generate Report
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </form>
+
+  <!-- Table -->
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <div class="table-responsive">
+        <table id="rebookfailedTable" class="table table-bordered table-hover align-middle w-100">
+
+          <thead class="table-primary text-center">
+            <tr>
+              <th style="width:5%;">S No.</th>
+              <th style="width:10%;">Tour Name</th>
+              <th style="width:15%;">Email</th>
+              <th style="width:12%;">Name</th>
+              <th style="width:7%;">Booking Date</th>
+              <th style="width:7%;">Journey Date</th>
+              <th style="width:8%;">Passengers</th>
+              <th style="width:10%;">Booking Status</th>
+              <th style="width:9%;">Payment Status</th>
+              <th style="width:13%;">Txn ID</th>
+              <th style="width:4%;">Details</th>
+            </tr>
+          </thead>
+
+          <tbody>
+  {% for booking in booking_list %}
+  <tr>
+    <td class="text-center fw-semibold">{{ forloop.counter }}</td>
+    <td class="text-truncate">
+  {{ booking.dttdc_tour.tour_name|default:"—" }}
+</td>
+    <td class="text-truncate">{{ booking.user_details.email }}</td>
+    <td class="text-truncate">{{ booking.user_details.name }}</td>
+    <td class="text-center">{{ booking.booking_date|date:"d M Y" }}</td>
+    <td class="text-center">{{ booking.user_details.tour_journey_date|date:"d M Y" }}</td>
+    <td class="text-center">
+  {{ booking.number_of_passengers }}
+</td>
+    <td class="text-center">{{ booking.booking_status }}</td>
+    <td class="text-center">
+  {% if booking.payment %}
+    <span class="badge
+      {% if booking.payment.status == 'success' %}
+        bg-success
+      {% elif booking.payment.status == 'failed' %}
+        bg-danger
+      {% else %}
+        bg-warning text-dark
+      {% endif %}
+    ">
+      {{ booking.payment.status|title }}
+    </span>
+  {% else %}
+    <span class="badge bg-secondary">No Payment</span>
+  {% endif %}
+</td>
+    <td class="text-center">
+  {% if booking.payment %}
+    {{ booking.payment.txnid }}
+  {% else %}
+    —
+  {% endif %}
+</td>
+    <td class="text-center">
+      <a href="#"
+         class="btn btn-sm btn-outline-primary rounded-pill px-3">View</a>
+    </td>
+  </tr>
+  {% endfor %}
+</tbody>
+
+
+        </table>
+      </div>
+      <div class="mt-3 d-flex justify-content-end">
+        <div class="px-3 py-2 border rounded fw-semibold" style="background:#bad875;">
+          Total Requests: {{ booking_list|length }}
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- Styles -->
+<style>
+  /* Required for percentage column widths */
+  #rebookfailedTable {
+    table-layout: fixed;
+  }
+
+  /* Default cell handling */
+  #rebookfailedTable th,
+  #rebookfailedTable td {
+    overflow: hidden;
+  }
+
+  /* Allow wrapping only where explicitly needed */
+  #rebookfailedTable td.text-wrap {
+    white-space: normal;
+  }
+</style>
+
+
+
+<!-- DataTable -->
+<!-- DataTable -->
+<script>
+  $(document).ready(function () {
+
+    $('#rebookfailedTable').DataTable({
+      language: {
+        emptyTable: "No rebooking requests found."
+      },
+
+
+      dom:
+        "<'row mb-2'<'col-md-6'l><'col-md-6 d-flex justify-content-end align-items-center'fB>>" +
+        "<'row'<'col-12'tr>>" +
+        "<'row mt-2'<'col-md-5'i><'col-md-7'p>>",
+
+      buttons: [
+        {
+          extend: 'excelHtml5',
+          text: 'Download Report',
+          className: 'btn btn-success btn-sm ms-2',
+          title: 'Ticket_Rebooking_Report_' + new Date().toISOString().slice(0, 10),
+        }
+      ],
+
+      pageLength: 9,
+      lengthMenu: [10, 25, 50, 100],
+      ordering: true,
+      responsive: false,
+      autoWidth: false
+
+
+    });
+
+
+
+  });
+
+</script>
+
+<!-- Date Validation -->
+<script>
+  document.getElementById('reportForm')?.addEventListener('submit', function (e) {
+    const startDate = document.querySelector('input[name="start_date"]')?.value;
+    const endDate = document.querySelector('input[name="end_date"]')?.value;
+
+    if (!startDate || !endDate) {
+      e.preventDefault();
+      alert('Please select both From and To dates.');
+      return;
+    }
+
+    if (startDate > endDate) {
+      e.preventDefault();
+      alert('From date cannot be later than To date.');
+    }
+  });
+
+</script>
+
+
+{% endblock %}

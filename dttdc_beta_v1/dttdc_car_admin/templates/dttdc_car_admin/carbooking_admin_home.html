@@ -1,0 +1,377 @@
+{% extends "dttdc_car_admin/base_car_admin.html" %}
+{% load static %}
+{% block car_admin_home_page %}
+{% load tz %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<div class="container-fluid py-3">
+  <div class="row g-3">
+
+    <!-- Mobile Toggle -->
+    <div class="col-12 d-md-none">
+      <button class="btn btn-primary w-100 shadow-sm" data-bs-toggle="offcanvas" data-bs-target="#admincarSidebar">
+        <i class="fa fa-bars me-2"></i> Menu
+      </button>
+    </div>
+
+    <!-- Sidebar -->
+    <aside class="col-md-3">
+      <div class="offcanvas offcanvas-start d-md-none" id="admincarSidebar">
+        <div class="offcanvas-header">
+          <h5>Admin Panel</h5>
+          <button class="btn-close" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body p-0">
+          {% include "dttdc_car_admin/components/sidebar_content_car.html" %}
+        </div>
+      </div>
+
+      <div class="d-none d-md-block sidebar-modern">
+        {% include "dttdc_car_admin/components/sidebar_car.html" %}
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="col-md-9">
+
+      <!-- Banner -->
+      <div class="banner-card text-center">
+        <img src="{% static 'dttdc_car_admin/images/carbooking_Admin_panel.png' %}" class="banner-img">
+      </div>
+
+      <!-- Welcome Section (FIXED) -->
+      <div class="welcome-card">
+        <div class="welcome-content">
+          <h2> Welcome Back, Car-Admin </h2>
+          <p>Here’s what’s happening with your bookings today</p>
+        </div>
+      </div>
+      <div class="alerts-wrapper">
+
+        <!-- Top Stats -->
+        <!-- <div class="row g-3 mb-3">
+
+          <div class="col-md-6">
+            <div class="stat-card">
+              <div>
+                <p>Total Bookings </p>
+                <h3>{{ total_bookings }}</h3>
+              </div>
+              <i class="fa fa-cube"></i>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="stat-card">
+              <div>
+                <p>Total Cancellations</p>
+                <h3>{{ total_cancellations }}</h3>
+              </div>
+              <i class="fa fa-times-circle text-danger"></i>
+            </div>
+          </div>
+        </div> -->
+
+
+
+        <!-- Alerts Title -->
+        <!-- <div class="section-title text-center mb-3">
+  🔔 Alerts & Notifications
+  <small class="text-muted d-block">Stay updated with latest activities</small>
+</div> -->
+
+        <!-- ALERT CARDS -->
+        <div class="row g-3">
+
+          <!-- Booking -->
+          <div class="col-md-6">
+            <div class="card modern-card">
+              <div class="card-header booking-header">
+                <span><i class="fa fa-cube me-2"></i> Booking Alerts</span>
+              </div>
+
+              <ul class="list-group list-group-flush">
+                {% for alert in booking_alerts %}
+                <a href="{% url 'admin_view_booking_details' alert.booking_id %}" class="text-decoration-none">
+                  <li class="list-group-item alert-item booking">
+                    <div class="alert-icon">
+                      <i class="fa fa-cube"></i>
+                    </div>
+
+                    <div class="flex-grow-1 ms-2">
+                      <div class="alert-title">
+                        {{ alert.message }}
+                      </div>
+                      <small class="text-muted">
+                        {{ alert.date|date:"d M Y, h:i A" }}
+                      </small>
+                    </div>
+
+
+                  </li>
+                </a>
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
+
+          <!-- Cancellation -->
+          <div class="col-md-6">
+            <div class="card modern-card">
+              <div class="card-header cancel-header">
+                <span><i class="fa fa-times-circle me-2"></i> Cancellation Alerts</span>
+              </div>
+
+              <ul class="list-group list-group-flush">
+                {% for alert in cancellation_alerts %}
+                <a href="{% url 'admin_view_booking_details' alert.booking_id %}" class="text-decoration-none">
+                  <li class="list-group-item alert-item cancellation">
+                    <div class="alert-icon">
+                      <i class="fa fa-times"></i>
+                    </div>
+
+                    <div class="flex-grow-1 ms-2">
+                      <div class="alert-title">
+                        {{ alert.message }}
+                      </div>
+                      <small class="text-muted">
+                        {{ alert.date|date:"d M Y, h:i A" }}
+                      </small>
+                    </div>
+
+
+                  </li>
+                </a>
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+<!-- 
+<style>
+  /* Sidebar */
+  .sidebar-modern {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Banner */
+  .banner-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 16px;
+  }
+
+  .banner-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 20px;
+    color: white;
+  }
+
+  .banner-overlay h2 {
+    font-weight: 700;
+  }
+
+  /* Section title */
+  .section-title {
+    font-size: 20px;
+    font-weight: 600;
+  }
+
+  /* Cards */
+  .modern-card {
+    border-radius: 16px;
+    border: none;
+    overflow: hidden;
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.05);
+  }
+
+  .booking-card .card-header {
+    background: linear-gradient(45deg, #bb5c03, #f7a84d);
+    color: white;
+  }
+
+  .cancel-card .card-header {
+    background: linear-gradient(45deg, #bb5c03, #f7a84d);
+    color: white;
+  }
+
+  /* Alert Items */
+  .alert-item-modern {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    
+    transition: all 0.25s ease;
+    border-left: 2px solid transparent;
+  }
+
+  .alert-item-modern.booking {
+    border-left-color: #bb5c03;
+  }
+
+  .alert-item-modern.cancellation {
+    border-left-color: #bb5c03;
+  }
+
+  .alert-item-modern:hover {
+    background: #faf395b2;
+    transform: translateX(6px) scale(1.01);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  }
+
+  .alert-title {
+    font-weight: 500;
+    font-size: 15px;
+  }
+
+  /* Icons */
+  .alert-item-modern i {
+    color: #999;
+  }
+
+  .welcome-card {
+  background: #ffffff;
+  padding: 18px 22px;
+  border-radius: 14px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.welcome-card h2 {
+  font-weight: 600;
+}
+
+.welcome-card p {
+  font-size: 14px;
+}
+</style> -->
+
+<style>
+  /* STAT CARDS */
+  .welcome-card {
+    background: linear-gradient(135deg, #f0de7a, #ff99006c);
+    color: #fff;
+    padding: 20px 25px;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+  }
+
+  .welcome-content h2 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 5px;
+  }
+
+  .welcome-content p {
+    font-size: 0.95rem;
+    opacity: 0.9;
+    margin: 0;
+  }
+
+  .welcome-card {
+    text-align: center;
+  }
+
+  .section-title {
+    text-align: center;
+  }
+
+  .stat-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px;
+    border-radius: 12px;
+    background: linear-gradient(45deg, #fffebe, #ffe60057);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  }
+
+  .stat-card.total {
+    background: linear-gradient(45deg, #ff6a00, #ff3d00);
+    color: white;
+  }
+
+  .stat-card h3 {
+    margin: 0;
+    font-weight: 700;
+  }
+
+  .stat-card i {
+    font-size: 22px;
+  }
+
+  /* CARDS */
+  .modern-card {
+    border-radius: 14px;
+    border: none;
+    overflow: hidden;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+  }
+
+  /* HEADERS */
+  .booking-header {
+    background: linear-gradient(45deg, #ff7a00, #ff99006c);
+    color: white;
+  }
+
+  .cancel-header {
+    background: linear-gradient(45deg, #ff7a00, #ff99006c);
+    color: white;
+  }
+
+  /* ALERT ITEM */
+  .alert-item {
+    display: flex;
+    align-items: center;
+    padding: 14px;
+    transition: 0.25s ease;
+  }
+
+  .alert-item:hover {
+    background: #fff3cd;
+    transform: translateX(5px);
+  }
+
+  /* ICON */
+  .alert-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: #ff7a00;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* TEXT */
+  .alert-title {
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  /* BADGES */
+  .badge {
+    font-size: 11px;
+    padding: 5px 8px;
+  }
+
+  .banner-img {
+    max-width: 800px;
+    /* adjust as needed */
+    width: 100%;
+
+
+  }
+</style>
+{% endblock %}

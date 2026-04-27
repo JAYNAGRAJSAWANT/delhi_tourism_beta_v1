@@ -1,0 +1,120 @@
+{% extends "dttdc_car_admin/carbooking_admin_hub.html" %}
+{% load static %}
+
+{% block add_vehicle %}
+
+<div class="container mt-4">
+
+  <!-- Errors -->
+  {% if form.non_field_errors %}
+    <div class="alert alert-danger">
+      {{ form.non_field_errors }}
+    </div>
+  {% endif %}
+
+  <!-- Messages -->
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <div class="card shadow-sm">
+
+    <!-- Header -->
+    <div class="card-header text-center">
+      <h5 class="mb-0" style="color:rgb(170, 22, 22);">
+        Add Vehicle
+      </h5>
+    </div>
+
+    <div class="card-body">
+
+      <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+
+        <!-- Vehicle Name -->
+        <div class="row mb-3">
+          <label class="col-md-3 col-form-label">
+            Vehicle Name <span class="text-danger">*</span>
+          </label>
+
+          <div class="col-md-9">
+            {{ form.vehicleName }}
+
+{% if form.vehicleName.errors %}
+  <div class="invalid-feedback d-block">
+    {{ form.vehicleName.errors|striptags }}
+  </div>
+{% endif %}
+          </div>
+        </div>
+
+        <!-- Vehicle Image -->
+        <div class="row mb-3">
+  <label class="col-md-3 col-form-label">
+    Vehicle Image
+  </label>
+
+  <div class="col-md-9">
+    
+    <!-- Input -->
+    {{ form.vehicleImage }}
+
+    <!-- Errors -->
+    {% if form.vehicleImage.errors %}
+      <div class="invalid-feedback d-block">
+        {{ form.vehicleImage.errors|striptags }}
+      </div>
+    {% endif %}
+
+    <!-- Preview (ONLY if image exists AND has URL) -->
+    {% if form.instance and form.instance.vehicleImage %}
+      <div class="mt-2">
+        <img src="{{ form.instance.vehicleImage.url }}" 
+             class="img-fluid rounded border"
+             style="max-height:150px;">
+      </div>
+    {% endif %}
+
+  </div>
+</div>
+
+        <!-- Submit -->
+        <div class="text-end">
+          <button type="submit" class="btn btn-primary px-4">
+            Save Vehicle
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+</div>
+
+<!-- Image Preview Script -->
+<script>
+  const input = document.getElementById('id_vehicle_image');
+  const preview = document.getElementById('imagePreview');
+
+  input.addEventListener('change', function () {
+    const file = this.files[0];
+
+    if (file) {
+      const reader = new FileReader();
+
+      reader.onload = function (e) {
+        preview.src = e.target.result;
+        preview.style.display = 'block';
+      }
+
+      reader.readAsDataURL(file);
+    }
+  });
+</script>
+
+{% endblock %}

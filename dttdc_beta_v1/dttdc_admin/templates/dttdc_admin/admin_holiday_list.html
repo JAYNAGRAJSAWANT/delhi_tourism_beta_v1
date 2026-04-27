@@ -1,0 +1,187 @@
+{% extends "dttdc_admin/base_admin.html" %}
+{% load static %}
+
+{% block holiday_list %}
+
+<div class="container-fluid mt-4">
+  <div class="row">
+
+    <!-- LEFT SIDEBAR (optional, same as your UI) -->
+    <!-- Sidebar -->
+    <aside class="col-md-3">
+      <div class="offcanvas offcanvas-start d-md-none" id="admincarSidebar">
+        <div class="offcanvas-header">
+          <h5>Admin Panel</h5>
+          <button class="btn-close" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body p-0">
+          {% include "dttdc_admin/components/panel_selection_sidebar_content.html" %}
+        </div>
+      </div>
+
+      <div class="d-none d-md-block sidebar-modern">
+        {% include "dttdc_admin/components/panel_selection_sidebar.html" %}
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <div class="col-md-9 text-center">
+
+      <div class="row justify-content-center my-4">
+
+        <div class="container">
+
+          {% if messages %}
+          {% for message in messages %}
+          <div class="alert alert-success">{{ message }}</div>
+          {% endfor %}
+          {% endif %}
+
+          <!-- Add Holiday Card -->
+          <div class="card shadow-sm mb-4">
+            <div class="card-header text-center bg-light">
+              <h4 class="text-danger mb-0">Add Holiday</h4>
+            </div>
+
+            <div class="card-body">
+              <form method="POST">
+                {% csrf_token %}
+                <div class="row align-items-end">
+
+                  <div class="col-md-4">
+                    <label class="form-label">Date</label>
+                    <input type="date" name="date" class="form-control">
+                  </div>
+
+                  <div class="col-md-6">
+                    <label class="form-label">Holiday Name</label>
+                    <input type="text" name="name" class="form-control">
+                  </div>
+
+                  <div class="col-md-2 text-end">
+                    <button type="submit" class="btn btn-danger w-100">Add</button>
+                  </div>
+
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Holiday List Card -->
+          <div class="card shadow-sm">
+            <div class="card-header text-center bg-light">
+              <h4 class="text-danger mb-0">Holiday List</h4>
+            </div>
+
+            <div class="card-body">
+
+              <div class="d-flex align-items-center mb-3">
+                <label class="me-2 fw-bold">Select Year:</label>
+                <select class="form-select w-auto"
+        onchange="window.location.href='?year=' + this.value;">
+
+  {% for y in years %}
+    <option value="{{ y.year }}" {% if y.year == selected_year %}selected{% endif %}>
+      {{ y.year }}
+    </option>
+  {% endfor %}
+
+</select>
+              </div>
+
+              {% if holidays %}
+              <table class="table table-bordered">
+                <thead class="table-light">
+                  <tr>
+                    <th>Date</th>
+                    <th>Holiday Name</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for holiday in holidays %}
+                  <tr>
+                    <td>{{ holiday.date }}</td>
+                    <td>{{ holiday.name }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+              {% else %}
+              <div class="text-center text-muted fw-bold py-4">
+                No Data Found!
+              </div>
+              {% endif %}
+
+            </div>
+          </div>
+
+        </div>
+
+
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<style>
+  .panel-card {
+    cursor: pointer;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+  }
+
+  .panel-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  }
+
+  .custom-card {
+    transition: box-shadow 0.3s;
+    box-shadow: none;
+    padding: 20px;
+    margin: 10px;
+    border: 1px solid #ddd;
+    border-radius: 7px;
+  }
+
+  .custom-card:hover {
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  }
+
+  .card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
+
+  .header-img {
+
+
+    object-fit: contain;
+  }
+
+  .card {
+    border-radius: 10px;
+  }
+
+  .card-header {
+    border-bottom: 1px solid #ddd;
+  }
+
+  .btn-danger {
+    background-color: #dc3545;
+    border: none;
+  }
+
+  .btn-danger:hover {
+    background-color: #c82333;
+  }
+
+  h4 {
+    font-weight: 600;
+  }
+</style>
+
+{% endblock %}

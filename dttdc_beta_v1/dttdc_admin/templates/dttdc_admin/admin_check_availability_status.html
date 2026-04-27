@@ -204,7 +204,7 @@
 
 /* Available dates */
 .flatpickr-day.available-date {
-  background: #198754;
+  background: #0f5201;
   color: #ffffff !important;
   box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.15);
 }
@@ -242,7 +242,117 @@
     overflow: hidden;
     flex-direction: column;
 }
+.seat-info {
+  font-size: 10px;
+  margin-top: 4px;
+  text-align: center;
+  line-height: 1.2;
+}
 
+.flatpickr-day {
+  position: relative;
+  padding: 6px;
+  display: block;
+}
+
+/* Date → top right */
+.date-number {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* Seat info → bottom left */
+.seat-info {
+  position: absolute;
+  bottom: 6px;
+  left: 8px;
+  font-size: 11px;
+  line-height: 1.3;
+  text-align: left;
+}
+
+/* Past dates styling */
+.flatpickr-day.past-date {
+  background: #d6d6d6 !important;
+  color: #6c757d !important;
+  opacity: 0.8;
+}
+
+/* Optional: reduce visibility of seat info too */
+.flatpickr-day.past-date .seat-info {
+  color: #6c757d;
+}
 </style>
 
+<script>
+  const availabilityData = {{ availability_data|safe }};
+  const enabledDates = Object.keys(availabilityData);
+
+  flatpickr("#availabilityCalendar", {
+    inline: true,
+    dateFormat: "Y-m-d",
+    enable: enabledDates,
+    disableMobile: true,
+
+   onDayCreate: function (_, __, ___, dayElem) {
+  const d = dayElem.dateObj;
+
+  const dateStr =
+    d.getFullYear() + "-" +
+    String(d.getMonth() + 1).padStart(2, "0") + "-" +
+    String(d.getDate()).padStart(2, "0");
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // Clear default content
+  dayElem.innerHTML = "";
+
+  // Date (top right)
+  const dateDiv = document.createElement("div");
+  dateDiv.className = "date-number";
+  dateDiv.innerText = d.getDate();
+  dayElem.appendChild(dateDiv);
+
+  // Past date styling
+  if (d < today) {
+    dayElem.classList.add("past-date");
+  }
+
+  // If available → show seat info + tooltip
+  if (availabilityData[dateStr]) {
+    const seats = availabilityData[dateStr];
+
+    const bookedSeats = seats.total_seats - seats.available_seats;
+
+    dayElem.classList.add("available-date");
+
+    // Bottom left info
+    const seatDiv = document.createElement("div");
+    seatDiv.className = "seat-info";
+    seatDiv.innerHTML = `
+      <div>Total : ${seats.total_seats}</div>
+      <div>Available : ${seats.available_seats}</div>
+    `;
+    dayElem.appendChild(seatDiv);
+
+    // ✅ Tooltip on hover
+    dayElem.setAttribute(
+  "title",
+  `Total seats: ${seats.total_seats}
+Available seats: ${seats.available_seats}
+Booked seats: ${bookedSeats}`
+);
+  }
+
+  // Sunday styling
+  if (d.getDay() === 0) {
+    dayElem.classList.add("sunday");
+  }
+}
+  });
+</script>
 {% endblock %}

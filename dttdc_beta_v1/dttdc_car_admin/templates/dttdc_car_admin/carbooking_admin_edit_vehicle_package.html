@@ -1,0 +1,119 @@
+{% extends "dttdc_car_admin/carbooking_admin_hub.html" %}
+{% load static %}
+
+{% block edit_vehicle_package %}
+
+<div class="container mt-4">
+
+  <!-- Errors -->
+  {% if form.non_field_errors %}
+    <div class="alert alert-danger">
+      {{ form.non_field_errors }}
+    </div>
+  {% endif %}
+
+  <!-- Messages -->
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <div class="card shadow-sm">
+
+    <div class="card-header text-center">
+      <h5>Edit Vehicle Package</h5>
+    </div>
+
+    <div class="card-body">
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        <!-- Package -->
+        <div class="mb-3">
+          <label>Package</label>
+          {{ form.package }}
+        </div>
+
+        <!-- Vehicle -->
+        <div class="mb-3">
+          <label>Vehicle</label>
+          {{ form.vehicle }}
+        </div>
+
+        <!-- Capacity -->
+        <div class="mb-3">
+          <label>Vehicle Capacity</label>
+          {{ form.vehicleCapacity }}
+        </div>
+
+        <!-- Description -->
+        <div class="mb-3">
+          <label>Tour Description</label>
+          {{ form.tourDescription }}
+        </div>
+
+        <!-- Base Fare -->
+        <div class="mb-3">
+          <label>Base Fare</label>
+          {{ form.baseFare }}
+        </div>
+
+        <!-- GST -->
+        <div class="mb-3">
+          <label>GST</label>
+          {{ form.GST }}
+        </div>
+
+        <!-- Extra Per KM -->
+        <div class="mb-3">
+          <label>Extra Per KM</label>
+          {{ form.extraPerKM }}
+        </div>
+
+        <!-- Extra Per Hour -->
+        <div class="mb-3">
+          <label>Extra Per Hour</label>
+          {{ form.extraPerHour }}
+        </div>
+
+        <!-- Per Night -->
+        <div class="mb-3">
+          <label>Per Night Charge</label>
+          {{ form.perNightCharge }}
+        </div>
+
+        <!-- Status -->
+        <div class="mb-3">
+          <label>Status</label>
+          {{ form.status }}
+        </div>
+
+        <!-- Buttons -->
+        <div class="text-end">
+          <a href="{% url 'select_vehicle_package' %}" class="btn btn-secondary me-2">
+            Back
+          </a>
+
+          <button type="submit" class="btn btn-primary px-4">
+            Update
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  setTimeout(() => {
+    document.querySelectorAll('.alert').forEach(el => el.remove());
+  }, 3000);
+</script>
+
+{% endblock %}

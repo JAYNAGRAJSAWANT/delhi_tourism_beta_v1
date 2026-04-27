@@ -1,0 +1,104 @@
+{% extends "dttdc_car_admin/carbooking_admin_hub.html" %}
+{% load static %}
+
+{% block add_package %}
+
+<div class="container mt-4">
+
+  <!-- Global Errors -->
+  {% if form.non_field_errors %}
+    <div class="alert alert-danger">
+      {{ form.non_field_errors }}
+    </div>
+  {% endif %}
+
+  <!-- Messages -->
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <div class="card shadow-sm">
+    
+    <!-- Header -->
+    <div class="card-header text-center">
+      <h5 class="mb-0" style="color:rgb(170, 22, 22);">
+        Add Package
+      </h5>
+    </div>
+
+    <!-- Body -->
+    <div class="card-body">
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        <!-- Package Name -->
+        <div class="row mb-3">
+          <label class="col-md-3 col-form-label">
+            Package Name <span class="text-danger">*</span>
+          </label>
+
+          <div class="col-md-9">
+            {{ form.packageName }}
+
+{% if form.packageName.errors %}
+  <div class="invalid-feedback d-block">
+    {{ form.packageName.errors|striptags }}
+  </div>
+{% endif %}
+          </div>
+        </div>
+
+        <!-- Package Category -->
+        <div class="row mb-3">
+          <label class="col-md-3 col-form-label">
+            Package Category <span class="text-danger">*</span>
+          </label>
+
+          <div class="col-md-9">
+            {{ form.carPackageCategory }}
+
+{% if form.carPackageCategory.errors %}
+  <div class="invalid-feedback d-block">
+    {{ form.carPackageCategory.errors|striptags }}
+  </div>
+{% endif %}
+          </div>
+        </div>
+
+        <!-- Status -->
+        <div class="row mb-4">
+          <label class="col-md-3 col-form-label">
+            Status
+          </label>
+
+          <div class="col-md-9">
+            {{ form.status }}
+
+            {% if form.status.errors %}
+              <div class="invalid-feedback d-block">
+                {{ form.status.errors|striptags }}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Submit -->
+        <div class="text-end">
+          <button type="submit" class="btn btn-primary px-4">
+            Save Package
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends "dttdc_car_admin/carbooking_admin_hub.html" %}
+
+{% block select_package %}
+
+<div class="container mt-4">
+
+  <div class="card shadow-sm">
+    <div class="card-header text-center">
+      <h5>Select Package to Edit</h5>
+    </div>
+
+    <div class="card-body">
+
+      <form>
+
+        <!-- Package Dropdown -->
+        <div class="mb-3">
+          <label>Select Package</label>
+
+          <select id="packageSelect" class="form-control">
+            <option value="">-- Select Package --</option>
+
+            {% for pkg in packages %}
+              <option value="{{ pkg.id }}">{{ pkg.packageName }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Buttons -->
+        <div class="text-end">
+          <button type="button" class="btn btn-primary" onclick="goToEdit()">
+            Edit Package
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+</div>
+
+<script>
+function goToEdit() {
+    var id = document.getElementById("packageSelect").value;
+
+    if (id) {
+        var url = "{% url 'edit_package' 0 %}";
+        window.location.href = url.replace('0', id);
+    } else {
+        alert("Please select a package");
+    }
+}
+</script>
+
+{% endblock %}
