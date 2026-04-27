@@ -1,7 +1,12 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 import uuid
-
+from ebooking.validators import (
+    phone_validator,
+    passport_validator,
+    pincode_validator,
+    journey_date_validator,
+)
 
 # VEHICLES
 class CarBookingVehicle(models.Model):
@@ -114,6 +119,7 @@ class CarBookingBookingDetails(models.Model):
     city = models.CharField(max_length=255)
     state = models.CharField(max_length=255)
     country = models.CharField(max_length=255)
+    pincode = models.CharField(max_length=15,validators=[pincode_validator])
 
     phoneNumber = models.CharField(max_length=255)
     passportNumber = models.CharField(max_length=255)
@@ -252,3 +258,5 @@ class User(models.Model):
 
     createdAt = models.DateTimeField(auto_now_add=True)
     updatedAt = models.DateTimeField(auto_now=True)
+
+

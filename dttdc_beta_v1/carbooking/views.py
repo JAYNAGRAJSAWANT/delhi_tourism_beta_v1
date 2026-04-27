@@ -1,6 +1,5 @@
-from django.shortcuts import  get_object_or_404, render
-
-
+from django.shortcuts import  get_object_or_404, render, redirect
+from .forms import CarBookingForm
 from .models import CarBookingPackage, CarBookingPackageCategory, CarBookingVehicleDetails
 
 
@@ -42,13 +41,50 @@ def carbooking_all_packages(request, package_id):
 # ========================================Vehicle Details =======================================
 def vehicle_details(request, vehicle_id):
     vehicle_detail = get_object_or_404(CarBookingVehicleDetails, id=vehicle_id)
+    gst_amount = vehicle_detail.GST
+    print(gst_amount)
+    total = float(vehicle_detail.baseFare) + gst_amount
+    print("total",total)
+
 
     return render(
         request,
         "carbooking/carbooking_vehicle_details.html",
         {
-            "vehicle_detail": vehicle_detail
+            "vehicle_detail": vehicle_detail,
+            "gst_amount": gst_amount,
+             "total": total,
         }
     )
     
+# ========================================Vehicle Details =======================================
 
+
+def carbooking_details(request):
+
+    if request.method == "POST":
+        form = CarBookingForm(request.POST)
+
+        if form.is_valid():
+            booking = form.save(commit=False)
+
+            # set default status (optional)
+            booking.bookingStatus = "Pending"
+
+            # you can calculate fare here if needed
+            # booking.totalFare = calculate_fare(...)
+
+            booking.save()
+
+            return redirect("carbooking_success")  # create this URL
+
+    else:
+        form = CarBookingForm()
+
+    return render(
+        request,
+        "carbooking/carbooking_booking_details.html",
+        {
+            "form": form
+        }
+    )

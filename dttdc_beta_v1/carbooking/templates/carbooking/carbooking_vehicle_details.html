@@ -20,9 +20,9 @@
         <!-- HERO -->
         <div class="car-hero">
           {% if vehicle_detail.vehicle.vehicleImage %}
-            <img src="{{ vehicle_detail.vehicle.vehicleImage.url }}">
+          <img src="{{ vehicle_detail.vehicle.vehicleImage.url }}">
           {% else %}
-            <img src="{% static 'images/default.jpg' %}">
+          <img src="{% static 'images/default.jpg' %}">
           {% endif %}
         </div>
 
@@ -32,19 +32,30 @@
 
           <div class="quick-meta">
             <span><i class="material-icons">people</i> {{ vehicle_detail.vehicleCapacity }} Seats</span>
-            <span><i class="material-icons">local_taxi</i> Driver Included</span>
+
             <span><i class="material-icons">route</i> {{ vehicle_detail.package.packageName }}</span>
           </div>
         </div>
 
         <!-- DESCRIPTION -->
         <div class="section glass-card">
-          <h6><i class="material-icons">description</i> Trip Description</h6>
+          <h6>
+            <i class="material-icons">description</i>
+            Description
+          </h6>
 
-          <p>{{ vehicle_detail.tourDescription }}</p>
+          <div class="trip-desc">
+            <p><strong>Garage to Garage</strong> (Dilli Haat INA)</p>
+
+            <p>
+              Reporting at address of customer after confirmation on phone number
+            </p>
+
+            <p class="terms">(Terms & Conditions apply)</p>
+          </div>
 
           <div class="note-box mt-2">
-            ⚠️ Parking, toll & permit charges are extra
+            <strong>Note:</strong> Parking, toll & permit charges are extra
           </div>
         </div>
 
@@ -59,14 +70,14 @@
               <span>₹ {{ vehicle_detail.baseFare }}</span>
             </div>
 
-            <div class="tariff-row">
-              <span>GST ({{ vehicle_detail.GST }}%)</span>
-              <span>₹ {{ vehicle_detail.baseFare|floatformat:2 }}</span>
+            <div class="tariff-row gst">
+              <span> GST (18%)</span>
+              <span>₹ {{ vehicle_detail.GST }}</span>
             </div>
 
             <div class="tariff-total">
               <span>Total Payable</span>
-              <span>₹ {{ vehicle_detail.baseFare }}</span>
+              <span>₹ {{ total }}</span>
             </div>
 
           </div>
@@ -98,9 +109,10 @@
 
         <!-- CTA -->
         <div class="footer">
-          <a href="#" class="btn-book">Book This Vehicle</a>
-          <p class="tc">* Terms & Conditions Apply</p>
+          <a href="{% url 'carbooking_details' %}" class="btn-book">Book This Vehicle</a>
         </div>
+
+        
 
       </div>
 
@@ -109,157 +121,214 @@
 </div>
 
 <style>
-
-/* MAIN CARD */
-.car-card {
-  background: linear-gradient(145deg, #fff6e9, #ffe0c4);
-  border-radius: 15px;
-  overflow: hidden;
-  box-shadow: 0 16px 35px rgba(0, 0, 0, 0.12);
-  padding-bottom: 20px;
-  max-width: 900px;
-  margin: auto;
-  border: 1px solid rgba(255, 140, 0, 0.3);
-}
-
-/* HERO */
-.car-hero {
-  height: 260px;
-  overflow: hidden;
-}
-
-.car-hero img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: 0.5s;
-}
-
-.car-hero:hover img {
-  transform: scale(1.08);
-}
-
-/* GLASS EFFECT */
-.glass-card {
-  background: rgba(255, 255, 255, 0.35);
-  backdrop-filter: blur(15px);
-  border-radius: 12px;
-  padding: 20px 25px;
-  margin: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  box-shadow: 0 6px 16px rgba(0,0,0,0.08);
-}
-
-/* HEADER */
-.car-header h2 {
-  font-size: 26px;
-  font-weight: 700;
-}
-
-.quick-meta {
-  display: flex;
-  gap: 25px;
-  margin-top: 10px;
-  font-size: 14px;
-  color: #555;
-  flex-wrap: wrap;
-}
-
-.quick-meta i {
-  color: #ff6a00;
-  margin-right: 5px;
-}
-
-/* SECTION */
-.section h6 {
-  color: #ff6a00;
-  font-weight: 600;
-  margin-bottom: 10px;
-}
-
-/* NOTE */
-.note-box {
-  border: 1px dashed #ff6a00;
-  padding: 8px;
-  border-radius: 6px;
-  font-size: 12px;
-}
-
-/* TARIFF */
-.tariff-card {
-  background: rgba(255,255,255,0.5);
-  border-radius: 10px;
-  padding: 15px;
-}
-
-.tariff-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 8px 0;
-  border-bottom: 1px dashed #ccc;
-}
-
-.tariff-total {
-  display: flex;
-  justify-content: space-between;
-  font-weight: 600;
-  padding-top: 10px;
-  color: green;
-}
-
-/* CHARGES */
-.charges-grid {
-  display: flex;
-  gap: 15px;
-  flex-wrap: wrap;
-}
-
-.charge-box {
-  flex: 1 1 30%;
-  background: rgba(255,255,255,0.5);
-  padding: 12px;
-  border-radius: 10px;
-  text-align: center;
-}
-
-/* BUTTON */
-.footer {
-  text-align: center;
-  margin-top: 20px;
-}
-
-.btn-book {
-  display: inline-block;
-  background: linear-gradient(135deg, #ff6a00, #ff3c00);
-  color: #fff;
-  padding: 14px 36px;
-  border-radius: 50px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: 0.3s;
+  /* MAIN CARD */
+  .btn-book {
+  color: white;              /* normal text color */
+  text-decoration: none;     /* remove underline */
 }
 
 .btn-book:hover {
-  transform: scale(1.08);
+  color: rgb(255, 255, 255);              /* keep same color on hover */
+  text-decoration: none;     /* optional */
 }
+  .car-card {
+    background: linear-gradient(145deg, #fff6e9, #ffe0c4);
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 16px 35px rgba(0, 0, 0, 0.12);
+    padding-bottom: 20px;
+    max-width: 900px;
+    margin: auto;
+    border: 1px solid rgba(255, 140, 0, 0.3);
+  }
 
-.tc {
-  font-size: 12px;
-  color: #666;
-  margin-top: 8px;
-}
+  /* HERO */
+  .car-hero {
+    height: 260px;
+    overflow: hidden;
+  }
 
-/* RESPONSIVE */
-@media (max-width: 768px) {
+  .car-hero img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: 0.5s;
+  }
+
+  .car-hero:hover img {
+    transform: scale(1.08);
+  }
+
+  /* GLASS EFFECT */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.35);
+    backdrop-filter: blur(15px);
+    border-radius: 12px;
+    padding: 20px 25px;
+    margin: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  }
+
+  /* HEADER */
+  .car-header h2 {
+    font-size: 26px;
+    font-weight: 700;
+  }
+
   .quick-meta {
-    flex-direction: column;
-    gap: 8px;
+    display: flex;
+    gap: 25px;
+    margin-top: 10px;
+
+    color: #555;
+    flex-wrap: wrap;
+  }
+
+  .quick-meta i {
+    color: #ff6a00;
+    margin-right: 5px;
+  }
+
+  /* SECTION */
+  .section h6 {
+    color: #ff6a00;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+
+  /* NOTE */
+  .note-box {
+    border: 1px dashed #ff6a00;
+    padding: 8px;
+    border-radius: 6px;
+    font-size: 12px;
+  }
+
+  /* TARIFF */
+  .tariff-card {
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 10px;
+    padding: 15px;
+  }
+
+  .tariff-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px dashed #ccc;
+  }
+
+  .tariff-total {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 600;
+    padding-top: 10px;
+    color: green;
+  }
+
+  /* CHARGES */
+  .charges-grid {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
   }
 
   .charge-box {
-    flex: 1 1 100%;
+    flex: 1 1 30%;
+    background: rgba(255, 255, 255, 0.5);
+    padding: 12px;
+    border-radius: 10px;
+    text-align: center;
   }
+
+  /* BUTTON */
+  .footer {
+    text-align: center;
+    margin-top: 20px;
+  }
+
+  .btn-book {
+    display: inline-block;
+    background: linear-gradient(135deg, #ff6a00, #ff3c00);
+    color: #fff;
+    padding: 14px 36px;
+    border-radius: 50px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: 0.3s;
+  }
+
+  .btn-book:hover {
+    transform: scale(1.08);
+  }
+
+  .tc {
+    font-size: 12px;
+    color: #666;
+    margin-top: 8px;
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 768px) {
+    .quick-meta {
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .charge-box {
+      flex: 1 1 100%;
+    }
+  }
+
+  .quick-meta span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    /* cleaner than margin-right on icon */
+  }
+
+  .quick-meta i {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    /* cleaner than margin-right on icon */
+  }
+
+  .section h6 {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #ff6a00;
+    font-weight: 600;
+    margin-bottom: 10px;
+    font-size: 16px;
+  }
+
+  .trip-desc p {
+    margin: 4px 0;
+    font-size: 14px;
+    color: #333;
+    padding-left: 10px;
+  }
+
+  .trip-desc strong {
+    font-weight: 600;
+  }
+
+  .trip-desc .terms {
+    font-size: 12px;
+    color: #777;
+  }
+  .tariff-row.gst {
+  
+  font-weight: 500;
 }
+
+.tariff-total {
+  font-size: 16px;
+}
+
 
 </style>
 

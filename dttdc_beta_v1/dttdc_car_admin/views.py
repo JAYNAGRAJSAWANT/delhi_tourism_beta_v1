@@ -331,3 +331,20 @@ def edit_vehicle_package(request, pk):
         "dttdc_car_admin/carbooking_admin_edit_vehicle_package.html",
         {"form": form}
     )
+
+# -----------------------------Update availability------------------------------------
+
+def update_car_availability(request):
+    return render(
+        request,
+        "dttdc_car_admin/carbooking_admin_update_availability.html",
+        
+    )
+
+# -----------------------------Check availability------------------------------------
+def check_car_availability(request):
+    return render(
+        request,
+        "dttdc_car_admin/carbooking_admin_check_availability.html",
+        
+    )

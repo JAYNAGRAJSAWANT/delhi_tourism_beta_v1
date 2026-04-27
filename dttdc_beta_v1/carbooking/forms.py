@@ -1,4 +1,11 @@
 from django import forms
+from django.core.exceptions import ValidationError
+from datetime import date, timedelta
+import re
+
+from .models import CarBookingBookingDetails
+
+
 from .models import (
     CarBookingPackage,
     CarBookingPackageCategory,
@@ -146,3 +153,189 @@ class CarBookingVehicleDetailsForm(forms.ModelForm):
             'extraPerHour': forms.NumberInput(attrs={'class': 'form-control'}),
             'perNightCharge': forms.NumberInput(attrs={'class': 'form-control'}),
         }
+
+
+    # ----------------------------------Carbooking Package form----------------------------
+
+class CarBookingForm(forms.ModelForm):
+
+    phoneNumber = forms.CharField(
+        widget=forms.TextInput(attrs={
+            "class": "form-control",
+            "id": "id_phone_number",
+            "placeholder": "Enter mobile number"
+        })
+    )
+
+    email = forms.EmailField(
+        widget=forms.EmailInput(attrs={
+            "class": "form-control",
+            "placeholder": "Enter email address"
+        }),
+        error_messages={
+            "required": "Email is required.",
+            "invalid": "Enter a valid email address."
+        }
+    )
+
+    class Meta:
+        model = CarBookingBookingDetails
+        fields = [
+            "journeyDate",
+            "fullName",
+            "email",
+            "phoneNumber",
+            "address",
+            "country",
+            "state",
+            "city",
+            "passportNumber",
+            "pickUpPlace",
+            "pickUpTime",
+            "vehicle",
+            "pincode"
+        ]
+
+        widgets = {
+            "journeyDate": forms.DateInput(attrs={
+                "type": "date",
+                "class": "form-control"
+            }),
+
+            "fullName": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": "Full Name"
+            }),
+
+            "address": forms.Textarea(attrs={
+                "rows": 3,
+                "class": "form-control",
+                "placeholder": "Enter full address"
+            }),
+
+            "country": forms.Select(attrs={
+                "class": "form-control",
+                "id": "country"
+            }),
+
+            "state": forms.Select(attrs={
+                "class": "form-control",
+                "id": "state"
+            }),
+
+            "city": forms.Select(attrs={
+                "class": "form-control",
+                "id": "city"
+            }),
+            "pincode": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": "Enter pincode"
+            }),
+
+            "passportNumber": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": "Passport Number (if applicable)"
+            }),
+
+            "pickUpPlace": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": "Pickup Location"
+            }),
+
+            "pickUpTime": forms.TimeInput(attrs={
+                "type": "time",
+                "class": "form-control"
+            }),
+
+            "vehicle": forms.Select(attrs={
+                "class": "form-control"
+            }),
+        }
+
+    # -----------------------
+    # INIT
+    # -----------------------
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Make all required except passport
+        for field in self.fields.values():
+            field.required = True
+
+        self.fields["passportNumber"].required = False
+
+        # Default dropdown options
+        self.fields["country"].choices = [
+            ("", "Select Country"),
+            ("India", "India"),
+            ("__other__", "Other"),
+        ]
+
+        self.fields["state"].choices = [
+            ("", "Select State"),
+            ("__other__", "Other"),
+        ]
+
+        self.fields["city"].choices = [
+            ("", "Select City"),
+            ("__other__", "Other"),
+        ]
+
+    # -----------------------
+    # VALIDATIONS
+    # -----------------------
+
+    def clean_fullName(self):
+        name = (self.cleaned_data.get("fullName") or "").strip()
+        name = re.sub(r"\s+", " ", name)
+
+        if len(name) < 2:
+            raise ValidationError("Name must be at least 2 characters.")
+
+        if not re.fullmatch(r"[A-Za-z\s\.\'-]+", name):
+            raise ValidationError("Name contains invalid characters.")
+
+        return name
+
+    def clean_phoneNumber(self):
+        phone = self.cleaned_data.get("phoneNumber")
+
+        if not re.fullmatch(r"\d{10}", phone):
+            raise ValidationError("Enter a valid 10-digit mobile number.")
+
+        return phone
+
+    def clean_passportNumber(self):
+        passport = (self.cleaned_data.get("passportNumber") or "").strip().upper()
+
+        if passport:
+            if not re.fullmatch(r"[A-Z0-9]{6,12}", passport):
+                raise ValidationError("Invalid passport number.")
+
+        return passport
+
+    def clean_journeyDate(self):
+        journey_date = self.cleaned_data.get("journeyDate")
+
+        min_date = date.today() + timedelta(days=1)
+
+        if journey_date < min_date:
+            raise ValidationError("Booking must be at least 1 day in advance.")
+
+        return journey_date
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        country = cleaned_data.get("country")
+        passport = cleaned_data.get("passportNumber")
+
+        # Passport required for non-India
+        if country and country != "India":
+            if not passport:
+                self.add_error(
+                    "passportNumber",
+                    "Passport is required for international bookings."
+                )
+
+        return cleaned_data

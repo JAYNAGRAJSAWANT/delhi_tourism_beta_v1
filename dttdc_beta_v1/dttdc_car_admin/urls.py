@@ -49,4 +49,8 @@ urlpatterns = [
    #==================================Edit vehicle package========================================
     path("select_vehicle_package",views.select_vehicle_package,name="select_vehicle_package"),
     path("edit_vehicle_package/<int:pk>/",views.edit_vehicle_package,name="edit_vehicle_package"),
+
+     #==================================Check Availability========================================
+    path("update_car_availability",views.update_car_availability,name="update_car_availability"),
+    path("check-car-availability/",views.check_car_availability,name="check-car-availability"),
 ]

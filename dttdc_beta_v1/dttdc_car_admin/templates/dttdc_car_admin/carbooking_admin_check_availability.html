@@ -1,0 +1,358 @@
+{% extends "dttdc_car_admin/carbooking_admin_hub.html" %}
+{% load static %}
+
+{% block carbooking_admin_check_availability %}
+<!-- Flatpickr -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<div class="container mt-4 mb-4">
+
+  {% if messages %}
+  {% for message in messages %}
+  <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+    {{ message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+  {% endfor %}
+  {% endif %}
+
+  <div class="card shadow border-0">
+    <div class="card-header text-center bg-light">
+      <h5 class="mb-0 fw-bold" style="color:rgb(170,22,22)">
+        Check Car Availability Status
+      </h5>
+    </div>
+
+    <div class="card-body px-4 py-4">
+      <form method="get">
+        <div class="row mb-4">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Select Tour</label>
+            <select name="tour" class="form-control" onchange="this.form.submit()">
+              <option value="">-- Select Tour --</option>
+
+              {% for tour in tours %}
+              <option value="{{ tour.id }}" {% if selected_tour and tour.id == selected_tour.id %}selected{% endif %}>
+                {{ tour.tour_name }}
+              </option>
+              {% endfor %}
+            </select>
+
+          </div>
+        </div>
+      </form>
+
+      {% if selected_tour %}
+     <h6 class="availability-heading-dark mb-3">
+ <strong>{{ selected_tour.tour_name }}</strong>
+</h6>
+
+
+
+      <div class="calendar-wrapper">
+        <input type="text" id="availabilityCalendar" class="d-none">
+
+      </div>
+      {% endif %}
+
+      {% if selected_tour %}
+<script>
+  const enabledDates = {{ available_dates|safe }};
+
+  flatpickr("#availabilityCalendar", {
+    inline: true,
+    dateFormat: "Y-m-d",
+    enable: enabledDates,
+    disableMobile: true,
+
+    onDayCreate: function (_, __, ___, dayElem) {
+      const d = dayElem.dateObj;
+      const dateStr =
+        d.getFullYear() + "-" +
+        String(d.getMonth() + 1).padStart(2, "0") + "-" +
+        String(d.getDate()).padStart(2, "0");
+
+      // Highlight available dates
+      if (enabledDates.includes(dateStr)) {
+        dayElem.classList.add("available-date");
+      }
+
+      // Sunday styling
+      if (d.getDay() === 0) {
+        dayElem.classList.add("sunday");
+      }
+    }
+  });
+</script>
+
+{% endif %}
+
+    </div>
+  </div>
+</div>
+
+<style>
+
+.availability-heading-dark {
+  padding: 12px 18px;
+  background: #b3d6fa;
+  color: #fff;
+  border-radius: 8px;
+  font-weight: 700;
+}
+.availability-heading-dark strong {
+  color: #000000;
+}
+
+
+ /* =========================
+   Calendar Wrapper
+========================= */
+.calendar-wrapper {
+  max-width: 950px;
+  margin-top: 20px;
+}
+
+/* =========================
+   Flatpickr Base
+========================= */
+.flatpickr-calendar.inline {
+  width: 100% !important;
+  max-width: 950px;
+  border: 1px solid #dee2e6;
+  box-shadow: none;
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+/* =========================
+   Month Header
+========================= */
+.flatpickr-months {
+  background: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+  padding: 14px 0;
+}
+
+.flatpickr-current-month {
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: #212529;
+}
+
+/* =========================
+   Weekday Header
+========================= */
+.flatpickr-weekdays {
+  background: #ffffff;
+  border-bottom: 1px solid #dee2e6;
+  padding: 0 12px;
+}
+
+.flatpickr-weekday {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #0d6efd;
+}
+
+/* Sunday heading */
+.flatpickr-weekday:first-child {
+  color: #dc3545;
+}
+
+/* =========================
+   Calendar Grid
+========================= */
+.flatpickr-days {
+  width: 100% !important;
+}
+
+.dayContainer {
+  width: 100% !important;
+  min-width: 100% !important;
+  display: grid !important;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 10px;
+  padding: 14px;
+}
+
+/* =========================
+   Date Cells
+========================= */
+.flatpickr-day {
+  width: 100% !important;
+  height: 82px;
+  max-width: none;
+  line-height: 1;
+  font-size: 1.25rem;
+  font-weight: 600;
+  border-radius: 8px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #1f2937;
+  background: #504c4c;
+}
+
+/* Sunday dates */
+.flatpickr-day.sunday {
+  color: #dc3545;
+}
+
+/* Available dates */
+.flatpickr-day.available-date {
+  background: #0f5201;
+  color: #ffffff !important;
+  box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.15);
+}
+
+/* Today highlight */
+.flatpickr-day.today {
+  border: 2px solid #0d6efd;
+}
+
+/* Disabled days */
+.flatpickr-day.flatpickr-disabled {
+  background: #e7e7e7;
+  color: #4b4343;
+  opacity: 1;
+  cursor: not-allowed;
+}
+.flatpickr-current-month {
+  padding: 0px;
+}
+
+
+/* Hover effect */
+.flatpickr-day:not(.disabled):hover {
+  background: #78807c;
+}
+
+.flatpickr-innerContainer {
+    display: block;
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    overflow: hidden;
+    flex-direction: column;
+}
+.seat-info {
+  font-size: 10px;
+  margin-top: 4px;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.flatpickr-day {
+  position: relative;
+  padding: 6px;
+  display: block;
+}
+
+/* Date → top right */
+.date-number {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* Seat info → bottom left */
+.seat-info {
+  position: absolute;
+  bottom: 6px;
+  left: 8px;
+  font-size: 11px;
+  line-height: 1.3;
+  text-align: left;
+}
+
+/* Past dates styling */
+.flatpickr-day.past-date {
+  background: #d6d6d6 !important;
+  color: #6c757d !important;
+  opacity: 0.8;
+}
+
+/* Optional: reduce visibility of seat info too */
+.flatpickr-day.past-date .seat-info {
+  color: #6c757d;
+}
+</style>
+
+<script>
+  const availabilityData = {{ availability_data|safe }};
+  const enabledDates = Object.keys(availabilityData);
+
+  flatpickr("#availabilityCalendar", {
+    inline: true,
+    dateFormat: "Y-m-d",
+    enable: enabledDates,
+    disableMobile: true,
+
+   onDayCreate: function (_, __, ___, dayElem) {
+  const d = dayElem.dateObj;
+
+  const dateStr =
+    d.getFullYear() + "-" +
+    String(d.getMonth() + 1).padStart(2, "0") + "-" +
+    String(d.getDate()).padStart(2, "0");
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // Clear default content
+  dayElem.innerHTML = "";
+
+  // Date (top right)
+  const dateDiv = document.createElement("div");
+  dateDiv.className = "date-number";
+  dateDiv.innerText = d.getDate();
+  dayElem.appendChild(dateDiv);
+
+  // Past date styling
+  if (d < today) {
+    dayElem.classList.add("past-date");
+  }
+
+  // If available → show seat info + tooltip
+  if (availabilityData[dateStr]) {
+    const seats = availabilityData[dateStr];
+
+    const bookedSeats = seats.total_seats - seats.available_seats;
+
+    dayElem.classList.add("available-date");
+
+    // Bottom left info
+    const seatDiv = document.createElement("div");
+    seatDiv.className = "seat-info";
+    seatDiv.innerHTML = `
+      <div>Total : ${seats.total_seats}</div>
+      <div>Available : ${seats.available_seats}</div>
+    `;
+    dayElem.appendChild(seatDiv);
+
+    // ✅ Tooltip on hover
+    dayElem.setAttribute(
+  "title",
+  `Total seats: ${seats.total_seats}
+Available seats: ${seats.available_seats}
+Booked seats: ${bookedSeats}`
+);
+  }
+
+  // Sunday styling
+  if (d.getDay() === 0) {
+    dayElem.classList.add("sunday");
+  }
+}
+  });
+</script>
+{% endblock %}

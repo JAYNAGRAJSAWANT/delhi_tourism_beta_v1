@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const citySelect = document.getElementById("city");
 
   const passportRow = document.getElementById("passport_row");
-  const passportInput = document.getElementById("id_passport");
+  const passportInput = document.getElementById("id_passportNumber");
 
   const OTHER = "__other__";
 
@@ -152,7 +152,7 @@ document.querySelector("form").addEventListener("submit", function () {
     })
       .then(res => res.json())
       .then(data => {
-
+        console.log("STATE API RESPONSE:", data); // 🔥 DEBUG
         data.data.states.forEach(state => {
           const option = document.createElement("option");
           option.value = state.name;
@@ -195,7 +195,7 @@ document.querySelector("form").addEventListener("submit", function () {
     })
       .then(res => res.json())
       .then(data => {
-
+          console.log("CITY API RESPONSE:", data);
         data.data.forEach(city => {
           const option = document.createElement("option");
           option.value = city;
