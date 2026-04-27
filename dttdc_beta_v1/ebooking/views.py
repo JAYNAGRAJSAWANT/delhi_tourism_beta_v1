@@ -715,6 +715,121 @@ def payu_success(request):
         {"booking": booking, "payment": payment},
     )
 
+def reduce_seats_after_after_payment(booking):                               
+    """
+    Docstring for reduce_seats_after_after_payment
+    
+    Reduce the available seats for the tour on the journey date    
+    """
+    
+    user = booking.user_details
+    tour = booking.dttdc_tour
+    journey_date = user.tour_journey_date
+    passengers = booking.number_of_passengers
+    
+    print("Tour Information : ", tour)
+    print(" ======================== ")
+    print("Journey Information : ", journey_date)
+    print(" ======================== ")
+    print("Passengers Information : ", passengers)
+    
+    availability = (
+        DTTDCTourAvailability.objects
+        .select_for_update()
+        .get(tour=tour, available_date=journey_date)
+    )
+    
+    if availability.available_seats < passengers:
+        raise ValidationError(
+            f"Insuffcient seats for {journey_date}"
+        )
+    
+    availability.available_seats = F("available_seats") - passengers
+    availability.save()
+
+
+@csrf_exempt
+def payu_failure(request):
+    data = request.POST
+    txnid = data.get("txnid")
+
+    payment = get_object_or_404(DTTDCTourPaymentDetails, txnid=txnid)
+    booking = payment.booking
+
+    payment.status = data.get("status", "failed")
+    payment.error = data.get("error")
+    payment.error_Message = data.get("error_Message")
+    payment.save()
+
+    # ❗ Mark booking as failed
+    booking.booking_status = "payment_failed"
+    booking.save()
+
+    # ❗ Release seats
+    release_seats(booking)
+
+    return render(
+        request,
+        "ebooking/payment_failure.html",
+        {
+            "booking": booking,
+            "payment": payment,
+            "reason": "Payment failed. Seats have been released.",
+        },
+    )
+
+
+def is_payment_timed_out(payment):
+    timeout_limit = timezone.now() - timedelta(minutes=15)
+    return payment.addedon < timeout_limit and payment.status == "initiated"
+
+def payment_timeout_view(request, pnr):
+    booking = get_object_or_404(DTTDCTourBooking, pnr_number=pnr)
+    payment = getattr(booking, "payment", None)
+
+    if not payment:
+        return redirect("booking_start")
+
+    if payment.status == "success":
+        return redirect("payment_success_page", pnr=pnr)
+
+    if is_payment_timed_out(payment):
+        payment.status = "timeout"
+        payment.save()
+
+        booking.booking_status = "payment_timeout"
+        booking.save()
+
+        # ❗ Release seats
+        release_seats(booking)
+
+        return render(
+            request,
+            "ebooking/payment_timeout.html",
+            {
+                "booking": booking,
+                "payment": payment,
+            },
+        )
+
+    return redirect("payu_payment_init", pnr=pnr)
+
+def release_seats(booking):
+    """
+    Releases seats / passenger allocations for a booking
+    """
+    DTTDCTravellerBookingMap.objects.filter(
+        booking=booking
+    ).update(booking_status=None)
+
+    # If you track available seats in tour:
+    # tour = booking.dttdc_tour
+    # tour.available_seats += booking.number_of_passengers
+    # tour.save()
+    
+    
+# -------------------------------------------------- END OF PAYMENT CYCLE FLOW --------------------------------
+
 #### added by shubhi ########
 ###### download ticket view starts here #########
 def link_callback(uri, rel):
@@ -878,122 +993,6 @@ def _render_with_error(request, message):
     )
 ################################################################################
 #### shubhi code ends here ################ 
-
-
-def reduce_seats_after_after_payment(booking):                               
-    """
-    Docstring for reduce_seats_after_after_payment
-    
-    Reduce the available seats for the tour on the journey date    
-    """
-    
-    user = booking.user_details
-    tour = booking.dttdc_tour
-    journey_date = user.tour_journey_date
-    passengers = booking.number_of_passengers
-    
-    print("Tour Information : ", tour)
-    print(" ======================== ")
-    print("Journey Information : ", journey_date)
-    print(" ======================== ")
-    print("Passengers Information : ", passengers)
-    
-    availability = (
-        DTTDCTourAvailability.objects
-        .select_for_update()
-        .get(tour=tour, available_date=journey_date)
-    )
-    
-    if availability.available_seats < passengers:
-        raise ValidationError(
-            f"Insuffcient seats for {journey_date}"
-        )
-    
-    availability.available_seats = F("available_seats") - passengers
-    availability.save()
-
-
-@csrf_exempt
-def payu_failure(request):
-    data = request.POST
-    txnid = data.get("txnid")
-
-    payment = get_object_or_404(DTTDCTourPaymentDetails, txnid=txnid)
-    booking = payment.booking
-
-    payment.status = data.get("status", "failed")
-    payment.error = data.get("error")
-    payment.error_Message = data.get("error_Message")
-    payment.save()
-
-    # ❗ Mark booking as failed
-    booking.booking_status = "payment_failed"
-    booking.save()
-
-    # ❗ Release seats
-    release_seats(booking)
-
-    return render(
-        request,
-        "ebooking/payment_failure.html",
-        {
-            "booking": booking,
-            "payment": payment,
-            "reason": "Payment failed. Seats have been released.",
-        },
-    )
-
-
-def is_payment_timed_out(payment):
-    timeout_limit = timezone.now() - timedelta(minutes=15)
-    return payment.addedon < timeout_limit and payment.status == "initiated"
-
-def payment_timeout_view(request, pnr):
-    booking = get_object_or_404(DTTDCTourBooking, pnr_number=pnr)
-    payment = getattr(booking, "payment", None)
-
-    if not payment:
-        return redirect("booking_start")
-
-    if payment.status == "success":
-        return redirect("payment_success_page", pnr=pnr)
-
-    if is_payment_timed_out(payment):
-        payment.status = "timeout"
-        payment.save()
-
-        booking.booking_status = "payment_timeout"
-        booking.save()
-
-        # ❗ Release seats
-        release_seats(booking)
-
-        return render(
-            request,
-            "ebooking/payment_timeout.html",
-            {
-                "booking": booking,
-                "payment": payment,
-            },
-        )
-
-    return redirect("payu_payment_init", pnr=pnr)
-
-def release_seats(booking):
-    """
-    Releases seats / passenger allocations for a booking
-    """
-    DTTDCTravellerBookingMap.objects.filter(
-        booking=booking
-    ).update(booking_status=None)
-
-    # If you track available seats in tour:
-    # tour = booking.dttdc_tour
-    # tour.available_seats += booking.number_of_passengers
-    # tour.save()
-    
-    
-# -------------------------------------------------- END OF PAYMENT CYCLE FLOW --------------------------------
 
 # --------------------------------------------------- Start of Tour Cancellation ------------------------------
 
