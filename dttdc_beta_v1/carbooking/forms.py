@@ -199,7 +199,8 @@ class CarBookingForm(forms.ModelForm):
         widgets = {
             "journeyDate": forms.DateInput(attrs={
                 "type": "date",
-                "class": "form-control"
+                "class": "form-control",
+                "id":"id_journeyDate"
             }),
 
             "fullName": forms.TextInput(attrs={

@@ -1390,3 +1390,7 @@ def change_password(request):
         return redirect("change_password")
 
     return render(request, 'dttdc_admin/admin_change_password.html')
+
+
+###-------------- Abhijeet Thorat views starts here-------##########
+###-------------- Booking Flow starts here ---------##########

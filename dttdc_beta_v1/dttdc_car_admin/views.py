@@ -10,6 +10,10 @@ from carbooking.forms import (
     CarBookingVehicleForm
 )
 
+from .forms import UpdateCarAvailability
+from carbooking.models import CarBookingAvailability
+from datetime import timedelta
+
 
 # ========================================Carbooking Admin  Homepage=======================================
 # Create your views here.
@@ -331,20 +335,65 @@ def edit_vehicle_package(request, pk):
         "dttdc_car_admin/carbooking_admin_edit_vehicle_package.html",
         {"form": form}
     )
-
+# ---------------------------- Added By Abhijeet Thorat ------------------------------
 # -----------------------------Update availability------------------------------------
 
 def update_car_availability(request):
+    form = UpdateCarAvailability()
+    
+    if request.method == "POST":
+        form = UpdateCarAvailability(request.POST)
+        
+        if form.is_valid():
+            vehicle = form.cleaned_data["vehicle"]
+            from_date = form.cleaned_data["from_date"]
+            to_date = form.cleaned_data["to_date"]
+            total_seats = form.cleaned_data["total_seats"]
+            
+            current_date = from_date
+            
+            while current_date <= to_date:
+                obj, created = CarBookingAvailability.objects.get_or_create(
+                    vehicleDetails=vehicle,
+                    availableDate=current_date,
+                    defaults={
+                        "totalSeats": total_seats,
+                        "availableSeats": total_seats
+                    }
+                )
+                
+                if not created:
+                    booked_seats = obj.totalSeats - obj.availableSeats
+                    
+                    if booked_seats > 0:
+                        current_date += timedelta(days=1)
+                        continue
+                
+                    obj.totalSeats = total_seats
+                    obj.availableSeats = total_seats
+                    obj.save()
+                
+                current_date += timedelta(days=1)
+            
+            messages.success(request, "Car availability updated successfully")
+        
+        else:
+            # messages.error(request,"Please fix the errors below.")
+            print("Please fix the errors below.")
+               
     return render(
         request,
         "dttdc_car_admin/carbooking_admin_update_availability.html",
-        
+        {"form": form} 
     )
 
 # -----------------------------Check availability------------------------------------
 def check_car_availability(request):
+    
     return render(
         request,
         "dttdc_car_admin/carbooking_admin_check_availability.html",
         
     )
+    
+#---------------------------- Abhijeet Code Ends Here --------------------------------
