@@ -1,100 +1,217 @@
-# Delhi Tourism – Beta v1
+# 🏙️ Delhi Tourism – Beta v1
 
-`delhi_tourism_beta_v1` is a comprehensive digital platform designed to streamline the experience of exploring, booking, and managing official Delhi Tourism tours. The system provides a unified environment for users to browse curated tour packages, check real-time availability, make secure online payments, and manage their bookings with ease.
-
-This version represents the **beta release** of the platform, focusing on delivering core booking functionality, structured data flow, and end-to-end transparency for users and administrators.
+![Delhi Tourism Banner](./banner.jpg)
 
 ---
 
-## Key Features
+## 📌 Overview
 
-### 1. Tour Catalogue & Discovery
-- Detailed listing of Delhi Tourism-approved tour packages  
-- Categorized tours (heritage, cultural, adventure, day trips, multi-day)  
-- Rich tour information: itinerary, locations covered, timings, prices, duration, and extra details  
+**`delhi_tourism_beta_v1`** is a comprehensive digital platform designed to streamline the experience of exploring, booking, and managing official Delhi Tourism tours.
 
-### 2. Availability Management
-- Real-time seat availability for each tour and departure date  
-- Automatic seat adjustments during bookings and cancellations  
+The platform provides a **unified ecosystem** where users can:
+- Discover curated tour packages  
+- Check real-time availability  
+- Make secure online payments  
+- Manage bookings seamlessly  
 
-### 3. User & Passenger Management
-- Capture user information at booking time  
-- Support for multiple passengers per booking  
-- Structured passenger details: name, age, gender, and associations  
-
-### 4. Booking Lifecycle
-- Complete booking workflow  
-  - Tour selection  
-  - Passenger mapping  
-  - Fare calculation  
-  - Payment initiation  
-  - Booking confirmation  
-- Generation of PNR, ticket numbers, and invoice IDs  
-
-### 5. Secure Payment Integration
-- Integrated with PayU  
-- Captures transaction IDs, bank references, amounts, modes, and payment status  
-- Supports all required payment gateway metadata fields  
-
-### 6. Cancellation & Refund Workflow
-- Online cancellation request submission  
-- Admin approval tracking  
-- Refund processing linked to cancellations  
-- Transparent refund statuses and timestamps  
-
-### 7. Auditable System Records
-- Timestamped bookings, cancellations, refunds, and payments  
-- Fully relational structure for complete traceability  
+This release represents the **Beta version**, focused on delivering a stable and complete booking workflow with transparency and scalability.
 
 ---
 
-## System Modules
+## ✨ Key Features
 
-### Tour Management
-Manages categories, tour details, itineraries, departure schedules, fare structures, and media assets.
-
-### Availability Engine
-Tracks real-time tour seat counts and ensures consistent seat updates on booking and cancellation actions.
-
-### User & Passenger Records
-Stores user profile and passenger-level information for identification, coordination, and compliance.
-
-### Booking Management
-Handles bookings, reference number generation, user-passenger mapping, and booking state transitions.
-
-### Payments
-Records payment responses, payment statuses, gateway metadata, hashes, and banking details.
-
-### Cancellations & Refunds
-Processes cancellation requests, admin approvals, and refund issue tracking.
+### 🧭 Tour Catalogue & Discovery
+- Delhi Tourism-approved tour listings  
+- Categorized tours:
+  - Heritage  
+  - Cultural  
+  - Adventure  
+  - Day Trips  
+  - Multi-day Tours  
+- Rich details:
+  - 📍 Itinerary  
+  - ⏰ Timings & duration  
+  - 💰 Pricing  
+  - 📝 Additional information  
 
 ---
 
-## Database Architecture Overview
-
-The beta system uses a structured relational architecture composed of:
-
-- **Tour Master Tables**  
-- **Tour Availability Tables**  
-- **User & Passenger Profiles**  
-- **Booking Records**  
-- **Payment Metadata Tables**  
-- **Cancellation & Refund Tables**  
-- **Booking–Passenger Mapping**  
-
-This ensures high data integrity, traceability, and robust reporting.
+### 📊 Availability Management
+- Real-time seat tracking  
+- Automatic updates during:
+  - ✔️ Booking  
+  - ❌ Cancellation  
 
 ---
 
-## Purpose of Beta v1
-
-The objective of **Delhi Tourism – Beta v1** is to:
-
-- Validate complete booking workflows  
-- Test availability and seat tracking  
-- Verify payment gateway reliability  
-- Provide stable backend components for production rollout  
-- Establish a scalable and maintainable database structure  
-- Enable detailed cancellation and refund testing  
+### 👥 User & Passenger Management
+- Capture user details at booking time  
+- Multiple passengers per booking  
+- Structured passenger data:
+  - Name  
+  - Age  
+  - Gender  
+  - Associations  
 
 ---
+
+### 🎫 Booking Lifecycle
+End-to-end workflow:
+
+1. Tour Selection  
+2. Passenger Mapping  
+3. Fare Calculation  
+4. Payment Initiation  
+5. Booking Confirmation  
+
+Includes:
+- 🧾 PNR Generation  
+- 🎟️ Ticket Numbers  
+- 📄 Invoice IDs  
+
+---
+
+### 💳 Secure Payment Integration
+- Integrated with **PayU**  
+- Captures:
+  - Transaction ID  
+  - Bank reference  
+  - Payment mode  
+  - Payment status  
+- Supports full gateway metadata  
+
+---
+
+### 🔄 Cancellation & Refund Workflow
+- Online cancellation requests  
+- Admin approval mechanism  
+- Refund tracking system  
+- Transparent status updates  
+
+---
+
+### 📁 Auditable System Records
+- Timestamped operations:
+  - Bookings  
+  - Payments  
+  - Cancellations  
+  - Refunds  
+
+Ensures:
+- 🔍 Full traceability  
+- 📊 Accurate reporting  
+
+---
+
+## 🧩 System Modules
+
+### 🗺️ Tour Management
+Handles:
+- Categories  
+- Tour details  
+- Itineraries  
+- Departure schedules  
+- Pricing structures  
+- Media assets  
+
+---
+
+### ⚙️ Availability Engine
+- Real-time seat tracking  
+- Ensures consistency across operations  
+
+---
+
+### 👤 User & Passenger Records
+- Stores user profiles  
+- Maintains passenger-level information  
+
+---
+
+### 📦 Booking Management
+- Booking creation and lifecycle  
+- Reference number generation  
+- Booking state transitions  
+
+---
+
+### 💰 Payments
+- Stores payment gateway responses  
+- Maintains transaction metadata  
+- Tracks payment status  
+
+---
+
+### 🔁 Cancellations & Refunds
+- Handles cancellation requests  
+- Admin approval workflows  
+- Refund processing and tracking  
+
+---
+
+## 🗄️ Database Architecture Overview
+
+The system follows a **relational architecture** with:
+
+- 📌 Tour Master Tables  
+- 📊 Tour Availability Tables  
+- 👥 User & Passenger Profiles  
+- 🎫 Booking Records  
+- 💳 Payment Metadata Tables  
+- 🔄 Cancellation & Refund Tables  
+- 🔗 Booking–Passenger Mapping  
+
+### ✔️ Benefits
+- High data integrity  
+- Strong relational consistency  
+- Scalable and maintainable design  
+
+---
+
+## 🎯 Purpose of Beta v1
+
+The primary objectives are:
+
+- ✅ Validate complete booking workflows  
+- 📊 Test availability & seat tracking  
+- 💳 Verify payment gateway reliability  
+- 🏗️ Build stable backend architecture  
+- 🔄 Test cancellation & refund lifecycle  
+- 📈 Prepare for production deployment  
+
+---
+
+## 🚀 Future Scope
+
+- 📊 Advanced analytics dashboard  
+- 🤖 AI-based tour recommendations  
+- 📱 Mobile application support  
+- 💰 Dynamic pricing engine  
+- 🌐 Multi-language support  
+
+---
+
+## 📂 Project Structure (Example)
+    project-root/
+    │── README.md
+    │── banner.png
+    │── backend/
+    │── frontend/
+    │── docs/
+
+---
+
+## ⚙️ Setup Instructions (Basic)
+
+```bash
+# Clone repository
+git clone <repo-url>
+
+# Navigate to project
+cd delhi_tourism_beta_v1
+
+# Install dependencies
+npm install
+
+# Run project
+npm start
