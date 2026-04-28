@@ -2,8 +2,12 @@
 {% load static %}
 
 {% block car_carbooking_booking_details %}
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
+<!-- CSS IMPORTS STARTS -->
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<link rel=stylesheet href="{% static 'carbooking/css/car_booking_details.css' %}" />
+<!-- CSS IMPORTS ENDS -->
+ 
 <div class="container py-5">
   <div class="row">
 
@@ -73,7 +77,15 @@
                     </label>
 
                     <div class="col-md-4">
-                      {{ form.journeyDate }}
+                      {% comment %} {{ form.journeyDate }} {% endcomment %}
+                      <input 
+                        type="date"
+                        id="id_journeyDate"
+                        name="journeyDate"
+                        class="form-control"
+                        data-url="/carbooking/check_car_availability/"
+                        data-vehicle-id="{{ vehicle.id }}"
+                      >
 
                       {% if form.journeyDate.errors %}
                       <div class="text-danger small mt-1">
@@ -267,114 +279,7 @@
 
   </div>
 
-  <style>
-    .ticket-section {
-      background: #ffffff;
-      padding: 25px;
-      margin-bottom: 15px;
-      border-radius: 8px;
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
-    }
-
-    .section-label {
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: #495057;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      border-bottom: 1px dashed #dee2e6;
-      padding-bottom: 8px;
-      margin-bottom: 15px;
-    }
-
-    .form-label {
-      display: block;
-      font-size: 0.875rem;
-      font-weight: 500;
-      margin-bottom: 5px;
-    }
-
-    .ticket-footer {
-      padding: 15px 0;
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, #e75a1e, #77340b, #e75a1e);
-      border: none;
-      font-weight: 600;
-    }
-
-    .fw-semibold {
-      font-weight: 600 !important;
-    }
-
-    .pnr-badge {
-      background: rgba(255, 255, 255, 0.2);
-      padding: 6px 12px;
-      border-radius: 4px;
-      font-size: 0.85rem;
-      font-weight: 600;
-    }
-
-    .ticket-wrapper {
-      background: #f3f4f6;
-      padding: 6px;
-      padding-top: 0px;
-      border-radius: 10px;
-    }
-
-    .ticket-card {
-      background: #ffffff;
-      border-radius: 8px;
-      border: 1px solid #dee2e6;
-    }
-
-    .ticket-header {
-      background: linear-gradient(135deg, #e75a1e, #d8844f, #e75a1e);
-      color: #fff;
-      padding: 16px 20px;
-    }
-
-    .ticket-header h6 {
-      font-size: 0.95rem;
-      font-weight: 600;
-      margin: 0;
-      color: whitesmoke;
-    }
-
-    .pnr-badge {
-      background: rgba(255, 255, 255, 0.2);
-      padding: 6px 12px;
-      border-radius: 4px;
-      font-size: 0.85rem;
-    }
-
-    .ticket-section {
-      padding: 20px;
-    }
-
-    .section-label {
-      font-size: 0.75rem;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      color: #6c757d;
-      margin-bottom: 16px;
-      text-transform: uppercase;
-    }
-
-    .form-label-col {
-      font-size: 0.85rem;
-      font-weight: 500;
-      color: #495057;
-      padding-top: 6px;
-    }
-
-    .ticket-footer {
-      background: #f8f9fa;
-      padding: 15px 20px;
-      border-top: 1px solid #dee2e6;
-    }
-  </style>
+  <!-- SCRIPT IMPORT STARTS -->
   <script>
     document.getElementById("country").dataset.selected = "{{ form.instance.country|default:'' }}";
     document.getElementById("state").dataset.selected = "{{ form.instance.state|default:'' }}";
@@ -383,71 +288,9 @@
 
   <script src="{% static 'carbooking/js/location.js' %}"></script>
 
-  <script>
-    const journeyDateInput = document.getElementById("id_journeyDate");
-    const availabilityBox = document.getElementById("availabilityMessage");
-    const submitBtn = document.querySelector("button[type='submit']");
+  <script src="{% static 'carbooking/js/check_car_availability.js' %}"></script>
 
-    const TOUR_ID = "{{ booking.dttdc_tour.id }}";
-    const CHECK_URL = "{% url 'check_tour_availability' %}";
-
-    journeyDateInput.addEventListener("change", function () {
-      const date = this.value;
-      availabilityBox.innerHTML = "";
-      submitBtn.disabled = true;
-
-      if (!date) return;
-
-      fetch(`${CHECK_URL}?tour_id=${TOUR_ID}&journey_date=${date}`)
-        .then(response => {
-          if (!response.ok) {
-            throw new Error("Network response was not OK");
-          }
-          return response.json();
-        })
-        .then(data => {
-          if (data.available) {
-            availableSeats = parseInt(data.seats); // 👈 IMPORTANT
-
-            availabilityBox.innerHTML = `Available Vehicles: ${data.seats}`;
-            availabilityBox.className = "text-success small fw-semibold";
-
-            checkSeatLimit(); // 👈 re-check passengers
-          }
-          else {
-            availabilityBox.innerHTML = data.message || "Tour not available";
-            availabilityBox.className = "text-danger small fw-semibold";
-            submitBtn.disabled = true;
-          }
-
-        })
-        .catch(error => {
-          console.error("Availability check failed:", error);
-          availabilityBox.innerHTML = `
-          <div class="alert alert-danger py-2 mb-0">
-            Unable to check availability. Try again.
-          </div>
-        `;
-        });
-    });
-  </script>
-
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      const dateInput = document.getElementById("id_journeyDate");
-      if (!dateInput) return;
-
-      const minDate = new Date();
-      minDate.setDate(minDate.getDate() + 2);
-
-      const yyyy = minDate.getFullYear();
-      const mm = String(minDate.getMonth() + 1).padStart(2, "0");
-      const dd = String(minDate.getDate()).padStart(2, "0");
-
-      dateInput.min = `${yyyy}-${mm}-${dd}`;
-    });
-  </script>
-
+  <script src="{% static 'carbooking/js/date_validation.js' %}"></script>
 
   <script>
     document.addEventListener("DOMContentLoaded", function () {
@@ -551,60 +394,6 @@
 
     });
   </script>
-
-
-  <style>
-    .invalid-feedback {
-      display: block;
-      font-size: 0.875rem;
-      margin-top: 4px;
-    }
-
-    .is-invalid {
-      border-color: #dc3545 !important;
-    }
-  </style>
-
-
-  <script>
-    let availableSeats = null;
-
-    const adultsSelect = document.getElementById("id_number_of_adults");
-    const childrenSelect = document.getElementById("id_number_of_child");
-    const seatErrorBox = document.getElementById("seatLimitError");
-    const submitBtn3 = document.querySelector("button[type='submit']");
-
-    function checkSeatLimit() {
-      if (availableSeats === null) return;
-
-      const adults = parseInt(adultsSelect.value || 0);
-      const children = parseInt(childrenSelect.value || 0);
-      const totalPassengers = adults + children;
-
-      if (totalPassengers > availableSeats) {
-
-        const seatWord = availableSeats === 1 ? "seat" : "seats";
-        const seatVerb = availableSeats === 1 ? "is" : "are";
-
-        const passengerWord =
-          totalPassengers === 1 ? "passenger" : "passengers";
-
-        seatErrorBox.textContent =
-          `Only ${availableSeats} ${seatWord} ${seatVerb} available. ` +
-          `You selected ${totalPassengers} ${passengerWord}.`;
-
-        seatErrorBox.classList.remove("d-none");
-        submitBtn3.disabled = true; //comment this when you want to check the backkend validation is working or not 
-
-      } else {
-        seatErrorBox.textContent = "";
-        seatErrorBox.classList.add("d-none");
-        submitBtn3.disabled = false;
-      }
-    }
-
-    adultsSelect.addEventListener("change", checkSeatLimit);
-    childrenSelect.addEventListener("change", checkSeatLimit);
-  </script>
-
+  
+  <!-- SCRIPT IMPORT ENDS -->
   {% endblock %}

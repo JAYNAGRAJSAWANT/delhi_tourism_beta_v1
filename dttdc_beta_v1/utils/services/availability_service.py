@@ -13,6 +13,11 @@ from datetime import datetime
 from carbooking.models import CarBookingAvailability
 
 def check_car_availability(vehicle_id, journey_date):
+    
+    print("----------------------------------------------------")
+    print("******* Calling availability check service *********")
+    print("----------------------------------------------------")
+    
     try:
         date_obj = datetime.strptime(journey_date, "%Y-%m-%d").date()
     except ValueError:
@@ -27,12 +32,24 @@ def check_car_availability(vehicle_id, journey_date):
     ).first()
     
     if not availability:
+        
+        print("*****************************************")
+        print("| Available : False                     |")
+        print(f'| Seats : No Availability for this date |')
+        print("*****************************************")
+        
         return {
             "available": False,
             "message": "No availability for this date"
         }
     
     if availability.availableSeats > 0:
+        
+        print("********************")
+        print("| Available : True |")
+        print(f'| Seats : {availability.availableSeats}        |')
+        print("********************")
+        
         return {
             "available":True,
             "seats": availability.availableSeats

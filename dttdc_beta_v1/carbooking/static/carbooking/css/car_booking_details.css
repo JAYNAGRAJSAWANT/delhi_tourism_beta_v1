@@ -1,0 +1,116 @@
+  .ticket-section {
+      background: #ffffff;
+      padding: 25px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+  }
+
+  .section-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #495057;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      border-bottom: 1px dashed #dee2e6;
+      padding-bottom: 8px;
+      margin-bottom: 15px;
+  }
+
+  .form-label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 5px;
+  }
+
+  .ticket-footer {
+      padding: 15px 0;
+  }
+
+  .btn-primary {
+      background: linear-gradient(135deg, #e75a1e, #77340b, #e75a1e);
+      border: none;
+      font-weight: 600;
+  }
+
+  .fw-semibold {
+      font-weight: 600 !important;
+  }
+
+  .pnr-badge {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      font-weight: 600;
+  }
+
+  .ticket-wrapper {
+      background: #f3f4f6;
+      padding: 6px;
+      padding-top: 0px;
+      border-radius: 10px;
+  }
+
+  .ticket-card {
+      background: #ffffff;
+      border-radius: 8px;
+      border: 1px solid #dee2e6;
+  }
+
+  .ticket-header {
+      background: linear-gradient(135deg, #e75a1e, #d8844f, #e75a1e);
+      color: #fff;
+      padding: 16px 20px;
+  }
+
+  .ticket-header h6 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin: 0;
+      color: whitesmoke;
+  }
+
+  .pnr-badge {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 0.85rem;
+  }
+
+  .ticket-section {
+      padding: 20px;
+  }
+
+  .section-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      color: #6c757d;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+  }
+
+  .form-label-col {
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: #495057;
+      padding-top: 6px;
+  }
+
+  .ticket-footer {
+      background: #f8f9fa;
+      padding: 15px 20px;
+      border-top: 1px solid #dee2e6;
+  }
+
+  .invalid-feedback {
+      display: block;
+      font-size: 0.875rem;
+      margin-top: 4px;
+  }
+
+  .is-invalid {
+      border-color: #dc3545 !important;
+  }

@@ -1,8 +1,10 @@
 from django.shortcuts import  get_object_or_404, render, redirect
+from django.views.decorators.http import require_GET
+from django.http import JsonResponse
 from .forms import CarBookingForm
 from .models import CarBookingPackage, CarBookingPackageCategory, CarBookingVehicleDetails
-
-
+from utils.services.availability_service import check_car_availability
+from datetime import datetime,date
 # ======================================== All Categories packages =======================================
 
 def carbooking_all_categories(request):
@@ -56,10 +58,71 @@ def vehicle_details(request, vehicle_id):
              "total": total,
         }
     )
+
+
+# =======================================Abhijeet Thorat ========================================
+# =====================================Booking Flow Starts Here =================================
+
+
+# ==================================== Check Car Availability ===================================
+
+@require_GET
+def check_car_vehicle_availability(request):
+    vehicle_id = request.GET.get("vehicle_id")
+    journey_date = request.GET.get("journey_date")
+        
+    # Validation for missing parameters
+    if not vehicle_id or not journey_date:
+        return JsonResponse({
+            "available":False,
+            "message":"vehicle object and journey_date are required"
+        },status=400)
+        
+    # Validation for Vehicle Id Type
+    try:
+        vehicle_id = int(vehicle_id)
+    except ValueError:
+        return JsonResponse({
+            "available":False,
+            "message":"Invalid Type or vehicle id"
+        }, status=400)
+        
+    # Avoid calling availability fucntionality
+    if not CarBookingVehicleDetails.objects.filter(id=vehicle_id,status=True).exists():
+        return JsonResponse({
+            "avaiable":"False",
+            "message":"Vehicle not Found"
+        }, status=400)
+        
+    # Validation for date format
+    try:
+        print(" ** VALIDATION INVOKED : Invalid date format. Use YYYY-MM-DD ( Dateformat validation invoked)")
+        journey_date_obj = datetime.strptime(journey_date, "%Y-%m-%d").date()
+    except ValueError:
+        return JsonResponse({
+            "available":False,
+            "message":"Invalid date format. Use YYYY-MM-DD"
+        }, status=400)
+
+    # Prevent past date booking
+    if journey_date_obj < date.today():
+        print(" ** VALIDATION INVOKED : Cannot check the availability for Past Dates (Past Date validation invoked)")
+        return JsonResponse({
+            "available":False,
+            "message":"Cannot check the availability for Past Dates"
+        }, status=400)
+            
+    try:    
+        availability_check = check_car_availability(vehicle_id,journey_date)
+        return JsonResponse(availability_check)
+    except Exception as e:
+        print("Availability Error : ",str(e))
+        
+        return JsonResponse({
+            "available":False,
+            "message":"Something went wrong. Please try again"
+        }, status=500)
     
-# ========================================Vehicle Details =======================================
-
-
 def carbooking_details(request):
 
     if request.method == "POST":
@@ -88,3 +151,4 @@ def carbooking_details(request):
             "form": form
         }
     )
+    
