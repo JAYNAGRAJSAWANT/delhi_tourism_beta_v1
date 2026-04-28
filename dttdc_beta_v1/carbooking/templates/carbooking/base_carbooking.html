@@ -32,11 +32,11 @@
       rel="stylesheet"
     />
 
-<link rel="stylesheet"
-  href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/css/intlTelInput.css" />
+    <link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/css/intlTelInput.css" />
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/intlTelInput.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/intlTelInput.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js"></script>
 
     
     <!-- Bootstrap Icons -->
@@ -44,10 +44,11 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.5.0/font/bootstrap-icons.min.css"
     />
-    <link
+    {% comment %} <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
-    />
+    /> {% endcomment %}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <!-- Datatables Responsive -->
     <link
       rel="stylesheet"
@@ -69,6 +70,7 @@
       {% block car_content %}{% endblock %}
       {% block car_vehicle_content %}{% endblock %}
       {% block car_carbooking_booking_details %}{% endblock %}
+      {% block carbooking_booking_detail_preview %}{% endblock %}
       
 
     </div>
@@ -78,12 +80,7 @@
       src="{% static 'carbooking/js/bootstrap.bundle.min.js' %}"
       crossorigin="anonymous"
     ></script>
-
-    <!-- Datatables -->
-    <script src="https://cdn.datatables.net/responsive/3.0.2/js/dataTables.responsive.js"></script>
-
     
-
     <!-- Google Translate -->
     <script src="{% static 'carbooking/js/googleTranslate.js' %}"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

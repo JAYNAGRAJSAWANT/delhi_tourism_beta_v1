@@ -1,0 +1,174 @@
+{% extends "carbooking/base_carbooking.html" %}
+{% load static %}
+
+{% block carbooking_booking_detail_preview %}
+
+<div class="container mt-4">
+  <div class="row">
+
+    <!-- MAIN CONTENT -->
+    <div class="col-lg-10 mx-auto">
+      <div class="card shadow-sm">
+
+        <!-- HEADER -->
+        <div class="card-header text-center bg-light py-3"
+          style="border-bottom: 3px solid #b8440e;">
+          <h5 class="fw-bold mb-0">Booking Preview</h5>
+        </div>
+
+        <div class="p-3">
+
+          <!-- BOOKING DETAILS -->
+          <div class="ticket-section">
+            <div class="section-label">Booking Details</div>
+
+            <div class="row border-bottom py-2">
+              <div class="col-md-4 fw-semibold">Car Package:</div>
+              <div class="col-md-8">
+                {{ booking.vehicle.vehicleName }}
+              </div>
+            </div>
+
+            <div class="row border-bottom py-2">
+              <div class="col-md-4 fw-semibold">Date of Journey:</div>
+              <div class="col-md-8">
+                {% comment %} {{ booking.journeyDate|date:"d M Y" }} {% endcomment %}
+              </div>
+            </div>
+
+            <div class="row border-bottom py-2">
+              <div class="col-md-4 fw-semibold">Pickup Time:</div>
+              <div class="col-md-8">
+                {% comment %} {{ booking.pickUpTime|time:"h:i A" }} {% endcomment %}
+              </div>
+            </div>
+
+            <div class="row py-2">
+              <div class="col-md-4 fw-semibold">Pickup Place:</div>
+              <div class="col-md-8">
+                {% comment %} {{ booking.pickUpPlace }} {% endcomment %}
+              </div>
+            </div>
+          </div>
+
+          <!-- USER DETAILS -->
+          <div class="ticket-section mt-3">
+            <div class="section-label">User Details</div>
+
+            <div class="row border-bottom py-2">
+              <div class="col-md-4 fw-semibold">Full Name:</div>
+              <div class="col-md-8"> </div>
+            </div>
+
+            <div class="row border-bottom py-2">
+              <div class="col-md-4 fw-semibold">Email:</div>
+              <div class="col-md-8"></div>
+            </div>
+
+            <div class="row border-bottom py-2">
+              <div class="col-md-4 fw-semibold">Phone:</div>
+              <div class="col-md-8"></div>
+            </div>
+
+            <div class="row border-bottom py-2">
+              <div class="col-md-4 fw-semibold">Country:</div>
+              <div class="col-md-8"></div>
+            </div>
+
+            <div class="row border-bottom py-2">
+              <div class="col-md-4 fw-semibold">State:</div>
+              <div class="col-md-8"></div>
+            </div>
+
+            <div class="row py-2">
+              <div class="col-md-4 fw-semibold">City:</div>
+              <div class="col-md-8"></div>
+            </div>
+
+            {% comment %} {% if booking.passportNumber %}
+            <div class="row border-top pt-2">
+              <div class="col-md-4 fw-semibold">Passport Number:</div>
+              <div class="col-md-8">{{ booking.passportNumber }}</div>
+            </div>
+            {% endif %} {% endcomment %}
+          </div>
+
+          <!-- TOTAL -->
+          <div class="d-flex justify-content-end mt-3">
+            <div class="border p-2 fw-bold">
+              Total Fare: ₹ /-
+            </div>
+          </div>
+
+          <!-- CAPTCHA -->
+          <div class="mt-4">
+            <div class="row align-items-center mb-2">
+              <label class="col-md-3 fw-semibold">Captcha:</label>
+              <div class="col-md-3">
+                {% comment %} <img src="{% url 'generate_captcha' %}" alt="captcha"> {% endcomment %}
+              </div>
+            </div>
+
+            <div class="row align-items-center">
+              <label class="col-md-3 fw-semibold">Enter Captcha:</label>
+              <div class="col-md-4">
+                <input type="text" name="captcha" class="form-control" required>
+              </div>
+            </div>
+          </div>
+
+          <!-- TERMS -->
+          <div class="mt-3">
+            <input type="checkbox" required>
+            <a href="#" class="ms-2 text-decoration-underline" target="_blank">
+              I agree to Terms & Conditions
+            </a>
+          </div>
+
+          <!-- ACTION BUTTONS -->
+          <div class="d-flex justify-content-end mt-4 gap-2">
+            {% comment %} <a href="{% url 'carbooking_details' %}" class="btn btn-secondary">
+              Previous
+            </a> {% endcomment %}
+
+            {% comment %} <form method="post" action="{% url 'initiate_payment' %}">
+              {% csrf_token %} {% endcomment %}
+              <input type="hidden" name="booking_id" value="{{ booking.id }}">
+              <button type="submit" class="btn btn-warning">
+                Pay Now
+              </button>
+            {% comment %} </form> {% endcomment %}
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<style>
+.ticket-section {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+}
+
+.section-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  color: #6c757d;
+}
+
+.btn-warning {
+  background: linear-gradient(135deg, #e75a1e, #77340b);
+  border: none;
+  color: #fff;
+  font-weight: 600;
+}
+</style>
+
+{% endblock %}

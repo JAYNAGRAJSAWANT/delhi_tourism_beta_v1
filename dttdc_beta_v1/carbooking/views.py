@@ -2,7 +2,7 @@ from django.shortcuts import  get_object_or_404, render, redirect
 from django.views.decorators.http import require_GET
 from django.http import JsonResponse
 from .forms import CarBookingForm
-from .models import CarBookingPackage, CarBookingPackageCategory, CarBookingVehicleDetails
+from .models import CarBookingPackage, CarBookingPackageCategory, CarBookingVehicleDetails, CarBookingBookingDetails
 from utils.services.availability_service import check_car_availability
 from datetime import datetime,date
 # ======================================== All Categories packages =======================================
@@ -63,7 +63,47 @@ def vehicle_details(request, vehicle_id):
 # =======================================Abhijeet Thorat ========================================
 # =====================================Booking Flow Starts Here =================================
 
+def carbooking_details(request,vehicle_id):
+    
+    if request.method == "POST":
+        print("Inside Booking Flow")
+        
+        form = CarBookingForm(request.POST)
 
+        if form.is_valid():
+            print("Inside Form Check")
+            print("CLEANED DATA:", form.cleaned_data)
+            booking = form.save(commit=False)
+            # set default status (optional)
+            booking.bookingStatus = "Pending"
+
+            # you can calculate fare here if needed
+            # booking.totalFare = calculate_fare(...)
+            booking.totalFare = 123
+            booking.vehicle_id = vehicle_id
+            booking.save()
+
+            return redirect("booking_details_preview",booking_id=booking.id)  # create this URL
+        else:
+            print("Inside Form Check Failed")
+            print(form.errors)
+    else:
+        print("Inside Form Check Failed")
+        form = CarBookingForm()
+
+    return render(
+        request,
+        "carbooking/carbooking_booking_details.html",
+        {
+            "form": form
+        }
+    )
+    
+def booking_details_preview(request,booking_id):
+    booking_data = CarBookingBookingDetails.objects.get(id=booking_id)
+    print("Booking data : ", booking_data)
+    return render(request,"carbooking/carbooking_booking_detail_preview.html",context={"booking_data":booking_data})
+    
 # ==================================== Check Car Availability ===================================
 
 @require_GET
@@ -122,33 +162,4 @@ def check_car_vehicle_availability(request):
             "available":False,
             "message":"Something went wrong. Please try again"
         }, status=500)
-    
-def carbooking_details(request):
-
-    if request.method == "POST":
-        form = CarBookingForm(request.POST)
-
-        if form.is_valid():
-            booking = form.save(commit=False)
-
-            # set default status (optional)
-            booking.bookingStatus = "Pending"
-
-            # you can calculate fare here if needed
-            # booking.totalFare = calculate_fare(...)
-
-            booking.save()
-
-            return redirect("carbooking_success")  # create this URL
-
-    else:
-        form = CarBookingForm()
-
-    return render(
-        request,
-        "carbooking/carbooking_booking_details.html",
-        {
-            "form": form
-        }
-    )
     

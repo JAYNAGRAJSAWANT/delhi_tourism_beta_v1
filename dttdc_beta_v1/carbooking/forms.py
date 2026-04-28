@@ -192,7 +192,7 @@ class CarBookingForm(forms.ModelForm):
             "passportNumber",
             "pickUpPlace",
             "pickUpTime",
-            "vehicle",
+            # "vehicle",
             "pincode"
         ]
 
@@ -205,7 +205,8 @@ class CarBookingForm(forms.ModelForm):
 
             "fullName": forms.TextInput(attrs={
                 "class": "form-control",
-                "placeholder": "Full Name"
+                "placeholder": "Full Name",
+                "required": True
             }),
 
             "address": forms.Textarea(attrs={
@@ -248,9 +249,9 @@ class CarBookingForm(forms.ModelForm):
                 "class": "form-control"
             }),
 
-            "vehicle": forms.Select(attrs={
-                "class": "form-control"
-            }),
+            # "vehicle": forms.Select(attrs={
+            #     "class": "form-control"
+            # }),
         }
 
     # -----------------------
@@ -301,8 +302,11 @@ class CarBookingForm(forms.ModelForm):
     def clean_phoneNumber(self):
         phone = self.cleaned_data.get("phoneNumber")
 
-        if not re.fullmatch(r"\d{10}", phone):
-            raise ValidationError("Enter a valid 10-digit mobile number.")
+        # if not re.fullmatch(r"\d{10}", phone):
+        #     raise ValidationError("Enter a valid 10-digit mobile number.")
+        
+        if not re.match(r'^\+?\d{10,15}$', phone):
+            raise forms.ValidationError("Enter a valid phone number.")
 
         return phone
 
