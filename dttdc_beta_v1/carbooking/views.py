@@ -95,7 +95,8 @@ def carbooking_details(request,vehicle_id):
         request,
         "carbooking/carbooking_booking_details.html",
         {
-            "form": form
+            "form": form,
+            "vehicle_id":vehicle_id
         }
     )
     
@@ -108,9 +109,11 @@ def booking_details_preview(request,booking_id):
 
 @require_GET
 def check_car_vehicle_availability(request):
+    print("** INSIDE CAR AVAILABILITY CHECK FUNCTION **")
     vehicle_id = request.GET.get("vehicle_id")
     journey_date = request.GET.get("journey_date")
         
+    print("Vehicle ID : ",vehicle_id)
     # Validation for missing parameters
     if not vehicle_id or not journey_date:
         return JsonResponse({

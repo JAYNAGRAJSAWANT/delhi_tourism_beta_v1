@@ -79,6 +79,7 @@
                     </label>
 
                     <div class="col-md-4">
+                     
                       {% comment %} {{ form.journeyDate }} {% endcomment %}
                       <input 
                         type="date"
@@ -86,7 +87,7 @@
                         name="journeyDate"
                         class="form-control"
                         data-url="/carbooking/check_car_availability/"
-                        data-vehicle-id={{vehicle_detail.id}}
+                        data-vehicle-id={{vehicle_id}}
                       >
 
                       {% if form.journeyDate.errors %}

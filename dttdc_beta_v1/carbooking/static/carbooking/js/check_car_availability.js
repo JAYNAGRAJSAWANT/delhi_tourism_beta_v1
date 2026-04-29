@@ -19,6 +19,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const CHECK_URL = journeyDateInput.dataset.url;
     //const VEHICLE_DETAIL_ID = journeyDateInput.dataset.vehicleId;
     const VEHICLE_DETAIL_ID = journeyDateInput.dataset.vehicleId;
+    console.log(VEHICLE_DETAIL_ID)
 
     journeyDateInput.addEventListener("change", function () {
         const date = this.value;

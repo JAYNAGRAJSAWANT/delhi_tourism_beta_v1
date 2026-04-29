@@ -25,29 +25,28 @@
             <div class="row border-bottom py-2">
               <div class="col-md-4 fw-semibold">Car Package:</div>
               <div class="col-md-8">
-                {{ booking.vehicle.vehicleName }}
+                {{ booking_data.vehicle.vehicleName }}
               </div>
             </div>
 
             <div class="row border-bottom py-2">
               <div class="col-md-4 fw-semibold">Date of Journey:</div>
               <div class="col-md-8">
-                {% comment %} {{ booking.journeyDate|date:"d M Y" }} {% endcomment %}
+                {{ booking_data.journeyDate|date:"d M Y" }} 
               </div>
             </div>
 
             <div class="row border-bottom py-2">
               <div class="col-md-4 fw-semibold">Pickup Time:</div>
               <div class="col-md-8">
-                {% comment %} {{ booking.pickUpTime|time:"h:i A" }} {% endcomment %}
+               {{ booking_data.pickUpTime|time:"h:i A" }}
               </div>
             </div>
 
             <div class="row py-2">
               <div class="col-md-4 fw-semibold">Pickup Place:</div>
               <div class="col-md-8">
-                {% comment %} {{ booking.pickUpPlace }} {% endcomment %}
-              </div>
+                {{ booking_data.pickUpPlace }}
             </div>
           </div>
 
@@ -57,46 +56,46 @@
 
             <div class="row border-bottom py-2">
               <div class="col-md-4 fw-semibold">Full Name:</div>
-              <div class="col-md-8"> </div>
+              <div class="col-md-8"> {{ booking_data.fullName}} </div>
             </div>
 
             <div class="row border-bottom py-2">
               <div class="col-md-4 fw-semibold">Email:</div>
-              <div class="col-md-8"></div>
+              <div class="col-md-8"> {{ booking_data.email}} </div>
             </div>
 
             <div class="row border-bottom py-2">
               <div class="col-md-4 fw-semibold">Phone:</div>
-              <div class="col-md-8"></div>
+              <div class="col-md-8"> {{ booking_data.phoneNumber}} </div>
             </div>
 
             <div class="row border-bottom py-2">
               <div class="col-md-4 fw-semibold">Country:</div>
-              <div class="col-md-8"></div>
+              <div class="col-md-8"> {{ booking_data.country}} </div>
             </div>
 
             <div class="row border-bottom py-2">
               <div class="col-md-4 fw-semibold">State:</div>
-              <div class="col-md-8"></div>
+              <div class="col-md-8"> {{ booking_data.state}} </div>
             </div>
 
             <div class="row py-2">
               <div class="col-md-4 fw-semibold">City:</div>
-              <div class="col-md-8"></div>
+              <div class="col-md-8"> {{ booking_data.city}} </div>
             </div>
 
-            {% comment %} {% if booking.passportNumber %}
+            {% if booking_data.passportNumber %}
             <div class="row border-top pt-2">
               <div class="col-md-4 fw-semibold">Passport Number:</div>
-              <div class="col-md-8">{{ booking.passportNumber }}</div>
+              <div class="col-md-8">{{ booking_data.passportNumber }}</div>
             </div>
-            {% endif %} {% endcomment %}
+            {% endif %}
           </div>
 
           <!-- TOTAL -->
           <div class="d-flex justify-content-end mt-3">
             <div class="border p-2 fw-bold">
-              Total Fare: ₹ /-
+              Total Fare: ₹{{booking_data.totalFare}} /-
             </div>
           </div>
 
@@ -133,7 +132,7 @@
 
             {% comment %} <form method="post" action="{% url 'initiate_payment' %}">
               {% csrf_token %} {% endcomment %}
-              <input type="hidden" name="booking_id" value="{{ booking.id }}">
+              <input type="hidden" name="booking_id" value="{{ booking_data.id }}">
               <button type="submit" class="btn btn-warning">
                 Pay Now
               </button>
