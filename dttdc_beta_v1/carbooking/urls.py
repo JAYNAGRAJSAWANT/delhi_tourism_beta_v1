@@ -11,4 +11,7 @@ urlpatterns = [
    path("booking_details_preview/<int:booking_id>/", views.booking_details_preview, name="booking_details_preview"),
    path("check-car-calender/",views.car_availability_calendar,name="check-car-calender"),
 
+   path("car-payment-init/<int:booking_id>/", views.car_payment_init, name="car_payment_init"),
+   path("car-payment-success/", views.car_payment_success, name="car_payment_success"),
+   path("car-payment-failure/", views.car_payment_failure, name="car_payment_failure"),
 ]

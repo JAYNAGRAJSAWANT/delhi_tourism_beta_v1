@@ -1,10 +1,18 @@
 from django.shortcuts import  get_object_or_404, render, redirect
 from django.views.decorators.http import require_GET
+import hashlib
+from django.conf import settings
 from django.http import JsonResponse
 from .forms import CarBookingForm
-from .models import CarBookingAvailability, CarBookingPackage, CarBookingPackageCategory, CarBookingVehicleDetails, CarBookingBookingDetails
+from .models import CarBookingPackage, CarBookingPackageCategory, CarBookingVehicleDetails, CarBookingBookingDetails,CarBookingTransaction
+from dttdc_admin.captcha_utility import generateCaptchaValueWithToken, validate_captcha
 from utils.services.availability_service import check_car_availability
 from datetime import datetime,date
+from django.contrib import messages
+from django.utils import timezone
+from django.urls import reverse
+from django.views.decorators.csrf import csrf_exempt
+from django.db import transaction
 # ======================================== All Categories packages =======================================
 
 def carbooking_all_categories(request):
@@ -79,7 +87,7 @@ def carbooking_details(request,vehicle_id):
 
             # you can calculate fare here if needed
             # booking.totalFare = calculate_fare(...)
-            booking.totalFare = 123
+            booking.totalFare = 1
             booking.vehicle_id = vehicle_id
             booking.save()
 
@@ -100,11 +108,184 @@ def carbooking_details(request,vehicle_id):
         }
     )
     
-def booking_details_preview(request,booking_id):
-    booking_data = CarBookingBookingDetails.objects.get(id=booking_id)
-    print("Booking data : ", booking_data)
-    return render(request,"carbooking/carbooking_booking_detail_preview.html",context={"booking_data":booking_data})
+def booking_details_preview(request, booking_id):
+    booking = get_object_or_404(CarBookingBookingDetails, id=booking_id)
+
+    errors = {}
+    captcha_token = None
+    captcha_value = None
+
+    if request.method == "GET":
+        captcha_data = generateCaptchaValueWithToken()
+        captcha_token = captcha_data["captchaToken"]
+        captcha_value = captcha_data["captchaValue"]
+
+    elif request.method == "POST":
+        user_input = request.POST.get("user_captcha_input", "").strip()
+        captcha_token = request.POST.get("captchaToken", "")
+
+        # 🔒 CAPTCHA VALIDATION
+        if not user_input:
+            errors["captcha"] = "Please enter the captcha"
+        else:
+            result = validate_captcha(user_input, captcha_token)
+
+            if result["status"] != "success":
+                errors["captcha"] = result["message"]
+
+        # ❌ FAILED → regenerate captcha
+        if errors:
+            captcha_data = generateCaptchaValueWithToken()
+            captcha_token = captcha_data["captchaToken"]
+            captcha_value = captcha_data["captchaValue"]
+
+        else:
+            # ✅ SUCCESS FLOW
+
+            # 🔥 IMPORTANT: update booking status BEFORE payment
+            booking.bookingStatus = "payment_initiated"
+            booking.save(update_fields=["bookingStatus"])
+
+            # 👉 redirect to payment init
+            return redirect("car_payment_init", booking_id=booking.id)
+
+    return render(
+        request,
+        "carbooking/carbooking_booking_detail_preview.html",
+        {
+            "booking_data": booking,
+            "captcha_token": captcha_token,
+            "captcha_value": captcha_value,
+            "errors": errors,
+        },
+    )
     
+@csrf_exempt
+@transaction.atomic
+def car_payment_success(request):
+    data = request.POST
+    print("Car Payment Success Response:", data)
+
+    txnid = data.get("txnid")
+
+    transaction = get_object_or_404(CarBookingTransaction, txnid=txnid)
+    booking = transaction.bookingDetails
+
+    # 🔒 Idempotency (PayU retry protection)
+    if booking.bookingStatus == "paid":
+        return render(
+            request,
+            "carbooking/payment_success.html",
+            {
+                "booking": booking,
+                "already_processed": True
+            }
+        )
+
+    # 🔒 OPTIONAL: verify hash (recommended)
+    # you can reuse your verify_payu_hash()
+
+    status = data.get("status")
+
+    if status != "success":
+        booking.bookingStatus = "payment_failed"
+        booking.save(update_fields=["bookingStatus"])
+
+        return render(
+            request,
+            "carbooking/payment_failure.html",
+            {"booking": booking}
+        )
+
+    # ✅ SUCCESS FLOW
+    transaction.paymentStatus = "success"
+    transaction.save(update_fields=["paymentStatus"])
+    booking.bookingStatus = "paid"
+
+    # store transaction details
+    booking.mihpayid = data.get("mihpayid")
+    booking.bank_ref_num = data.get("bank_ref_num")
+    booking.mode = data.get("mode")
+
+    booking.save()
+
+    return render(
+        request,
+        "carbooking/payment_success.html",
+        {"booking": booking}
+    )
+    
+@csrf_exempt
+def car_payment_failure(request):
+    data = request.POST
+    print("Car Payment Failure Response:", data)
+
+    txnid = data.get("txnid")
+
+    transaction = get_object_or_404(CarBookingTransaction, txnid=txnid)
+    booking = transaction.bookingDetails
+
+    transaction.paymentStatus = "failed"
+    transaction.save(update_fields=["paymentStatus"])
+    
+    booking.bookingStatus = "payment_failed"
+    booking.save(update_fields=["bookingStatus"])
+
+    return render(
+        request,
+        "carbooking/payment_failure.html",
+        {"booking": booking}
+    )
+    
+def car_payment_init(request, booking_id):
+    booking = get_object_or_404(CarBookingBookingDetails, id=booking_id)
+
+    if booking.bookingStatus == "paid":
+        return redirect("payment_already_done")
+
+    amount = str(booking.totalFare)
+    firstname = booking.fullName
+    email = booking.email
+    phone = booking.phoneNumber
+    productinfo = f"Car Booking {booking.id}"
+
+    txnid = f"CAR{booking.id}{int(timezone.now().timestamp())}"
+
+    surl = request.build_absolute_uri(reverse("car_payment_success"))
+    furl = request.build_absolute_uri(reverse("car_payment_failure"))
+
+    hash_string = (
+        f"{settings.PAYU_MERCHANT_KEY}|{txnid}|{amount}|{productinfo}|"
+        f"{firstname}|{email}|||||||||||{settings.PAYU_MERCHANT_SALT}"
+    )
+
+    hashh = hashlib.sha512(hash_string.encode()).hexdigest().lower()
+
+    # Save transaction (recommended)
+    CarBookingTransaction.objects.create(
+        txnid=txnid,
+        amount=booking.totalFare,
+        paymentStatus="initiated",
+        bookingDetails=booking
+    )
+
+    return render(
+        request,
+        "payment/payu_redirect.html",
+        {
+            "payu_url": settings.PAYU_BASE_URL,
+            "key": settings.PAYU_MERCHANT_KEY,
+            "txnid": txnid,
+            "amount": amount,
+            "productinfo": productinfo,
+            "firstname": firstname,
+            "email": email,
+            "phone": phone,
+            "surl": surl,
+            "furl": furl,
+            "hash": hashh,
+        },
+    )
 # ==================================== Check Car Availability ===================================
 
 @require_GET
