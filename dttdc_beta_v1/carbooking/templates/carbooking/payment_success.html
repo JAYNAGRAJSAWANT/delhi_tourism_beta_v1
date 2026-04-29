@@ -1,0 +1,24 @@
+<!-- templates/carbooking/payment_success.html -->
+
+{% extends "carbooking/base_carbooking.html" %}
+
+{% block payment_success %}
+<div class="container mt-5">
+  <div class="card shadow text-center p-4">
+    
+    <h2 class="text-success mb-3">Payment Successful ✅</h2>
+
+    <p><strong>Booking ID:</strong> {{ booking.id }}</p>
+    <p><strong>Name:</strong> {{ booking.fullName }}</p>
+    <p><strong>Amount Paid:</strong> ₹{{ booking.totalFare }}</p>
+
+    {% if already_processed %}
+      <div class="alert alert-info mt-3">
+        This payment was already processed earlier.
+      </div>
+    {% endif %}
+
+    <a href="/" class="btn btn-primary mt-3">Go Home</a>
+  </div>
+</div>
+{% endblock %}

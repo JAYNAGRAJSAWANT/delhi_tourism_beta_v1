@@ -7,7 +7,7 @@ This file contain a script that calls the check car vehicle availability
 and return a JSON response to further consumen in the Template.
 
 */
-console.log("Calling from File")
+
 
 document.addEventListener("DOMContentLoaded", function() {
     const journeyDateInput = document.getElementById("id_journeyDate");

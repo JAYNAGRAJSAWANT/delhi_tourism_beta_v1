@@ -1,0 +1,20 @@
+<!-- templates/carbooking/payment_failure.html -->
+
+{% extends "carbooking/base_carbooking.html" %}
+
+{% block payment_failure %}
+<div class="container mt-5">
+  <div class="card shadow text-center p-4">
+    
+    <h2 class="text-danger mb-3">Payment Failed ❌</h2>
+
+    <p><strong>Booking ID:</strong> {{ booking.id }}</p>
+    <p>Please try again or contact support.</p>
+
+    <a href="{% url 'booking_details_preview' booking.id %}" class="btn btn-warning mt-3">
+      Retry Payment
+    </a>
+
+  </div>
+</div>
+{% endblock %}
