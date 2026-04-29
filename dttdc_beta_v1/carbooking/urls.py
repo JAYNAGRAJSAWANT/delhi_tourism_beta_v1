@@ -8,5 +8,7 @@ urlpatterns = [
    path("vehicle_details/<int:vehicle_id>/",views.vehicle_details,name="vehicle_details"),
    path("carbooking_details/<int:vehicle_id>/",views.carbooking_details,name="carbooking_details"),
    path("check_car_availability/",views.check_car_vehicle_availability,name="check_car_availability"),
-   path("booking_details_preview/<int:booking_id>/", views.booking_details_preview, name="booking_details_preview")
+   path("booking_details_preview/<int:booking_id>/", views.booking_details_preview, name="booking_details_preview"),
+   path("check-car-calender/",views.car_availability_calendar,name="check-car-calender"),
+
 ]

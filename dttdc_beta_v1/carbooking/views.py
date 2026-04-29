@@ -2,7 +2,7 @@ from django.shortcuts import  get_object_or_404, render, redirect
 from django.views.decorators.http import require_GET
 from django.http import JsonResponse
 from .forms import CarBookingForm
-from .models import CarBookingPackage, CarBookingPackageCategory, CarBookingVehicleDetails, CarBookingBookingDetails
+from .models import CarBookingAvailability, CarBookingPackage, CarBookingPackageCategory, CarBookingVehicleDetails, CarBookingBookingDetails
 from utils.services.availability_service import check_car_availability
 from datetime import datetime,date
 # ======================================== All Categories packages =======================================
@@ -166,3 +166,39 @@ def check_car_vehicle_availability(request):
             "message":"Something went wrong. Please try again"
         }, status=500)
     
+
+
+
+def car_availability_calendar(request):
+    package_id = request.GET.get("package")
+    selected_package = None
+    availability_data = {}
+    packages = CarBookingPackage.objects.filter(status=True)
+    print("COUNT:", packages.count())
+    if package_id:
+        selected_package = CarBookingPackage.objects.filter(
+            id=package_id, status=True
+        ).first()
+        
+
+        if selected_package:
+            availability_qs = CarBookingAvailability.objects.filter(
+                vehicleDetails__package=selected_package,
+                vehicleDetails__status=True
+            ).select_related("vehicleDetails__vehicle")
+
+            for obj in availability_qs:
+                date_str = obj.availableDate.strftime("%Y-%m-%d")
+
+                availability_data.setdefault(date_str, []).append({
+                    "vehicle": obj.vehicleDetails.vehicle.vehicleName,
+                    "total_seats": obj.totalSeats,
+                    "available_seats": obj.availableSeats,
+                })
+
+    return render(request, "dttdc_car_admin/carbooking_admin_check_availability.html", 
+                  {
+        "packages": CarBookingPackage.objects.filter(status=True),
+        "selected_package": selected_package,
+        "availability_data": availability_data
+    })
