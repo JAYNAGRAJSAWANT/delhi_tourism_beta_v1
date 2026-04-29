@@ -1,8 +1,6 @@
 # Car Booking App - Quick Reference Guide
 
 ## What Was Changed
-
-### Models (carbooking/models.py)
 ✅ Added 6 new models for complete booking flow:
 - `CarBookingBooking` - Main booking record
 - `CarBookingUserDetails` - User/customer info
@@ -348,24 +346,6 @@ GET  /carbooking/check-car-calender/                 → AJAX calendar
 
 ---
 
-## Common Issues & Solutions
-
-**Issue**: Django not found error
-**Solution**: Activate virtual environment or ensure Django is installed
-
-**Issue**: Media files not saving
-**Solution**: Ensure `media/` directory exists and is writable
-
-**Issue**: CAPTCHA not working
-**Solution**: Check `dttdc_admin.captcha_utility` module is properly imported
-
-**Issue**: PayU hash mismatch
-**Solution**: Verify PAYU_MERCHANT_KEY and PAYU_MERCHANT_SALT in settings
-
-**Issue**: PDF not generating
-**Solution**: Ensure xhtml2pdf is installed: `pip install xhtml2pdf`
-
----
 
 ## Next Steps
 
