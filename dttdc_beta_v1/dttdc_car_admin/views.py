@@ -44,8 +44,13 @@ def car_cancellation_requests(request):
 
 # ========================================Car admin package categories=======================================
 def car_admin_package_categories(request):
-  context={ }
-  return render(request,"dttdc_car_admin/carbooking_admin_package_categories.html",context)
+    categories = CarBookingPackageCategory.objects.filter(status=True)
+    print("categories",categories)
+
+    context = {
+        "categories": categories
+    }
+    return render(request, "dttdc_car_admin/carbooking_admin_package_categories.html", context)
 
 # ========================================Car admin package details=======================================
 
