@@ -4,7 +4,7 @@ import hashlib
 from django.conf import settings
 from django.http import JsonResponse
 from .forms import CarBookingForm
-from .models import CarBookingPackage, CarBookingPackageCategory, CarBookingVehicleDetails, CarBookingBookingDetails,CarBookingTransaction
+from .models import CarBookingPackage, CarBookingPackageCategory, CarBookingPaymentDetails, CarBookingVehicleDetails, CarBookingBookingDetails,CarBookingTransaction
 from dttdc_admin.captcha_utility import generateCaptchaValueWithToken, validate_captcha
 from utils.services.availability_service import check_car_availability
 from datetime import datetime,date
@@ -124,7 +124,7 @@ def booking_details_preview(request, booking_id):
         user_input = request.POST.get("user_captcha_input", "").strip()
         captcha_token = request.POST.get("captchaToken", "")
 
-        # 🔒 CAPTCHA VALIDATION
+        # CAPTCHA VALIDATION
         if not user_input:
             errors["captcha"] = "Please enter the captcha"
         else:
@@ -133,20 +133,20 @@ def booking_details_preview(request, booking_id):
             if result["status"] != "success":
                 errors["captcha"] = result["message"]
 
-        # ❌ FAILED → regenerate captcha
+        # FAILED → regenerate captcha
         if errors:
             captcha_data = generateCaptchaValueWithToken()
             captcha_token = captcha_data["captchaToken"]
             captcha_value = captcha_data["captchaValue"]
 
         else:
-            # ✅ SUCCESS FLOW
+            # SUCCESS FLOW
 
-            # 🔥 IMPORTANT: update booking status BEFORE payment
+            # IMPORTANT: update booking status BEFORE payment
             booking.bookingStatus = "payment_initiated"
             booking.save(update_fields=["bookingStatus"])
 
-            # 👉 redirect to payment init
+            # redirect to payment init
             return redirect("car_payment_init", booking_id=booking.id)
 
     return render(
@@ -171,7 +171,7 @@ def car_payment_success(request):
     transaction = get_object_or_404(CarBookingTransaction, txnid=txnid)
     booking = transaction.bookingDetails
 
-    # 🔒 Idempotency (PayU retry protection)
+    # Idempotency (PayU retry protection)
     if booking.bookingStatus == "paid":
         return render(
             request,
@@ -182,7 +182,6 @@ def car_payment_success(request):
             }
         )
 
-    # 🔒 OPTIONAL: verify hash (recommended)
     # you can reuse your verify_payu_hash()
 
     status = data.get("status")
@@ -197,11 +196,42 @@ def car_payment_success(request):
             {"booking": booking}
         )
 
-    # ✅ SUCCESS FLOW
+    # SUCCESS FLOW
     transaction.paymentStatus = "success"
     transaction.save(update_fields=["paymentStatus"])
     booking.bookingStatus = "paid"
+    
+    CarBookingPaymentDetails.objects.create(
+        transaction=transaction,
+        txnid=txnid,
+        status=data.get("status"),
+        amount=data.get("amount"),
 
+        mihpayid=data.get("mihpayid"),
+        mode=data.get("mode"),
+        unmappedstatus=data.get("unmappedstatus"),
+
+        firstname=data.get("firstname"),
+        email=data.get("email"),
+        phone=data.get("phone"),
+
+        productinfo=data.get("productinfo"),
+
+        vehicle_name=booking.vehicle.vehicleName,
+        journey_date=booking.journeyDate,
+
+        bank_ref_num=data.get("bank_ref_num"),
+        bankcode=data.get("bankcode"),
+        name_on_card=data.get("name_on_card"),
+        cardnum=data.get("cardnum"),
+
+        net_amount_debit=data.get("net_amount_debit"),
+
+        error=data.get("error"),
+        error_message=data.get("error_Message"),
+
+        payment_response=dict(data),
+    )
     # store transaction details
     booking.mihpayid = data.get("mihpayid")
     booking.bank_ref_num = data.get("bank_ref_num")
@@ -241,7 +271,7 @@ def car_payment_init(request, booking_id):
     booking = get_object_or_404(CarBookingBookingDetails, id=booking_id)
 
     if booking.bookingStatus == "paid":
-        return redirect("payment_already_done")
+        return redirect("car_payment_success")
 
     amount = str(booking.totalFare)
     firstname = booking.fullName
@@ -347,7 +377,7 @@ def check_car_vehicle_availability(request):
             "message":"Something went wrong. Please try again"
         }, status=500)
     
-
+# ======================================= Abhijeet Thorat Ends ========================================
 
 
 def car_availability_calendar(request):

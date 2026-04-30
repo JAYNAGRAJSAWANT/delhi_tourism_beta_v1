@@ -11,6 +11,8 @@ from .validators import (
     journey_date_validator,
 )
 
+### Added By Abhijeet Thorat on 2024-06-20 for Car Booking Models ###
+
 # --- Core Models --- 
 
 # =========================DTTDC Tour Category Model===========================
@@ -394,3 +396,4 @@ class DTTDCCancellationHistory(models.Model):
 
     class Meta:
         unique_together = ('booking', 'traveller')
+        
