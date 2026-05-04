@@ -55,21 +55,54 @@ def car_admin_package_categories(request):
 # ========================================Car admin package details=======================================
 
 def car_admin_package_details(request):
-  context={ }
-  return render(request,"dttdc_car_admin/carbooking_admin_package_details.html",context)
+    packages = CarBookingPackage.objects.select_related(
+        "carPackageCategory"
+    ).filter(status=True)
+
+    context = {
+        "packages": packages
+    }
+
+    return render(
+        request,
+        "dttdc_car_admin/carbooking_admin_package_details.html",
+        context
+    )
 
 # ========================================Car admin vehicle packages=======================================
 
 def car_admin_vehicle_packages(request):
-  context={ }
-  return render(request,"dttdc_car_admin/carbooking_admin_vehicle_packages.html",context)
+    vehicle_packages = CarBookingVehicleDetails.objects.select_related(
+        "package",
+        "package__carPackageCategory",
+        "vehicle"
+    ).filter(status=True)
+
+    context = {
+        "vehicle_packages": vehicle_packages
+    }
+
+    return render(
+        request,
+        "dttdc_car_admin/carbooking_admin_vehicle_packages.html",
+        context
+    )
 
 # ========================================Car admin vehcicles=======================================
-
 def car_admin_vehicles(request):
-  context={ }
-  return render(request,"dttdc_car_admin/carbooking_admin_vehicles.html",context)
+    vehicle_packages = CarBookingVehicleDetails.objects.select_related(
+        "vehicle"
+    ).filter(status=True)
 
+    context = {
+        "vehicle_packages": vehicle_packages
+    }
+
+    return render(
+        request,
+        "dttdc_car_admin/carbooking_admin_vehicles.html",
+        context
+    )
 # ========================================Car cancellation requests=======================================
 
 

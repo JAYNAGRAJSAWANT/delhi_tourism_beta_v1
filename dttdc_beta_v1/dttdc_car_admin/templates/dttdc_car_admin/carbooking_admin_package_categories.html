@@ -33,33 +33,27 @@
 </thead>
 
 <tbody>
-  {% for vp in vehicle_packages %}
-  <p>{{ vp }}</p>
-  <p>{{ vp.package }}</p>
-  <p>{{ vp.package.carPackageCategory }}</p>
-  <tr>
-    <!-- Sr.No -->
-    <td>{{ forloop.counter }}</td>
+  {% for cat in categories %}
+<tr>
+  <td>{{ forloop.counter }}</td>
 
-    <!-- Package Category -->
-    <td>{{ vp.package.carPackageCategory.packageCategoryName }}</td>
+  <td>{{ cat.packageCategoryName }}</td>
 
-    <!-- Status -->
-    <td>
-      {% if vp.package.is_active %}
-        <span class="badge bg-success">Active</span>
-      {% else %}
-        <span class="badge bg-danger">Inactive</span>
-      {% endif %}
-    </td>
-  </tr>
-  {% empty %}
-  <tr>
-    <td colspan="3" class="text-center text-muted">
-      No data available.
-    </td>
-  </tr>
-  {% endfor %}
+  <td>
+    {% if cat.status %}
+      <span class="badge bg-success">Active</span>
+    {% else %}
+      <span class="badge bg-danger">Inactive</span>
+    {% endif %}
+  </td>
+</tr>
+{% empty %}
+<tr>
+  <td colspan="3" class="text-center text-muted">
+    No data available.
+  </td>
+</tr>
+{% endfor %}
 </tbody>
 </table>
 

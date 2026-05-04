@@ -34,34 +34,21 @@
     </tr>
   </thead>
 
-  <tbody>
-  {% for vp in vehicle_packages %}
-  <tr>
-    <!-- Sr.No -->
-    <td>{{ forloop.counter }}</td>
-
-    <!-- Package Name -->
-    <td>{{ vp.package.packageName }}</td>
-
-    <!-- Package Category -->
-    <td>{{ vp.package.carPackageCategory.packageCategoryName }}</td>
-
-    <!-- Status -->
-    <td>
-      {% if vp.package.is_active %}
-        <span class="badge bg-success">Active</span>
-      {% else %}
-        <span class="badge bg-danger">Inactive</span>
-      {% endif %}
-    </td>
-  </tr>
-  {% empty %}
-  <tr>
-    <td colspan="4" class="text-center text-muted">
-      No data available.
-    </td>
-  </tr>
-  {% endfor %}
+ <tbody>
+{% for pkg in packages %}
+<tr>
+  <td>{{ forloop.counter }}</td>
+  <td>{{ pkg.packageName }}</td>
+  <td>{{ pkg.carPackageCategory.packageCategoryName }}</td>
+  <td>
+    {% if pkg.status %}
+      <span class="badge bg-success">Active</span>
+    {% else %}
+      <span class="badge bg-danger">Inactive</span>
+    {% endif %}
+  </td>
+</tr>
+{% endfor %}
 </tbody>
 </table>
 
