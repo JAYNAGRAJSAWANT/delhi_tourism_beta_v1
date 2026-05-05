@@ -118,7 +118,6 @@
             <th style="width:9%;">Address</th>
             <th style="width:8%;">Journey Date</th>
             <th style="width:7%;">Car Booking Date</th>
-            <th style="width:7%;">Journey Date</th>
             <th style="width:7%;">Total Fare</th>
             <th style="width:7%;">Amount Paid</th>
             <th style="width:5%;">Booking Status</th>
@@ -140,39 +139,35 @@
 
     <!-- 3. Package Name -->
     <td class="text-break">
-      {{ booking.dttdc_tour.tour_name }}
+      {{ booking.vehicle.vehicleName }}
     </td>
 
     <!-- 4. Email -->
-    <td>{{ booking.user_details.email }}</td>
+    <td>{{ booking.email }}</td>
 
     <!-- 5. Name -->
-    <td>{{ booking.user_details.name }}</td>
+    <td>{{ booking.fullName }}</td>
 
     <!-- 6. Phone -->
-    <td>{{ booking.user_details.phone_number }}</td>
+    <td>{{ booking.phoneNumber }}</td>
 
     <!-- 7. Address -->
-    <td>{{ booking.user_details.address }}</td>
+    <td>{{ booking.address }}</td>
 
     <!-- 8. Journey Date -->
     <td class="text-nowrap">
-      {{ booking.user_details.tour_journey_date|date:"d/m/Y" }}
+      {{ booking.journeyDate|date:"d/m/Y" }}
     </td>
 
     <!-- 9. Car Booking Date -->
     <td class="text-nowrap">
-      {{ booking.booking_date|date:"d/m/Y H:i" }}
+      {{ booking.createdAt|date:"d/m/Y H:i" }}
     </td>
 
-    <!-- 10. Journey Date (duplicate column in header) -->
-    <td class="text-nowrap">
-      {{ booking.user_details.tour_journey_date|date:"d/m/Y" }}
-    </td>
 
     <!-- 11. Total Fare -->
     <td class="fw-semibold">
-      ₹ {{ booking.total_fare }}
+      ₹ {{ booking.totalFare }}
     </td>
 
     <!-- 12. Amount Paid -->
@@ -187,7 +182,7 @@
     <!-- 13. Booking Status -->
     <td>
       <span class="badge bg-info">
-        {{ booking.booking_status|title }}
+        {{ booking.bookingStatus|title }}
       </span>
     </td>
 
@@ -208,7 +203,7 @@
 
     <!-- 15. View Ticket -->
     <td class="text-center">
-      <a href="{% url 'admin_view_tour_ticket' booking.pnr_number %}"
+      <a href="#"
          target="_blank"
          class="btn btn-sm btn-primary">
         View
@@ -226,7 +221,7 @@
 
   {% empty %}
   <tr>
-    <td colspan="16" class="text-center text-muted">
+    <td colspan="15" class="text-center text-muted">
       No bookings found.
     </td>
   </tr>
@@ -275,7 +270,7 @@
 <script>
 $(document).ready(function () {
 
-  $('#carTourBookingDetails').DataTable({
+  $('carTourBookingDetails').DataTable({
     dom:
       "<'row mb-2'<'col-md-6'l><'col-md-6 d-flex justify-content-end align-items-center'fB>>" +
   "<'row'<'col-12'tr>>" +
