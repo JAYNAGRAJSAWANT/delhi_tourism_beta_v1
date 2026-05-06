@@ -413,3 +413,5 @@ def car_availability_calendar(request):
         "selected_package": selected_package,
         "availability_data": availability_data
     })
+
+

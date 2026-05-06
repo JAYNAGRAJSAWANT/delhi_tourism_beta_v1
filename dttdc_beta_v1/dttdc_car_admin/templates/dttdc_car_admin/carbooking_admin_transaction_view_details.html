@@ -1,0 +1,171 @@
+{% extends "dttdc_car_admin/base_car_admin.html" %}
+{% load static %}
+
+{% block car_transaction_details_view %}
+
+<div class="container-fluid mt-4">
+
+  <div class="card-header bg-white d-flex align-items-center justify-content-center position-relative">
+
+    <a href="javascript:history.back()"
+       class="btn btn-danger position-absolute start-0 ms-3">
+      ← Back
+    </a>
+
+    <h5 class="fw-bold mb-0 text-center">
+      Transaction Details
+    </h5>
+
+  </div>
+
+  <div class="card-body p-0">
+
+    {% if payment %}
+
+    <!-- ================= BASIC INFO ================= -->
+    <table class="table table-bordered mb-0">
+      <thead class="table-primary text-center">
+        <tr><th colspan="2">Basic Information</th></tr>
+      </thead>
+      <tbody>
+        <tr><th>Txn ID</th><td>{{ payment.txnid }}</td></tr>
+        <tr><th>Mihpayid</th><td>{{ payment.mihpayid }}</td></tr>
+
+        <tr>
+          <th>Status</th>
+          <td>
+            <span class="badge
+              {% if payment.status|lower == 'success' %}bg-success
+              {% elif payment.status|lower == 'failed' %}bg-danger
+              {% else %}bg-warning text-dark{% endif %}">
+              {{ payment.status|title }}
+            </span>
+          </td>
+        </tr>
+
+        <tr><th>Mode</th><td>{{ payment.mode }}</td></tr>
+        <tr><th>Payment Gateway</th><td>{{ payment.mode|default:"N/A" }}</td></tr>
+
+        <tr><th>Amount</th><td class="fw-bold text-success">₹ {{ payment.amount }}</td></tr>
+        <tr><th>Amount Debit</th><td>{{ payment.net_amount_debit|default:"N/A" }}</td></tr>
+
+        <tr><th>Date</th><td>{{ transaction.createdAt|date:"d/m/Y h:i A" }}</td></tr>
+        <tr><th>Booking ID</th><td>{{ booking.id }}</td></tr>
+      </tbody>
+    </table>
+
+    <!-- ================= BOOKING INFO ================= -->
+    <table class="table table-bordered mb-0">
+      <thead class="table-primary text-center">
+        <tr><th colspan="2">Booking Info</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th>Vehicle</th>
+          <td>{{ booking.vehicle_details.vehicle.vehicleName }}</td>
+        </tr>
+        <tr>
+          <th>Tour Name</th>
+          <td>{{ booking.vehicle_details.package.packageName }}</td>
+        </tr>
+        <tr>
+          <th>Journey Date</th>
+          <td>{{ booking.journeyDate|date:"d/m/Y" }}</td>
+        </tr>
+        <tr>
+          <th>Total Fare</th>
+          <td>₹ {{ booking.totalFare }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- ================= CUSTOMER ================= -->
+    <table class="table table-bordered mb-0">
+      <thead class="table-primary text-center">
+        <tr><th colspan="2">Customer Details</th></tr>
+      </thead>
+      <tbody>
+        <tr><th>Full Name</th><td>{{ payment.firstname }}</td></tr>
+        <tr><th>Email</th><td>{{ payment.email }}</td></tr>
+        <tr><th>Phone No</th><td>{{ payment.phone }}</td></tr>
+        <tr><th>Address</th><td>{{ booking.address }}</td></tr>
+        <tr><th>City</th><td>{{ booking.city }}</td></tr>
+        <tr><th>State</th><td>{{ booking.state }}</td></tr>
+        <tr><th>Country</th><td>{{ booking.country }}</td></tr>
+        <tr><th>Zipcode</th><td>{{ booking.pincode }}</td></tr>
+      </tbody>
+    </table>
+
+    <!-- ================= BANK ================= -->
+    <table class="table table-bordered mb-0">
+      <thead class="table-primary text-center">
+        <tr><th colspan="2">Bank Details</th></tr>
+      </thead>
+      <tbody>
+        <tr><th>Bank Ref No.</th><td>{{ payment.bank_ref_num }}</td></tr>
+        <tr><th>Bank Code</th><td>{{ payment.bankcode }}</td></tr>
+        <tr><th>Name On Card</th><td>{{ payment.name_on_card }}</td></tr>
+        <tr><th>Card Number</th><td>{{ payment.cardnum }}</td></tr>
+      </tbody>
+    </table>
+
+    <!-- ================= FINANCIAL ================= -->
+    <table class="table table-bordered mb-0">
+      <thead class="table-primary text-center">
+        <tr><th colspan="2">Financial Details</th></tr>
+      </thead>
+      <tbody>
+        <tr><th>Discount</th><td>{{ payment.discount }}</td></tr>
+        <tr><th>Net Amount Debit</th><td>{{ payment.net_amount_debit }}</td></tr>
+      </tbody>
+    </table>
+
+    <!-- ================= EXTRA ================= -->
+    <table class="table table-bordered mb-0">
+      <thead class="table-primary text-center">
+        <tr><th colspan="2">Additional Info</th></tr>
+      </thead>
+      <tbody>
+        <tr><th>Product Info</th><td>{{ payment.productinfo }}</td></tr>
+        <tr><th>Key</th><td>N/A</td></tr>
+
+        <tr><th>Field1</th><td>N/A</td></tr>
+        <tr><th>Field2</th><td>N/A</td></tr>
+        <tr><th>Field3</th><td>N/A</td></tr>
+        <tr><th>Field4</th><td>N/A</td></tr>
+        <tr><th>Field5</th><td>N/A</td></tr>
+        <tr><th>Field6</th><td>N/A</td></tr>
+        <tr><th>Field7</th><td>N/A</td></tr>
+        <tr><th>Field8</th><td>N/A</td></tr>
+        <tr><th>Field9</th><td>N/A</td></tr>
+
+        <tr><th>Gift Card</th><td>N/A</td></tr>
+
+        <tr><th>Error</th><td>{{ payment.error|default:"N/A" }}</td></tr>
+        <tr><th>Error Message</th><td class="text-danger">{{ payment.error_message|default:"N/A" }}</td></tr>
+      </tbody>
+    </table>
+
+    {% else %}
+      <div class="text-center p-4 text-muted">
+        No payment details available.
+      </div>
+    {% endif %}
+
+  </div>
+</div>
+
+<style>
+.table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  width: 30%;
+}
+
+.table-primary th {
+  background-color: #5b7bd5 !important;
+  color: #fff;
+}
+</style>
+
+{% endblock %}

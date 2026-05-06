@@ -47,7 +47,7 @@
   <div class="card shadow-sm">
     <div class="card-body">
       <div class="table-responsive">
-      <table id="#carTourBookingDetails"
+      <table id="carTourBookingDetails"
              class="table table-bordered table-hover align-middle w-100">
 
         <thead class="table-primary text-center">
@@ -77,22 +77,28 @@
     <td class="text-center fw-semibold">{{ forloop.counter }}</td>
 
     <!-- 2. Package Name -->
-    <td>{{ booking.dttdc_tour.tour_name }}</td>
+    <td>
+  {% if booking.vehicle_details and booking.vehicle_details.package %}
+    {{ booking.vehicle_details.package.packageName }}
+  {% else %}
+    <span class="text-muted">N/A</span>
+  {% endif %}
+</td>
 
     <!-- 3. Email -->
-    <td class="text-break">{{ booking.user_details.email }}</td>
+    <td class="text-break">{{ booking.email }}</td>
 
     <!-- 4. Name -->
-    <td>{{ booking.user_details.name }}</td>
+    <td>{{ booking.fullName }}</td>
 
     <!-- 5. Transaction ID -->
-    <td>{{ booking.payment.transaction_id }}</td>
+    <td>{{ booking.transaction.txnid }}</td>
 
     <!-- 6. payuMoneyId -->
-    <td>{{ booking.payment.payu_money_id }}</td>
+    <td>{{ booking.payment.mihpayid }}</td>
 
     <!-- 7. Bank Ref No -->
-    <td>{{ booking.payment.bank_ref_no }}</td>
+    <td>{{ booking.payment.bank_ref_num }}</td>
 
     <!-- 8. Transaction Status -->
     <td>
@@ -118,7 +124,7 @@
 
     <!-- 10. Journey Date -->
     <td class="text-nowrap">
-      {{ booking.user_details.tour_journey_date|date:"d/m/Y" }}
+      {{ booking.journeyDate|date:"d/m/Y" }}
     </td>
 
     <!-- 11. Error Message -->
@@ -128,8 +134,8 @@
 
     <!-- 12. View Details -->
     <td class="text-center">
-      <a href="{% url 'admin_view_tour_ticket' booking.pnr_number %}"
-         target="_blank"
+      <a href="{% url 'carbooking_admin_transaction_view_details' booking.transaction.txnid %}"
+         
          class="btn btn-sm btn-primary">
         View
       </a>
@@ -199,7 +205,7 @@ $(document).ready(function () {
         extend: 'excelHtml5',
         text: 'Download Report',
         className: 'btn btn-success btn-sm ms-2',
-        title: 'Tour_Booking_Report_' + new Date().toISOString().slice(0,10),
+        title: 'Transaction_Report_' + new Date().toISOString().slice(0,10),
       }
     ],
 

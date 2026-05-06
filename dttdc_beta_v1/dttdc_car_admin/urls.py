@@ -7,14 +7,12 @@ urlpatterns = [
     path("carbooking_admin_hub",views.carbooking_admin_hub,name="admin_hub_carbooking"),
     path("car_tour_booking_details",views.car_tour_booking_details,name="car_tour_booking_details"),
     path("car_tour_transaction_details",views.car_tour_transaction_details,name="car_tour_transaction_details"),
-    path("car_cancellation_requests",views.car_cancellation_requests,name="car_cancellation_requests"),
+     path("car_cancellation_requests",views.car_cancellation_requests,name="car_cancellation_requests"),
 
     path("car_admin_package_categories",views.car_admin_package_categories,name="car_admin_package_categories"),
     path("car_admin_package_details",views.car_admin_package_details,name="car_admin_package_details"),
     path("car_admin_vehicle_packages",views.car_admin_vehicle_packages,name="car_admin_vehicle_packages"),
     path("car_admin_vehicles",views.car_admin_vehicles,name="car_admin_vehicles"),
-
-
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -53,4 +51,7 @@ urlpatterns = [
      #==================================Check Availability========================================
     path("update_car_availability",views.update_car_availability,name="update_car_availability"),
     path("check-car-availability/",views.check_car_availability,name="check-car-availability"),
+
+    path("carbooking_admin_transaction_view_details/<str:txnid>/",views.carbooking_admin_transaction_view_details,name="carbooking_admin_transaction_view_details"),
+    path("carbooking_admin_booking_view_details/<str:bookid>/",views.carbooking_admin_booking_view_details,name="carbooking_admin_booking_view_details"),
 ]

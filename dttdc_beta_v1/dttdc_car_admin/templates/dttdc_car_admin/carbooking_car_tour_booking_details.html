@@ -104,7 +104,7 @@
   <div class="card shadow-sm">
     <div class="card-body">
       <div class="table-responsive">
-      <table id="#carTourBookingDetails"
+      <table id="carTourBookingDetails"
              class="table table-bordered table-hover align-middle w-100">
 
         <thead class="table-primary text-center">
@@ -139,8 +139,8 @@
 
     <!-- 3. Package Name -->
     <td class="text-break">
-      {{ booking.vehicle.vehicleName }}
-    </td>
+  {{ booking.vehicle_details.vehicle.vehicleName }}
+</td>
 
     <!-- 4. Email -->
     <td>{{ booking.email }}</td>
@@ -212,7 +212,7 @@
 
     <!-- 16. View Details -->
     <td class="text-center">
-      <a href="#" class="btn btn-sm btn-secondary">
+      <a href="{% url 'carbooking_admin_booking_view_details' booking.id %}" class="btn btn-sm btn-secondary">
         Details
       </a>
     </td>
@@ -270,7 +270,7 @@
 <script>
 $(document).ready(function () {
 
-  $('carTourBookingDetails').DataTable({
+  $('#carTourBookingDetails').DataTable({
     dom:
       "<'row mb-2'<'col-md-6'l><'col-md-6 d-flex justify-content-end align-items-center'fB>>" +
   "<'row'<'col-12'tr>>" +
@@ -281,7 +281,7 @@ $(document).ready(function () {
         extend: 'excelHtml5',
         text: 'Download Report',
         className: 'btn btn-success btn-sm ms-2',
-        title: 'Tour_Booking_Report_' + new Date().toISOString().slice(0,10),
+        title: 'Car_Booking_Report_' + new Date().toISOString().slice(0,10),
       }
     ],
 
