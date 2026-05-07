@@ -71,10 +71,20 @@ def vehicle_details(request, vehicle_id):
 # =======================================Abhijeet Thorat ========================================
 # =====================================Booking Flow Starts Here =================================
 
+
+def get_financial_year(date_obj):
+    year = date_obj.year
+
+    if date_obj.month >= 4:
+        return f"{year}-{str(year + 1)[-2:]}"
+    else:
+        return f"{year - 1}-{str(year)[-2:]}"
+    
+    
 def carbooking_details(request,vehicle_id):
     
     if request.method == "POST":
-        print("Inside Booking Flow")
+        print("Inside Booking Flow : ", vehicle_id)
         
         form = CarBookingForm(request.POST)
 
@@ -88,7 +98,7 @@ def carbooking_details(request,vehicle_id):
             # you can calculate fare here if needed
             # booking.totalFare = calculate_fare(...)
             booking.totalFare = 1
-            booking.vehicle_id = vehicle_id
+            booking.vehicle_details_id = vehicle_id
             booking.save()
 
             return redirect("booking_details_preview",booking_id=booking.id)  # create this URL
@@ -201,6 +211,66 @@ def car_payment_success(request):
     transaction.save(update_fields=["paymentStatus"])
     booking.bookingStatus = "paid"
     
+    # ============================================
+    # Generate PNR Number
+    # ============================================
+
+    timestamp_part = str(int(timezone.now().timestamp() * 1000))[4:12]
+
+    pnr_number = f"{timestamp_part}{booking.id}"
+
+    print("PNR Number :", pnr_number)
+
+    # ============================================
+    # Generate Financial Year
+    # ============================================
+
+    invoice_date = timezone.now()
+    financial_year = get_financial_year(invoice_date)
+
+    print("Financial Year :", financial_year)
+
+    # ============================================
+    # Generate Invoice Number
+    # ============================================
+
+    prefix = "CRO/ON"
+
+    invoice_prefix = f"{prefix}/{financial_year}/"
+
+    # Find latest invoice
+    latest_ticket = CarBookingTicketDetails.objects.filter(
+        invoiceNumber__startswith=invoice_prefix
+    ).order_by("-id").first()
+
+    new_sequence = 1
+
+    if latest_ticket:
+        try:
+            last_invoice = latest_ticket.invoiceNumber
+
+            # Extract last number
+            last_sequence = int(last_invoice.split("/")[-1])
+
+            new_sequence = last_sequence + 1
+
+        except Exception as e:
+            print("Invoice Sequence Error :", str(e))
+
+    invoice_number = f"{invoice_prefix}{new_sequence}"
+
+    print("Generated Invoice Number :", invoice_number)
+
+    # ============================================
+    # Create Ticket
+    # ============================================
+
+    CarBookingTicketDetails.objects.create(
+        pnrNumber=pnr_number,
+        invoiceNumber=invoice_number,
+        bookingDetails=booking
+    )
+    
     CarBookingPaymentDetails.objects.create(
         transaction=transaction,
         txnid=txnid,
@@ -217,7 +287,7 @@ def car_payment_success(request):
 
         productinfo=data.get("productinfo"),
 
-        vehicle_name=booking.vehicle.vehicleName,
+        vehicle_name=booking.vehicle_details.vehicle.vehicleName,
         journey_date=booking.journeyDate,
 
         bank_ref_num=data.get("bank_ref_num"),
