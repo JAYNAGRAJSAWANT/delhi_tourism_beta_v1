@@ -413,3 +413,97 @@ def car_availability_calendar(request):
         "selected_package": selected_package,
         "availability_data": availability_data
     })
+
+# -----------------------------------------------carbooking_ticket_reprint-------------------------------------------
+
+def carbooking_ticket_reprint(request):
+
+    return render(request, "carbooking/carbooking_ticket_reprint.html", 
+                  {
+        
+    })
+# -----------------------------------------------carbooking_ticket_cancellation-------------------------------------------
+from django.shortcuts import render, redirect
+from .forms import CarCancellationForm
+
+
+def carbooking_cancellation(request):
+
+    if request.method == "POST":
+
+        form = CarCancellationForm(request.POST)
+
+        # ==========================================
+        # CAPTCHA VALIDATION
+        # ==========================================
+        captcha_result = validate_captcha(
+            request.POST.get("user_captcha_input"),
+            request.POST.get("captchaToken"),
+        )
+
+        if captcha_result["status"] != "success":
+
+            captcha_data = generateCaptchaValueWithToken()
+
+            return render(
+                request,
+                "carbooking/carbooking_ticket_cancellation.html",
+                {
+                    "form": form,
+                    "captcha_value": captcha_data["captchaValue"],
+                    "captcha_token": captcha_data["captchaToken"],
+                    "error_message": captcha_result["message"],
+                },
+            )
+
+        # ==========================================
+        # FORM VALIDATION
+        # ==========================================
+        if form.is_valid():
+
+            booking = form.booking
+            ticket = form.ticket
+
+            # SUCCESS
+            return redirect(
+                "carbooking_cancellation_preview",
+                pnr=ticket.pnrNumber
+            )
+
+        # ==========================================
+        # INVALID FORM
+        # ==========================================
+        captcha_data = generateCaptchaValueWithToken()
+
+        return render(
+            request,
+            "carbooking/carbooking_ticket_cancellation.html",
+            {
+                "form": form,
+                "captcha_value": captcha_data["captchaValue"],
+                "captcha_token": captcha_data["captchaToken"],
+                "error_message": None,
+            },
+        )
+
+    # ==========================================
+    # GET REQUEST
+    # ==========================================
+    captcha_data = generateCaptchaValueWithToken()
+
+    return render(
+        request,
+        "carbooking/carbooking_ticket_cancellation.html",
+        {
+            "form": CarCancellationForm(),
+            "captcha_value": captcha_data["captchaValue"],
+            "captcha_token": captcha_data["captchaToken"],
+            "error_message": None,
+        },
+    )
+
+ 
+    
+
+
+

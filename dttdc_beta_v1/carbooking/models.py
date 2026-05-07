@@ -129,10 +129,11 @@ class CarBookingBookingDetails(models.Model):
 
     totalFare = models.FloatField()
 
-    vehicle = models.ForeignKey(
-        CarBookingVehicle,
+    vehicle_details = models.ForeignKey(
+        CarBookingVehicleDetails,
         on_delete=models.PROTECT
     )
+    
 
     createdAt = models.DateTimeField(auto_now_add=True)
     updatedAt = models.DateTimeField(auto_now=True)

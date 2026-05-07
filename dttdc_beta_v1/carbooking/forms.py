@@ -344,3 +344,107 @@ class CarBookingForm(forms.ModelForm):
                 )
 
         return cleaned_data
+    
+
+
+
+
+
+# ==================================================================================================
+# ----------------------------------Car Cancellation Form---------------------------------------
+# ==================================================================================================
+
+from django import forms
+from .models import (
+    CarBookingBookingDetails,
+    CarBookingTicketDetails
+)
+
+class CarCancellationForm(forms.Form):
+
+    pnr_number = forms.CharField(
+        max_length=255,
+        widget=forms.TextInput(
+            attrs={
+                "class": "form-control",
+                "placeholder": "Please enter PNR Number",
+            }
+        ),
+        error_messages={
+            "required": "PNR Number is required.",
+        },
+    )
+
+    email = forms.EmailField(
+        widget=forms.EmailInput(
+            attrs={
+                "class": "form-control",
+                "placeholder": "Please enter Email Address",
+            }
+        ),
+        error_messages={
+            "required": "Email address is required.",
+            "invalid": "Enter a valid email address.",
+        },
+    )
+
+    journey_date = forms.DateField(
+        widget=forms.DateInput(
+            attrs={
+                "type": "date",
+                "class": "form-control",
+            }
+        ),
+        error_messages={
+            "required": "Journey date is required.",
+        },
+    )
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        pnr_number = cleaned_data.get("pnr_number")
+        email = cleaned_data.get("email")
+        journey_date = cleaned_data.get("journey_date")
+
+        if not pnr_number or not email or not journey_date:
+            return cleaned_data
+
+        try:
+            ticket = CarBookingTicketDetails.objects.select_related(
+                "bookingDetails",
+                "bookingDetails__vehicle_details",
+                "bookingDetails__vehicle_details__vehicle",
+                "bookingDetails__vehicle_details__package",
+            ).get(
+                pnrNumber=pnr_number
+            )
+
+        except CarBookingTicketDetails.DoesNotExist:
+            raise forms.ValidationError(
+                "Invalid PNR Number."
+            )
+
+        booking = ticket.bookingDetails
+
+        # EMAIL VALIDATION
+        if booking.email.lower() != email.lower():
+            raise forms.ValidationError(
+                "Email does not match booking records."
+            )
+
+        # JOURNEY DATE VALIDATION
+        if booking.journeyDate != journey_date:
+            raise forms.ValidationError(
+                "Journey date does not match booking records."
+            )
+
+        # STORE OBJECTS FOR VIEW USE
+        self.ticket = ticket
+        self.booking = booking
+
+        return cleaned_data
+
+
+
+

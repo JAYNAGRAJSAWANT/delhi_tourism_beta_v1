@@ -1,0 +1,256 @@
+{% extends "carbooking/base_carbooking.html" %}
+
+{% load static %}
+
+{% block carbooking_ticket_reprint %}
+
+<div class="container">
+  <div class="row m-3">
+
+<!-- SIDEBAR -->
+<aside class="col-12 col-md-3">
+  {% include "ebooking/components/tour_booking_sidebar.html" %}
+</aside>
+
+<!-- MAIN -->
+<div class="col-lg-9">
+  <div class="card mt-4 shadow-sm">
+    
+    <!-- HEADER -->
+    <div class="card-header text-center bg-light py-2"
+      style="border-bottom: 3px solid #b8440e;">
+      <h5 class="fw-bold mb-1" style="font-size: 1.5rem;">
+        Ticket Reprint Form
+      </h5>
+    </div>
+<div class="SideTitle p-2 text-center bg-light my-2 text-white">
+          Ticket Reprint Details
+        </div>
+    <div class="ticket-wrapper">
+
+      <div class="ticket-card">
+
+        <form method="post" target="_blank">
+          {% csrf_token %}
+
+          <div class="ticket-section">
+
+            <div class="section-label">Ticket Reprint Details</div>
+
+            {% if messages %}
+              <div id="errorBox">
+                {% for message in messages %}
+                  <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                  </div>
+                {% endfor %}
+              </div>
+            {% endif %}
+
+            <!-- PNR -->
+            <div class="row mb-3 align-items-center">
+              <label class="col-md-3 col-form-label fw-semibold">
+                PNR Number <span class="text-danger">*</span>
+              </label>
+              <div class="col-md-9">
+                <input type="text" name="pnr" class="form-control"
+                       placeholder="Enter PNR Number" required>
+              </div>
+            </div>
+
+            <!-- DATE -->
+            <div class="row mb-3 align-items-center">
+              <label class="col-md-3 col-form-label fw-semibold">
+                Date Of Tour <span class="text-danger">*</span>
+              </label>
+              <div class="col-md-4">
+                <input type="date" name="journey_date" id="journeyDate" class="form-control" required>
+              </div>
+            </div>
+
+            <!-- CAPTCHA -->
+            <div class="row mb-3 align-items-center">
+              <label class="col-md-3 col-form-label fw-semibold">
+                Captcha
+              </label>
+
+              <div class="col-md-9">
+                <div class="d-flex align-items-center gap-2">
+
+                  <canvas id="captchaCanvas"
+                          width="150"
+                          height="50"
+                          class="border rounded">
+                  </canvas>
+
+                  <i class="fa fa-refresh"
+                     style="cursor:pointer;"
+                     onclick="reloadCaptcha()"></i>
+                </div>
+              </div>
+            </div>
+
+            <!-- CAPTCHA INPUT -->
+            <div class="row mb-3 align-items-center">
+              <label class="col-md-3 col-form-label fw-semibold">
+                Enter Captcha
+              </label>
+
+              <div class="col-md-9">
+                <input type="text"
+                       name="user_captcha_input"
+                       class="form-control"
+                       maxlength="6"
+                       placeholder="Enter Captcha"
+                       required>
+              </div>
+            </div>
+
+            <!-- TOKEN -->
+            <input type="hidden"
+                   id="captchaTokenField"
+                   name="captchaToken"
+                   value="{{ captcha_token }}">
+
+          </div>
+
+          <!-- FOOTER -->
+          <div class="ticket-footer border-top d-flex justify-content-end align-items-center">
+            <button type="submit" class="btn btn-primary px-4">
+              Get Ticket
+            </button>
+          </div>
+
+        </form>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+```
+
+  </div>
+</div>
+
+<!-- STYLES -->
+
+<style>
+.ticket-wrapper {
+  background: #f3f4f6;
+  padding: 6px;
+  border-radius: 10px;
+}
+
+.ticket-card {
+  background: #ffffff;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+}
+
+.ticket-section {
+  background: #ffffff;
+  padding: 25px;
+  border-radius: 8px;
+}
+
+.section-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #495057;
+  text-transform: uppercase;
+  border-bottom: 1px dashed #dee2e6;
+  margin-bottom: 15px;
+}
+
+.ticket-footer {
+  background: #f8f9fa;
+  padding: 15px 20px;
+  border-top: 1px solid #dee2e6;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #e75a1e, #77340b);
+  border: none;
+  font-weight: 600;
+}
+
+.fw-semibold {
+  font-weight: 600 !important;
+}
+</style>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const today = new Date();
+
+    // Format to YYYY-MM-DD
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+
+    const minDate = `${yyyy}-${mm}-${dd}`;
+
+    document.getElementById("journeyDate").setAttribute("min", minDate);
+});
+</script>
+<!-- CAPTCHA SCRIPT -->
+
+<script>
+let CAPTCHA_VALUE = "{{ captcha_value|default:''|escapejs }}";
+
+function drawCaptcha(value) {
+    const canvas = document.getElementById("captchaCanvas");
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (!value) return;
+
+    // Noise lines
+    ctx.beginPath();
+    ctx.moveTo(0, 10); ctx.lineTo(50, 100); ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(60, 0); ctx.lineTo(100, 200);
+    ctx.strokeStyle = "red"; ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(75, 0); ctx.lineTo(200, 200);
+    ctx.strokeStyle = "green"; ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(110, 0); ctx.lineTo(500, 250);
+    ctx.strokeStyle = "blue"; ctx.stroke();
+
+    ctx.fillStyle = "black";
+    ctx.font = "18px Arial";
+
+    for (let i = 0; i < value.length; i++) {
+        ctx.fillText(value[i], 20 * i + 5, (i % 2 === 0) ? 20 : 35);
+    }
+}
+
+// FIX FIRST LOAD
+window.onload = function () {
+    if (CAPTCHA_VALUE) {
+        drawCaptcha(CAPTCHA_VALUE);
+    } else {
+        reloadCaptcha();
+    }
+};
+
+// RELOAD CAPTCHA
+async function reloadCaptcha() {
+    const response = await fetch("{% url 'get_captcha' %}");
+    const data = await response.json();
+
+    CAPTCHA_VALUE = data.captchaValue;
+    document.getElementById("captchaTokenField").value = data.captchaToken;
+
+    drawCaptcha(CAPTCHA_VALUE);
+}
+</script>
+
+{% endblock %}

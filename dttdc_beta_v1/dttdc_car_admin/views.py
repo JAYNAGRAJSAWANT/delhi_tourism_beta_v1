@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib import messages
 
-from carbooking.models import CarBookingPackage, CarBookingPackageCategory, CarBookingVehicle, CarBookingVehicleDetails
+from carbooking.models import CarBookingBookingDetails, CarBookingPackage, CarBookingPackageCategory, CarBookingTransaction, CarBookingVehicle, CarBookingVehicleDetails
 from carbooking.forms import (
     CarBookingPackageCategoryForm,
     CarBookingPackageForm,
@@ -29,18 +29,148 @@ def carbooking_admin_hub(request):
 # ========================================Car tour booking details=======================================
 
 def car_tour_booking_details(request):
-  context={}
-  return render(request,"dttdc_car_admin/carbooking_car_tour_booking_details.html",context)
+
+    booking_list = CarBookingBookingDetails.objects.all().order_by("-createdAt")
+
+    # --- Filters ---
+    selected_year = request.GET.get("year")
+    selected_month = request.GET.get("month")
+    selected_day = request.GET.get("day")
+
+    if selected_year:
+        booking_list = booking_list.filter(journeyDate__year=selected_year)
+
+    if selected_month:
+        booking_list = booking_list.filter(journeyDate__month=selected_month)
+
+    if selected_day:
+        booking_list = booking_list.filter(journeyDate__day=selected_day)
+
+    # --- Attach payment manually ---
+    for booking in booking_list:
+        transaction = CarBookingTransaction.objects.filter(bookingDetails=booking).first()
+        payment = None
+        if transaction:
+            payment = getattr(transaction, "payment", None)
+
+        booking.transaction = transaction
+        booking.payment = payment
+
+    # --- Total Amount ---
+    total_amount = sum([
+        float(b.payment.amount) if b.payment else 0
+        for b in booking_list
+    ])
+
+    # --- Year & Month Dropdown ---
+    years = CarBookingBookingDetails.objects.dates('journeyDate', 'year')
+    years = [y.year for y in years]
+
+    months = [
+        (1, "January"), (2, "February"), (3, "March"),
+        (4, "April"), (5, "May"), (6, "June"),
+        (7, "July"), (8, "August"), (9, "September"),
+        (10, "October"), (11, "November"), (12, "December"),
+    ]
+
+    context = {
+        "booking_list": booking_list,
+        "total_amount": total_amount,
+        "years": years,
+        "months": months,
+        "selected_year": selected_year,
+        "selected_month": selected_month,
+        "selected_day": selected_day,
+    }
+
+    return render(request, "dttdc_car_admin/carbooking_car_tour_booking_details.html", context)
 
 # ========================================Car tour transaction details=======================================
+# def car_tour_transaction_details(request):
+
+#     # Fetch bookings with transactions & payment
+#     booking_list = CarBookingBookingDetails.objects.prefetch_related(
+#         "transactions__payment"
+#     ).order_by("-createdAt")
+
+#     # Attach transaction & payment (same logic, just cleaner)
+#     for booking in booking_list:
+#         txn = booking.transactions.first()
+#         booking.transaction = txn
+#         booking.payment = getattr(txn, "payment", None) if txn else None
+
+#     # Calculate total amount (success only)
+#     total_amount = sum(
+#         b.payment.amount for b in booking_list
+#         if b.payment and b.payment.status.lower() == "success"
+#     )
+
+#     return render(request,
+#         "dttdc_car_admin/carbooking_car_tour_transaction_details.html",
+#         {
+#             "booking_list": booking_list,
+#             "total_amount": total_amount or 0
+#         }
+#     )
+
 def car_tour_transaction_details(request):
-  context={}
-  return render(request,"dttdc_car_admin/carbooking_car_tour_transaction_details.html",context)
+
+    booking_list = CarBookingBookingDetails.objects.prefetch_related(
+        "transactions__payment"
+    ).select_related("vehicle").order_by("-createdAt")
+
+    for booking in booking_list:
+        txn = booking.transactions.first()
+        booking.transaction = txn
+        booking.payment = getattr(txn, "payment", None) if txn else None
+
+        # ✅ Get package via vehicle → vehicleDetails
+        vehicle_detail = CarBookingVehicleDetails.objects.filter(
+            vehicle=booking.vehicle
+        ).select_related("package").first()
+
+        booking.package = vehicle_detail.package if vehicle_detail else None
+
+    total_amount = sum(
+        b.payment.amount for b in booking_list
+        if b.payment and b.payment.status.lower() == "success"
+    )
+
+    return render(request,
+        "dttdc_car_admin/carbooking_car_tour_transaction_details.html",
+        {
+            "booking_list": booking_list,
+            "total_amount": total_amount or 0
+        }
+    )
       
 # ========================================Car cancellation requests=======================================
-def car_cancellation_requests(request):
-  context={ }
-  return render(request,"dttdc_car_admin/carbooking_car_cancellation_requests.html",context)
+def car_tour_transaction_details(request):
+
+    # Fetch bookings with transactions & payment
+    booking_list = CarBookingBookingDetails.objects.prefetch_related(
+        "transactions__payment"
+    ).order_by("-createdAt")
+
+    # Attach transaction & payment (same logic, just cleaner)
+    for booking in booking_list:
+        txn = booking.transactions.first()
+        booking.transaction = txn
+        booking.payment = getattr(txn, "payment", None) if txn else None
+
+    # Calculate total amount (success only)
+    total_amount = sum(
+        b.payment.amount for b in booking_list
+        if b.payment and b.payment.status.lower() == "success"
+    )
+
+    return render(request,
+        "dttdc_car_admin/carbooking_car_tour_transaction_details.html",
+        {
+            "booking_list": booking_list,
+            "total_amount": total_amount or 0
+        }
+    )
 
 # ========================================Car admin package categories=======================================
 def car_admin_package_categories(request):
@@ -55,21 +185,54 @@ def car_admin_package_categories(request):
 # ========================================Car admin package details=======================================
 
 def car_admin_package_details(request):
-  context={ }
-  return render(request,"dttdc_car_admin/carbooking_admin_package_details.html",context)
+    packages = CarBookingPackage.objects.select_related(
+        "carPackageCategory"
+    ).filter(status=True)
+
+    context = {
+        "packages": packages
+    }
+
+    return render(
+        request,
+        "dttdc_car_admin/carbooking_admin_package_details.html",
+        context
+    )
 
 # ========================================Car admin vehicle packages=======================================
 
 def car_admin_vehicle_packages(request):
-  context={ }
-  return render(request,"dttdc_car_admin/carbooking_admin_vehicle_packages.html",context)
+    vehicle_packages = CarBookingVehicleDetails.objects.select_related(
+        "package",
+        "package__carPackageCategory",
+        "vehicle"
+    ).filter(status=True)
+
+    context = {
+        "vehicle_packages": vehicle_packages
+    }
+
+    return render(
+        request,
+        "dttdc_car_admin/carbooking_admin_vehicle_packages.html",
+        context
+    )
 
 # ========================================Car admin vehcicles=======================================
-
 def car_admin_vehicles(request):
-  context={ }
-  return render(request,"dttdc_car_admin/carbooking_admin_vehicles.html",context)
+    vehicle_packages = CarBookingVehicleDetails.objects.select_related(
+        "vehicle"
+    ).filter(status=True)
 
+    context = {
+        "vehicle_packages": vehicle_packages
+    }
+
+    return render(
+        request,
+        "dttdc_car_admin/carbooking_admin_vehicles.html",
+        context
+    )
 # ========================================Car cancellation requests=======================================
 
 
@@ -402,3 +565,68 @@ def check_car_availability(request):
     )
     
 #---------------------------- Abhijeet Code Ends Here --------------------------------
+def car_cancellation_requests(request):
+    
+    return render(
+        request,
+        "dttdc_car_admin/carbooking_car_cancellation_requests.html",
+        
+    )
+# ------------------------------------------Carbooking admin view trancastion details-------------------------------------
+def carbooking_admin_transaction_view_details(request, txnid):
+
+    # Get transaction with related booking + payment + vehicle details
+    transaction = get_object_or_404(
+        CarBookingTransaction.objects.select_related(
+            "bookingDetails__vehicle_details__vehicle",
+            "bookingDetails__vehicle_details__package",
+            "payment"
+        ),
+        txnid=txnid
+    )
+
+    booking = transaction.bookingDetails
+    payment = getattr(transaction, "payment", None)
+
+    context = {
+        "transaction": transaction,
+        "booking": booking,
+        "payment": payment
+    }
+
+    return render(
+        request,
+        "dttdc_car_admin/carbooking_admin_transaction_view_details.html",
+        context
+    )
+
+
+# --------------------------------------------------Carbooking admin view booking details------------------------------------
+
+def carbooking_admin_booking_view_details(request, bookid):
+
+    booking = CarBookingBookingDetails.objects.select_related(
+        "vehicle_details__vehicle",
+        "vehicle_details__package"
+    ).get(id=bookid)
+
+    # Optional: get transaction + payment
+    transaction = booking.transactions.first()  # because related_name="transactions"
+
+    payment = None
+    if transaction:
+        payment = getattr(transaction, "payment", None)
+
+    context = {
+        "booking": booking,
+        "transaction": transaction,
+        "payment": payment,
+    }
+
+    return render(
+        request,
+        "dttdc_car_admin/carbooking_admin_booking_view_details.html",
+        context
+    )
+
+

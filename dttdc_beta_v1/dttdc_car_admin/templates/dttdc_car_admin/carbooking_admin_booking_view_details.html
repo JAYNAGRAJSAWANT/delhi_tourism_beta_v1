@@ -1,0 +1,148 @@
+{% extends "dttdc_car_admin/base_car_admin.html" %}
+{% load static %}
+
+{% block car_booking_details_view %}
+
+<div class="container-fluid mt-4">
+
+  <!-- HEADER -->
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <a href="javascript:history.back()" class="btn btn-outline-danger btn-sm">
+      ← Back
+    </a>
+
+    <h4 class="fw-bold mb-0 text-center flex-grow-1">
+      Booking Details
+    </h4>
+
+    <div style="width:80px;"></div>
+  </div>
+
+  <!-- MAIN SINGLE CONTAINER -->
+  <div class="card shadow border-0 mb-4" style="background-color:#c6d8b279;">
+    <div class="card-body">
+
+      <div class="row g-4">
+
+        <!-- LEFT SIDE -->
+        <div class="col-md-6">
+
+          <div class="info-row"><span>Booking ID</span><strong>{{ booking.id }}</strong></div>
+          <div class="info-row"><span>PNR Number</span><strong>{{ ticket.pnrNumber|default:"N/A" }}</strong></div>
+          <div class="info-row"><span>Invoice Number</span><strong>{{ ticket.invoiceNumber|default:"N/A" }}</strong></div>
+
+          <div class="info-row"><span>Package Name</span><strong>{{ booking.vehicle_details.package.packageName }}</strong></div>
+
+          <div class="info-row"><span>Name</span><strong>{{ booking.fullName }}</strong></div>
+          <div class="info-row"><span>Email</span><strong>{{ booking.email }}</strong></div>
+          <div class="info-row"><span>Phone Number</span><strong>{{ booking.phoneNumber }}</strong></div>
+
+          <div class="info-row"><span>Journey Date</span><strong>{{ booking.journeyDate|date:"d M Y" }}</strong></div>
+          <div class="info-row"><span>Booking Date</span><strong>{{ booking.createdAt|date:"d M Y H:i" }}</strong></div>
+
+        </div>
+
+        <!-- RIGHT SIDE -->
+        <div class="col-md-6">
+
+          <div class="info-row"><span>Vehicle Name</span><strong>{{ booking.vehicle_details.vehicle.vehicleName }}</strong></div>
+
+          <div class="info-row">
+            <span>Vehicle Capacity</span>
+            <strong>{{ booking.vehicle_details.vehicleCapacity }} (max persons)</strong>
+          </div>
+
+          <div class="info-row"><span>Address</span><strong>{{ booking.address }}</strong></div>
+          <div class="info-row"><span>City</span><strong>{{ booking.city }}</strong></div>
+          <div class="info-row"><span>State</span><strong>{{ booking.state }}</strong></div>
+          <div class="info-row"><span>Country</span><strong>{{ booking.country }}</strong></div>
+          <div class="info-row"><span>Zipcode</span><strong>{{ booking.pincode }}</strong></div>
+
+          <div class="info-row">
+            <span>Booking Status</span>
+            <span class="badge bg-info">{{ booking.bookingStatus|title }}</span>
+          </div>
+
+          <div class="info-row">
+            <span>Payment Status</span>
+            {% if payment %}
+              <span class="badge
+                {% if payment.status|lower == 'success' %}bg-success
+                {% elif payment.status|lower == 'failed' %}bg-danger
+                {% else %}bg-warning text-dark{% endif %}">
+                {{ payment.status|title }}
+              </span>
+            {% else %}
+              <span class="badge bg-secondary">Unpaid</span>
+            {% endif %}
+          </div>
+
+          <div class="info-row"><span>Total Fare</span><strong>₹ {{ booking.totalFare }}</strong></div>
+
+          <div class="info-row">
+            <span>Amount Paid</span>
+            <strong class="text-success">
+              ₹ {% if payment %}{{ payment.amount }}{% else %}0.00{% endif %}
+            </strong>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- BUTTONS -->
+      <div class="mt-4 d-flex justify-content-end gap-3">
+
+        <a href="#" class="btn btn-outline-primary">
+          View Ticket
+        </a>
+
+        {% if transaction %}
+        <a href="{% url 'carbooking_admin_transaction_view_details' transaction.txnid %}"
+           class="btn btn-success">
+          Payment Details
+        </a>
+        {% endif %}
+
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- STYLES -->
+<style>
+
+.info-row {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  border-bottom: 1px solid #f1f1f1;
+  font-size: 14px;
+  
+}
+
+.info-row span {
+  min-width: 180px;   /* keeps labels aligned */
+  font-weight: 500;
+  color: #555;
+}
+
+.info-row strong {
+  color: #222;
+  font-weight: 600;
+}
+
+.card {
+  border-radius: 10px;
+}
+
+.badge {
+  font-size: 12px;
+  padding: 6px 10px;
+}
+
+</style>
+
+{% endblock %}
