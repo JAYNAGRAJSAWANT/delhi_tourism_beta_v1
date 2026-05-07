@@ -4,7 +4,7 @@ import hashlib
 from django.conf import settings
 from django.http import JsonResponse
 from .forms import CarBookingForm
-from .models import CarBookingAvailability, CarBookingPackage, CarBookingPackageCategory, CarBookingVehicleDetails, CarBookingBookingDetails,CarBookingTransaction
+from .models import CarBookingAvailability, CarBookingPackage, CarBookingPackageCategory, CarBookingVehicleDetails, CarBookingBookingDetails,CarBookingTransaction,CarBookingPaymentDetails,CarBookingTicketDetails
 from dttdc_admin.captcha_utility import generateCaptchaValueWithToken, validate_captcha
 from utils.services.availability_service import check_car_availability
 from datetime import datetime,date
