@@ -628,3 +628,5 @@ def carbooking_admin_booking_view_details(request, bookid):
         "dttdc_car_admin/carbooking_admin_booking_view_details.html",
         context
     )
+
+

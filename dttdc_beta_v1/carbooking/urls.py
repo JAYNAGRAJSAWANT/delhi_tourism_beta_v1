@@ -15,4 +15,16 @@ urlpatterns = [
    path("car-payment-init/<int:booking_id>/", views.car_payment_init, name="car_payment_init"),
    path("car-payment-success/", views.car_payment_success, name="car_payment_success"),
    path("car-payment-failure/", views.car_payment_failure, name="car_payment_failure"),
+
+   # -------------------------------------------Cancellation---------------------------------
+
+   path("carbooking_ticket_reprint/", views.carbooking_ticket_reprint, name="carbooking_ticket_reprint"),
+
+   # -------------------------------------------Ticket Reprint---------------------------------
+
+    path("carbooking_cancellation/", views.carbooking_cancellation, name="carbooking_cancellation"),
+
+   
+
+
 ]
