@@ -536,7 +536,7 @@ def carbooking_cancellation(request):
 
             # SUCCESS
             return redirect(
-                "carbooking_cancellation_preview",
+                "car_ticket_cancellation_preview",
                 pnr=ticket.pnrNumber
             )
 
@@ -576,4 +576,39 @@ def carbooking_cancellation(request):
     
 
 
+from django.shortcuts import render, get_object_or_404
+from .models import CarBookingTicketDetails
 
+
+def car_ticket_cancellation_preview(request, pnr):
+
+    ticket = get_object_or_404(
+        CarBookingTicketDetails.objects.select_related(
+            "bookingDetails",
+            "bookingDetails__vehicle_details",
+            "bookingDetails__vehicle_details__vehicle",
+            "bookingDetails__vehicle_details__package",
+        ),
+        pnrNumber=pnr
+    )
+
+    booking = ticket.bookingDetails
+
+    transaction = booking.transactions.first()
+
+    payment = None
+    if transaction:
+        payment = getattr(transaction, "payment", None)
+
+    context = {
+        "ticket": ticket,
+        "booking": booking,
+        "transaction": transaction,
+        "payment": payment,
+    }
+
+    return render(
+        request,
+        "carbooking/carbooking_ticket_cancel.html",
+        context
+    )

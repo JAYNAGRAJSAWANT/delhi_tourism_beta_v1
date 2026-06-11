@@ -23,6 +23,7 @@ urlpatterns = [
    # -------------------------------------------Ticket Reprint---------------------------------
 
     path("carbooking_cancellation/", views.carbooking_cancellation, name="carbooking_cancellation"),
+    path("car_ticket_cancellation_preview/<str:pnr>/", views.car_ticket_cancellation_preview, name="car_ticket_cancellation_preview"),
 
    
 

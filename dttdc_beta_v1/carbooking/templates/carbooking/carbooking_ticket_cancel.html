@@ -1,0 +1,449 @@
+{% extends "carbooking/base_carbooking.html" %}
+{% load static %}
+
+{% block carbooking_ticket_cancel %}
+
+<div class="container">
+  <div class="row m-3">
+
+    <!-- SIDEBAR -->
+    <aside class="col-md-3 mb-4">
+      {% include "carbooking/components/car_booking_sidebar.html" %}
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <div class="col-lg-9">
+      <div class="card mt-4 shadow-sm">
+
+
+
+        <!-- PAGE HEADER -->
+        <div class="card-header text-center bg-light py-4"
+          style="border-bottom: 3px solid #b8440e; border-radius: .5rem .5rem 0 0;">
+          <h5 class="fw-bold mb-1" style="font-size: 1.5rem; letter-spacing: 0.5px;">
+            Ticket Cancellation Preview
+          </h5>
+        </div>
+
+
+
+        <!-- TOUR NAME STRIP -->
+        <div class="SideTitle p-2 text-center bg-light my-2 text-white">
+          {{ booking.vehicle_details.package.packageName }}
+        </div>
+
+        <div class="ticket-wrapper">
+
+          <div class="ticket-card">
+
+            <!-- TICKET HEADER -->
+            <div class="ticket-header d-flex justify-content-between align-items-center">
+              <h6 class="mb-0 text-uppercase fw-semibold">
+                Car Booking Ticket
+              </h6>
+
+              <span class="pnr-badge">
+                PNR : <strong>{{ ticket.pnrNumber }}</strong>
+              </span>
+            </div>
+
+            <!-- TOUR DETAILS -->
+            <!-- TOUR DETAILS -->
+<div class="ticket-section">
+  <div class="section-label">Booking Details</div>
+
+  <table class="table table-bordered details-table">
+
+    <tr>
+      <th>Package Name</th>
+      <td>{{ booking.vehicle_details.package.packageName }}</td>
+    </tr>
+
+    <tr>
+      <th>Vehicle Name</th>
+      <td>{{ booking.vehicle_details.vehicle.vehicleName }}</td>
+    </tr>
+
+    <tr>
+      <th>Vehicle Capacity</th>
+      <td>{{ booking.vehicle_details.vehicleCapacity }}</td>
+    </tr>
+
+    <tr>
+      <th>Journey Date</th>
+      <td>{{ booking.journeyDate|date:"d M Y" }}</td>
+    </tr>
+
+    <tr>
+      <th>Pickup Place</th>
+      <td>{{ booking.pickUpPlace }}</td>
+    </tr>
+
+    <tr>
+      <th>Pickup Time</th>
+      <td>{{ booking.pickUpTime }}</td>
+    </tr>
+
+    <tr>
+      <th>Total Fare</th>
+      <td>₹ {{ booking.totalFare }}</td>
+    </tr>
+
+  </table>
+</div>
+
+            <!-- USER DETAILS -->
+            <!-- USER DETAILS -->
+<div class="ticket-section border-top">
+  <div class="section-label">Customer Details</div>
+
+  <table class="table table-bordered details-table">
+
+    <tr>
+      <th>Full Name</th>
+      <td>{{ booking.fullName }}</td>
+    </tr>
+
+    <tr>
+      <th>Email</th>
+      <td>{{ booking.email }}</td>
+    </tr>
+
+    <tr>
+      <th>Phone Number</th>
+      <td>{{ booking.phoneNumber }}</td>
+    </tr>
+
+    <tr>
+      <th>Address</th>
+      <td>{{ booking.address }}</td>
+    </tr>
+
+    <tr>
+      <th>City</th>
+      <td>{{ booking.city }}</td>
+    </tr>
+
+    <tr>
+      <th>State</th>
+      <td>{{ booking.state }}</td>
+    </tr>
+
+    <tr>
+      <th>Country</th>
+      <td>{{ booking.country }}</td>
+    </tr>
+
+    <tr>
+      <th>Pincode</th>
+      <td>{{ booking.pincode }}</td>
+    </tr>
+
+  </table>
+</div>
+            <form method="post">
+              {% csrf_token %}
+              
+
+              <!-- TOTAL FARE -->
+              <div class="ticket-section border-top">
+                <div class="alert alert-warning fw-bold mb-0">
+                  Total Fare: Rs. {{ booking.totalFare }}/-
+                </div>
+              </div>
+
+
+
+              <!-- CONFIRMATION -->
+              <div class="ticket-footer position-relative d-flex justify-content-between align-items-center w-100">
+
+                <!-- LEFT SIDE: Previous -->
+                <a href="javascript:history.back()" class="btn btn-outline-secondary">
+                  Previous
+                </a>
+
+                <!-- RIGHT SIDE: Terms + Buttons -->
+                <div class="d-flex flex-column align-items-end">
+
+                  <div class="form-check terms-check mb-1">
+                    <input class="form-check-input" type="checkbox" id="termsCheck">
+                    <label class="form-check-label" for="termsCheck">
+                      I agree to the cancellation
+                      <a href="{% url 'ebooking_termsandconditionsforcancellation' %}" target="_blank">
+                        Terms & Conditions
+                      </a>
+                    </label>
+                  </div>
+
+                  <small id="termsWarning" class="text-danger d-none">
+                    <span class="text-danger">*</span>Please accept Terms & Conditions
+                  </small>
+
+                  <div class="d-flex align-items-center">
+                    <button type="submit" class="btn btn-primary px-4 me-2" id="payBtn" {% if existing_cancellation %}disabled{% endif %}>
+                      Cancel Booking
+                    </button>
+
+                    <a href="{% url 'home' %}" class="btn btn-outline-danger">
+                      Cancel
+                    </a>
+                  </div>
+
+                </div>
+
+              </div>
+
+
+
+            </form>
+
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STYLES -->
+<style>
+  .terms-check {
+    font-size: 0.85rem;
+  }
+
+  .terms-check a {
+    color: #b8440e;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .terms-check a:hover {
+    text-decoration: underline;
+  }
+
+  #termsWarning {
+    font-size: 0.75rem;
+  }
+
+  /* Base label style */
+  .terms-check label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #495057;
+    transition: color 0.2s ease;
+    cursor: pointer;
+  }
+
+  /* Terms link */
+  .terms-check a {
+    color: #b8440e;
+    font-weight: 600;
+    text-decoration: underline;
+  }
+
+  /* Checkbox pointer */
+  .terms-check .form-check-input {
+    cursor: pointer;
+  }
+
+  /* ✅ When checked – subtle confirmation */
+  .terms-check input:checked+label {
+    color: #0f5132;
+  }
+
+  /* Optional: bold link when checked */
+  .terms-check input:checked+label a {
+    color: #198754;
+  }
+
+
+  .ticket-wrapper {
+    background: #f3f4f6;
+    padding: 6px;
+    border-radius: 10px;
+  }
+
+  .ticket-card {
+    background: #ffffff;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+  }
+
+  .ticket-header {
+    background: linear-gradient(135deg, #e75a1e, #d8844f, #e75a1e);
+    color: #fff;
+    padding: 16px 20px;
+  }
+
+  .ticket-section {
+    padding: 22px;
+  }
+
+  .section-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: #6c757d;
+    text-transform: uppercase;
+    border-bottom: 1px dashed #dee2e6;
+    padding-bottom: 8px;
+    margin-bottom: 15px;
+  }
+
+  .details-table th {
+    width: 30%;
+    background: #f8f9fa;
+    font-weight: 600;
+  }
+
+  .pnr-badge {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .ticket-footer {
+    background: #f8f9fa;
+    padding: 15px 20px;
+    border-top: 1px solid #dee2e6;
+  }
+
+  .alert-warning {
+    background-color: #ffeb7b;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #e75a1e, #77340b, #e75a1e);
+    border: none;
+    font-weight: 600;
+  }
+</style>
+
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const terms = document.getElementById("termsCheck");
+    const payBtn = document.getElementById("payBtn");
+    const warning = document.getElementById("termsWarning");
+
+    terms.addEventListener("change", function () {
+      if (terms.checked) {
+        warning.classList.add("d-none");
+      }
+    });
+  });
+</script>
+
+
+<script>
+  let CAPTCHA_VALUE = "{{ captcha_value|escapejs }}";
+
+  /* Draw a noisy line */
+  function drawLine(info, style = {}) {
+    const canvas = document.getElementById("captchaCanvas");
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    const { x, y, x1, y1 } = info;
+    const { color = "black", width = 1 } = style;
+
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x1, y1);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.stroke();
+  }
+
+  /* Draw captcha text + noise */
+  function drawCaptcha(value) {
+    const canvas = document.getElementById("captchaCanvas");
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Noise lines
+    drawLine({ x: 0, y: 10, x1: 50, y1: 100 });
+    drawLine({ x: 60, y: 0, x1: 100, y1: 200 }, { color: "red" });
+    drawLine({ x: 75, y: 0, x1: 200, y1: 200 }, { color: "green" });
+    drawLine({ x: 110, y: 0, x1: 150, y1: 250 }, { color: "blue" });
+
+    ctx.font = "18px Arial";
+
+    if (!value || value.length !== 6) return;
+
+    ctx.fillText(value[0], 6, 15);
+    ctx.fillText(value[1], 25, 30);
+    ctx.fillText(value[2], 50, 20);
+    ctx.fillText(value[3], 70, 40);
+    ctx.fillText(value[4], 100, 15);
+    ctx.fillText(value[5], 120, 35);
+  }
+
+  /* Initial render */
+  document.addEventListener("DOMContentLoaded", function () {
+    drawCaptcha(CAPTCHA_VALUE);
+  });
+
+  /* Reload captcha */
+  async function reloadCaptcha() {
+    try {
+      const response = await fetch("{% url 'get_captcha' %}");
+      const data = await response.json();
+
+      CAPTCHA_VALUE = data.captchaValue;
+      document.getElementById("captchaTokenField").value = data.captchaToken;
+
+      drawCaptcha(CAPTCHA_VALUE);
+    } catch (e) {
+      console.error("Captcha reload failed", e);
+    }
+  }
+</script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const form = document.querySelector("form");
+    const captchaInput = document.querySelector('input[name="user_captcha_input"]');
+    const terms = document.getElementById("termsCheck");
+    const termsWarning = document.getElementById("termsWarning");
+
+    form.addEventListener("submit", function (e) {
+
+      // 1️⃣ Terms validation
+      if (!terms.checked) {
+        e.preventDefault();
+        termsWarning.classList.remove("d-none");
+        terms.focus();
+        return;
+      }
+
+      // 2️⃣ Captcha empty validation
+      if (!captchaInput.value.trim()) {
+        e.preventDefault();
+        alert("Please enter the captcha.");
+        captchaInput.focus();
+        return;
+      }
+
+    });
+  });
+</script>
+
+<script>
+  document.querySelector("form").addEventListener("submit", function (e) {
+    const checked = document.querySelectorAll(
+      'input[name="selected_passengers"]:checked'
+    );
+
+    if (checked.length === 0) {
+      e.preventDefault();
+      alert("Please select at least one passenger for cancellation.");
+    }
+  });
+</script>
+
+{% endblock %}
