@@ -1,0 +1,235 @@
+{% extends "dttdc_admin/base_admin.html" %}
+{% load static %}
+
+{% block admin_old_report_2024_transaction_report %}
+
+<div class="container-fluid mt-3">
+
+  <!-- Header -->
+  <div class="position-relative mb-3">
+    <a href="{% url 'admin_home' %}" class="btn btn-danger position-absolute start-0 top-50 translate-middle-y">
+      ← Back
+    </a>
+
+    <h4 class="fw-bold text-center mb-0">
+      Transaction Report
+    </h4>
+  </div>
+
+  <!-- Date Filter -->
+  <form method="get" id="reportForm">
+  <div class="card p-3 mb-3">
+    <div class="row align-items-end g-3">
+
+      <div class="col-lg-2 fw-semibold">
+        Filter:
+      </div>
+
+      <!-- Year -->
+      <div class="col-lg-3 col-md-4">
+        <label class="form-label small mb-0">Year</label>
+        <select name="year" class="form-select">
+          <option value="">All Years</option>
+
+          {% for y in years %}
+          <option value="{{ y }}" {% if year == y|stringformat:"s" %}selected{% endif %}>
+            {{ y }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Month -->
+      <div class="col-lg-3 col-md-4">
+        <label class="form-label small mb-0">Month</label>
+        <select name="month" class="form-select">
+          <option value="">All Months</option>
+
+          <option value="1" {% if month == "1" %}selected{% endif %}>January</option>
+          <option value="2" {% if month == "2" %}selected{% endif %}>February</option>
+          <option value="3" {% if month == "3" %}selected{% endif %}>March</option>
+          <option value="4" {% if month == "4" %}selected{% endif %}>April</option>
+          <option value="5" {% if month == "5" %}selected{% endif %}>May</option>
+          <option value="6" {% if month == "6" %}selected{% endif %}>June</option>
+          <option value="7" {% if month == "7" %}selected{% endif %}>July</option>
+          <option value="8" {% if month == "8" %}selected{% endif %}>August</option>
+          <option value="9" {% if month == "9" %}selected{% endif %}>September</option>
+          <option value="10" {% if month == "10" %}selected{% endif %}>October</option>
+          <option value="11" {% if month == "11" %}selected{% endif %}>November</option>
+          <option value="12" {% if month == "12" %}selected{% endif %}>December</option>
+        </select>
+      </div>
+
+      <!-- Day -->
+      <div class="col-lg-2 col-md-4">
+        <label class="form-label small mb-0">Day</label>
+        <select name="day" class="form-select">
+          <option value="">All Days</option>
+
+          {% for d in days %}
+          <option value="{{ d }}" {% if day == d|stringformat:"s" %}selected{% endif %}>
+            {{ d }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Button -->
+      <div class="col-lg-2">
+        <button type="submit" class="btn btn-primary w-100">
+          Generate Report
+        </button>
+      </div>
+      
+
+    </div>
+  </div>
+</form>
+
+  <!-- Table -->
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <div class="table-responsive">
+        <table id="btable" class="table table-bordered table-hover align-middle w-100">
+
+          <thead class="table-primary text-center">
+    <tr>
+        <th>S No.</th>
+        <th>User ID</th>
+        <th>Tour Name</th>
+        <th>Name</th>
+        <th>No.</th>
+        <th>Tour Date</th>
+        <th>Booking Status</th>
+        <th>Amount Paid</th>
+        <th>Mode</th>
+        <th>E-Mail ID</th>
+        <th>Booking Date</th>
+    </tr>
+</thead>
+
+          <tbody>
+{% for booking in booking_list %}
+<tr>
+
+    <td>{{ forloop.counter }}</td>
+
+    <td>{{ booking.userID }}</td>
+
+    <td>{{ booking.tour_name }}</td>
+
+    <td>{{ booking.name }}</td>
+
+    <td>
+        A-{{ booking.adult_ticketno|default:"0" }},
+        C-{{ booking.child_ticketno|default:"0" }}
+    </td>
+
+    <td>{{ booking.tourdate }}</td>
+
+    <td>
+        {% if booking.valid_status == "Y" %}
+            Confirmed
+        {% elif booking.valid_status == "N" %}
+            Cancelled
+        {% else %}
+            {{ booking.valid_status }}
+        {% endif %}
+    </td>
+
+    <td>{{ booking.amount_paid }}</td>
+
+    <td>{{ booking.pay_mode }}</td>
+
+    <td>{{ booking.email }}</td>
+
+    <td>{{ booking.date_time }}</td>
+
+</tr>
+{% empty %}
+<tr>
+    <td colspan="11" class="text-center text-muted">
+        No records found.
+    </td>
+</tr>
+{% endfor %}
+</tbody>
+
+
+        </table>
+      </div>
+      <div class="mt-3 d-flex justify-content-end">
+        <div class="px-3 py-2 border rounded fw-semibold" style="background:#bad875;">
+          Total Transactions: {{ booking_list|length }}
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- Styles -->
+<style>
+  /* Required for percentage column widths */
+  #btable {
+    table-layout: fixed;
+  }
+
+  /* Default cell handling */
+  #btable th,
+  #btable td {
+    overflow: hidden;
+  }
+
+  /* Allow wrapping only where explicitly needed */
+  #btable td.text-wrap {
+    white-space: normal;
+  }
+</style>
+
+
+
+<!-- DataTable -->
+<!-- DataTable -->
+<script>
+  $(document).ready(function () {
+
+    $('#btable').DataTable({
+      language: {
+        emptyTable: "No transaction history found."
+      },
+
+
+      dom:
+        "<'row mb-2'<'col-md-6'l><'col-md-6 d-flex justify-content-end align-items-center'fB>>" +
+        "<'row'<'col-12'tr>>" +
+        "<'row mt-2'<'col-md-5'i><'col-md-7'p>>",
+
+      buttons: [
+        {
+          extend: 'excelHtml5',
+          text: 'Download Tour Booking Report(Old)',
+          className: 'btn btn-success btn-sm ms-2',
+          title: 'Tour Booking Report(Old)' + new Date().toISOString().slice(0, 10),
+        }
+      ],
+
+      pageLength: 10,
+      lengthMenu: [10, 25, 50, 100],
+      ordering: true,
+      responsive: false,
+      autoWidth: true
+
+
+    });
+
+
+
+  });
+
+</script>
+
+
+
+{% endblock %}

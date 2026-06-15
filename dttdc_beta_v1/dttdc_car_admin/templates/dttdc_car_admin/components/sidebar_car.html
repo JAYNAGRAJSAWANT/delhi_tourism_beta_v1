@@ -1,9 +1,15 @@
 {% load static %}
 
 <div class="container">
-    <div class="SideTitle d-flex align-items-center text-white justify-content-center pb-2 h1">
-        Admin Panel
-    </div>
+    <div class="SideTitle position-relative text-white pb-2 h1 text-center">
+    <a href="javascript:void(0);" onclick="history.back();"
+       class="position-absolute start-0 ms-3 text-white text-decoration-none fw-bold"
+       style="font-size: 1.2rem;">
+        <i class="bi bi-arrow-left-circle-fill"></i>
+    </a>
+
+    <span>Admin Panel</span>
+</div>
 
     <div class="pl_left_arrow">
         <ul class="list-unstyled">
@@ -53,6 +59,11 @@
             <li class="mt-1">
                 <i class="fa fa-caret-right m-1"></i>
                 <a href="{% url 'car_admin_vehicle_packages' %}" class="tg">Vehicle Packages</a>
+            </li>
+
+            <li class="mt-1">
+                <i class="fa fa-caret-right m-1"></i>
+                <a href="{% url 'admin_selection' %}" class="tg">Back To Panel Selection</a>
             </li>
 
             <li class="mt-1">

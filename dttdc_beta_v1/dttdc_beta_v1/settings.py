@@ -82,6 +82,9 @@ WSGI_APPLICATION = 'dttdc_beta_v1.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
+  
+    #--------------------Default database-------------------
+
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': config('DB_NAME'),
@@ -92,7 +95,26 @@ DATABASES = {
         'OPTIONS': {
             'charset': 'utf8mb4',
         }
+    },
+
+
+    #--------------------Old database-------------------
+
+    'old_db': {  # Old Database
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': config('OLD_DB_NAME'),
+        'USER': config('OLD_DB_USER'),
+        'PASSWORD': config('OLD_DB_PASSWORD'),
+        'HOST': config('OLD_DB_HOST'),
+        'PORT': config('OLD_DB_PORT'),
+        'OPTIONS': {
+            'charset': 'utf8mb4',
+        }
     }
+
+
+
+
 }
 
 

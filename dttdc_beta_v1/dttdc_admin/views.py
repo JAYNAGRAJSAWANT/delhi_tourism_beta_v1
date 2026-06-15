@@ -1,6 +1,7 @@
 # views.py
 from datetime import date, datetime, timedelta
 from decimal import Decimal
+from django.db import connections
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.contrib.auth import authenticate, get_user_model, login
@@ -873,29 +874,22 @@ def admin_tour_booking_report(request):
         filter_field = "booking_date"
 
     try:
-        # Exact date
-        if year and month and day:
-            bookings = bookings.filter(**{
-                f"{filter_field}__year": int(year),
-                f"{filter_field}__month": int(month),
-                f"{filter_field}__day": int(day),
-            })
+       filters = {}
 
-        # Month
-        elif year and month:
-            bookings = bookings.filter(**{
-                f"{filter_field}__year": int(year),
-                f"{filter_field}__month": int(month),
-            })
+       if year:
+            filters[f"{filter_field}__year"] = int(year)
 
-        # Year
-        elif year:
-            bookings = bookings.filter(**{
-                f"{filter_field}__year": int(year),
-            })
+       if month:
+            filters[f"{filter_field}__month"] = int(month)
+
+       if day:
+            filters[f"{filter_field}__day"] = int(day)
+
+       if filters:
+            bookings = bookings.filter(**filters)
 
     except ValueError:
-        messages.error(request, "Invalid date selection")
+      messages.error(request, "Invalid date selection")
 
 
     if payment_status == "success":
@@ -1097,15 +1091,31 @@ def admin_transaction_report(request):
         "user_details",
         "payment"
     ).all().order_by("-booking_date")
+    print(
+    DTTDCTourBooking.objects.order_by('-booking_date')
+    .values_list('booking_date', flat=True)[:10]
+)
 
     # Apply date filter (on payment date OR booking date)
     if start_date and end_date:
-        start_date = parse_date(start_date)
-        end_date = parse_date(end_date)
+        start_obj = parse_date(start_date)
+        end_obj = parse_date(end_date)
 
         bookings = bookings.filter(
-            booking_date__date__range=(start_date, end_date)
-        )
+        booking_date__gte=f"{start_date} 00:00:00",
+        booking_date__lte=f"{end_date} 23:59:59"
+    )
+
+    print("START:", start_obj)
+    print("END:", end_obj)
+    print("COUNT:", bookings.count())
+    print("FILTERED COUNT:", bookings.count())
+
+    for b in bookings:
+     print(
+        b.booking_date,
+        
+     )
 
     return render(
         request,
@@ -1394,3 +1404,240 @@ def change_password(request):
 
 ###-------------- Abhijeet Thorat views starts here-------##########
 ###-------------- Booking Flow starts here ---------##########
+
+
+
+#-----------------------------------Code for old reports starts here-------------------------------
+# ----------------------------------Old Admin Booking Report-----------------------------------
+
+@admin_jwt_required
+def old_booking_report(request):
+
+    year = request.GET.get("year")
+    month = request.GET.get("month")
+    day = request.GET.get("day")
+
+    query = """
+        SELECT
+            id,
+            userID,
+            adult_ticketno,
+            child_ticketno,
+            tour_name,
+            name,
+            tourdate,
+            bookingid,
+            amount_paid,
+            phone,
+            state,
+            date_time
+        FROM onlinetour
+        WHERE 1=1
+    """
+
+    params = []
+
+    if year:
+        query += " AND RIGHT(date_time, 4) = %s"
+        params.append(year)
+
+    month_map = {
+    "1": "Jan",
+    "2": "Feb",
+    "3": "Mar",
+    "4": "Apr",
+    "5": "May",
+    "6": "Jun",
+    "7": "Jul",
+    "8": "Aug",
+    "9": "Sep",
+    "10": "Oct",
+    "11": "Nov",
+    "12": "Dec",
+    }
+
+    if month:
+            query += " AND date_time LIKE %s"
+            params.append(f"% {month_map[month]} %")
+
+    if day:
+          query += " AND date_time REGEXP %s"
+          params.append(f'^[A-Za-z]{{3}} [A-Za-z]{{3}} {int(day)} ')
+
+    query += " ORDER BY id DESC"
+
+    # Initial load = latest 100 records only
+    if not (year or month or day):
+        query += " LIMIT 100"
+
+    with connections['old_db'].cursor() as cursor:
+        cursor.execute(query, params)
+
+        columns = [col[0] for col in cursor.description]
+        booking_list = [
+            dict(zip(columns, row))
+            for row in cursor.fetchall()
+        ]
+
+    years = list(range(2011, 2025))  # 2011 to 2024
+    days = list(range(1, 32))
+
+    print("ROWS:", len(booking_list))
+    print("YEAR:", year, "MONTH:", month, "DAY:", day)
+
+    return render(
+        request,
+        "dttdc_admin/admin_old_report_2024_booking_report.html",
+        {
+            "booking_list": booking_list,
+            "year": year,
+            "month": month,
+            "day": day,
+            "years": years,
+            "days": days,
+        }
+    )
+# ----------------------------------Old Admin Transaction Report-----------------------------------
+
+
+@admin_jwt_required
+def old_transaction_report(request):
+
+    year = request.GET.get("year")
+    month = request.GET.get("month")
+    day = request.GET.get("day")
+
+    query = """
+    SELECT
+        id,
+        userID,
+        tour_name,
+        name,
+        adult_ticketno,
+        child_ticketno,
+        tourdate,
+        valid_status,
+        amount_paid,
+        pay_mode,
+        email,
+        date_time
+    FROM onlinetour
+    WHERE 1=1
+    """
+
+    params = []
+
+    if year:
+        query += " AND RIGHT(date_time, 4) = %s"
+        params.append(year)
+
+    month_map = {
+    "1": "Jan",
+    "2": "Feb",
+    "3": "Mar",
+    "4": "Apr",
+    "5": "May",
+    "6": "Jun",
+    "7": "Jul",
+    "8": "Aug",
+    "9": "Sep",
+    "10": "Oct",
+    "11": "Nov",
+    "12": "Dec",
+    }
+
+    if month:
+            query += " AND date_time LIKE %s"
+            params.append(f"% {month_map[month]} %")
+
+    if day:
+          query += " AND date_time REGEXP %s"
+          params.append(f'^[A-Za-z]{{3}} [A-Za-z]{{3}} {int(day)} ')
+
+    query += " ORDER BY id DESC"
+
+    # Initial load = latest 100 records
+    if not (year or month or day):
+        query += " LIMIT 100"
+
+    with connections['old_db'].cursor() as cursor:
+        cursor.execute(query, params)
+
+        columns = [col[0] for col in cursor.description]
+
+        transaction_list = [
+            dict(zip(columns, row))
+            for row in cursor.fetchall()
+        ]
+
+    years = list(range(2011, 2025))
+    days = list(range(1, 32))
+
+    
+
+    return render(
+        request,
+        "dttdc_admin/admin_old_report_2024_transaction_report.html",
+        {
+            "booking_list": transaction_list,
+            "year": year,
+            "month": month,
+            "day": day,
+            "years": years,
+            "days": days,
+        }
+    )
+
+# ----------------------------------Old Online CCD Report-----------------------------------
+
+@admin_jwt_required
+def old_online_ccd_reports(request):
+
+    booking_id = request.GET.get("booking_id", "").strip()
+
+    query = """
+        SELECT
+            id,
+            name,
+            merchTxnRef,
+            tourid,
+            bookingid,
+            amount,
+            receiptNo,
+            transactionNo,
+            authorizeID,
+            cardType,
+            message
+        FROM onlinetourccd
+        WHERE 1=1
+    """
+
+    params = []
+
+    if booking_id:
+        query += " AND bookingid LIKE %s"
+        params.append(f"%{booking_id}%")
+
+    query += " ORDER BY id DESC"
+
+    if not booking_id:
+        query += " LIMIT 100"
+
+    with connections['old_db'].cursor() as cursor:
+        cursor.execute(query, params)
+
+        columns = [col[0] for col in cursor.description]
+
+        booking_list = [
+            dict(zip(columns, row))
+            for row in cursor.fetchall()
+        ]
+
+    return render(
+        request,
+        "dttdc_admin/admin_old_report_2024_Online_CCD_report.html",
+        {
+            "booking_list": booking_list,
+            "booking_id": booking_id,
+        }
+    )

@@ -1,0 +1,183 @@
+{% extends "dttdc_admin/base_admin.html" %}
+{% load static %}
+
+{% block admin_old_report_2024_Online_CCD_report %}
+
+<div class="container-fluid mt-3">
+
+  <!-- Header -->
+  <div class="position-relative mb-3">
+    <a href="{% url 'admin_home' %}" class="btn btn-danger position-absolute start-0 top-50 translate-middle-y">
+      ← Back
+    </a>
+
+    <h4 class="fw-bold text-center mb-0">
+      Online CCD Report (OLD)
+    </h4>
+  </div>
+
+  <form method="get" class="mb-3">
+    <div class="row">
+        <div class="col-md-4">
+            <label class="form-label">Booking ID</label>
+            <input
+                type="text"
+                name="booking_id"
+                class="form-control"
+                placeholder="Enter Booking ID"
+                value="{{ booking_id }}"
+            >
+        </div>
+
+        <div class="col-md-2 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100">
+                Search
+            </button>
+        </div>
+
+        
+    </div>
+</form>
+
+
+  <!-- Table -->
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <div class="table-responsive">
+        <table id="transactionTable" class="table table-bordered table-hover align-middle w-100">
+
+          <thead class="table-primary text-center">
+<tr>
+    <th>S No.</th>
+    <th>Name</th>
+    <th>Tour Name</th>
+    <th>Booking ID</th>
+    <th>Amount Paid</th>
+    <th>Receipt Number</th>
+    <th>Transaction Number</th>
+    <th>Authorize ID</th>
+    <th>Card Type</th>
+    <th>Message</th>
+</tr>
+</thead>
+
+          <tbody>
+{% for booking in booking_list %}
+<tr>
+    <td>{{ forloop.counter }}</td>
+    <td>{{ booking.merchTxnRef }}</td>
+    <td>{{ booking.name }}</td>
+    <td>{{ booking.bookingid }}</td>
+    <td>{{ booking.amount }}</td>
+    <td>{{ booking.receiptNo }}</td>
+    <td>{{ booking.transactionNo }}</td>
+    <td>{{ booking.authorizeID }}</td>
+    <td>{{ booking.cardType }}</td>
+    <td>{{ booking.message }}</td>
+</tr>
+{% empty %}
+<tr>
+    <td colspan="10" class="text-center text-muted">
+        No records found.
+    </td>
+</tr>
+{% endfor %}
+</tbody>
+
+
+        </table>
+      </div>
+      <div class="mt-3 d-flex justify-content-end">
+        <div class="px-3 py-2 border rounded fw-semibold" style="background:#bad875;">
+          Total Transactions: {{ booking_list|length }}
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- Styles -->
+<style>
+  /* Required for percentage column widths */
+  #transactionTable {
+    table-layout: fixed;
+  }
+
+  /* Default cell handling */
+  #transactionTable th,
+  #transactionTable td {
+    overflow: hidden;
+  }
+
+  /* Allow wrapping only where explicitly needed */
+  #transactionTable td.text-wrap {
+    white-space: normal;
+  }
+</style>
+
+
+
+<!-- DataTable -->
+<!-- DataTable -->
+<script>
+  $(document).ready(function () {
+
+    $('#transactionTable').DataTable({
+      language: {
+        emptyTable: "No transaction history found."
+      },
+
+
+      dom:
+        "<'row mb-2'<'col-md-6'l><'col-md-6 d-flex justify-content-end align-items-center'fB>>" +
+        "<'row'<'col-12'tr>>" +
+        "<'row mt-2'<'col-md-5'i><'col-md-7'p>>",
+
+      buttons: [
+        {
+          extend: 'excelHtml5',
+          text: 'Download Transaction Report',
+          className: 'btn btn-success btn-sm ms-2',
+          title: 'Transaction_Report' + new Date().toISOString().slice(0, 10),
+        }
+      ],
+
+      pageLength: 10,
+      lengthMenu: [10, 25, 50, 100],
+      ordering: true,
+      responsive: false,
+      autoWidth: false
+
+
+    });
+
+
+
+  });
+
+</script>
+
+<!-- Date Validation -->
+<script>
+  document.getElementById('reportForm')?.addEventListener('submit', function (e) {
+    const startDate = document.querySelector('input[name="start_date"]')?.value;
+    const endDate = document.querySelector('input[name="end_date"]')?.value;
+
+    if (!startDate || !endDate) {
+      e.preventDefault();
+      alert('Please select both From and To dates.');
+      return;
+    }
+
+    if (startDate > endDate) {
+      e.preventDefault();
+      alert('From date cannot be later than To date.');
+    }
+  });
+
+</script>
+
+
+{% endblock %}

@@ -84,6 +84,16 @@ urlpatterns = [
     #---------------------------------------Admin Change Password------------------------------------------
      path('change_password/', views.change_password, name='change_password'),
 
+    #-------/////////////----------------Old Report URL's Till 2024------------////////////-------------
+
+    #-----------------------------------------Old Booking Report----------------------------------------
+     path('old_booking_report/', views.old_booking_report, name='old_booking_report'),
+
+    #-----------------------------------------Old Transaction Report----------------------------------------
+     path('old_transaction_report/', views.old_transaction_report, name='old_transaction_report'),
+
+    #-----------------------------------------Old Online CCD Report----------------------------------------
+     path('old_online_ccd_reports/', views.old_online_ccd_reports, name='old_online_ccd_reports'),
     
 
 
