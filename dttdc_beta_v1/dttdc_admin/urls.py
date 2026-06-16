@@ -94,7 +94,13 @@ urlpatterns = [
 
     #-----------------------------------------Old Online CCD Report----------------------------------------
      path('old_online_ccd_reports/', views.old_online_ccd_reports, name='old_online_ccd_reports'),
-    
+      
+
+    path(
+    "get-tours-by-category/",
+    views.get_tours_by_category,
+    name="get_tours_by_category"
+)
 
 
 ]

@@ -25,21 +25,28 @@
           Enter Date:
         </div>
 
-        <div class="col-lg-4 col-md-6">
+        <div class="col-lg-3 col-md-6">
           <label class="form-label small mb-0">From</label>
           <input type="date" name="start_date" class="form-control" value="{{ start_date }}">
         </div>
 
-        <div class="col-lg-4 col-md-6">
+        <div class="col-lg-3 col-md-6">
           <label class="form-label small mb-0">To</label>
           <input type="date" name="end_date" class="form-control" value="{{ end_date }}">
         </div>
 
-        <div class="col-lg-2">
-          <button type="submit" class="btn btn-primary w-100">
+        <div class="col-md-3">
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary flex-fill">
             Generate Report
-          </button>
-        </div>
+        </button>
+
+        <a href="{% url 'ticket_cancellation_requests' %}"
+           class="btn btn-danger flex-fill">
+            Reset
+        </a>
+    </div>
+</div>
 
       </div>
     </div>

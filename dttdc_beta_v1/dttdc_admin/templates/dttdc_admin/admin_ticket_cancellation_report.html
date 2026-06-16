@@ -40,9 +40,9 @@
     <div class="row align-items-end g-2 mb-3">
 
 
-      <div class="col-md-3">
+      <div class="col-md-2">
         <label class="form-label small">Select Category<span class="text-danger">*</span></label>
-        <select name="category" class="form-select">
+        <select name="category" id="category" class="form-select">
   <option value="">Select Category</option>
   {% for cat in categories %}
     <option value="{{ cat.id }}"
@@ -53,9 +53,9 @@
 </select>
       </div>
 
-      <div class="col-md-3">
+      <div class="col-md-2">
         <label class="form-label small">Select Tour<span class="text-danger">*</span></label>
-        <select name="tour" class="form-select">
+        <select name="tour" id="tour" class="form-select">
   <option value="">Select Tour</option>
   {% for t in tours %}
     <option value="{{ t.id }}"
@@ -93,9 +93,19 @@
       </div> 
     
       
-      <div class="col-md-2">
-        <button class="btn btn-primary w-100 ">Generate Report</button>
-      </div>
+      <div class="col-lg-4 col-md-12">
+          <label class="form-label small mb-1">&nbsp;</label>
+              <div class="d-flex gap-2">
+                  <button type="submit" class="btn btn-primary flex-fill">
+                      Generate Report
+                  </button>
+
+                  <a href="{% url 'admin_ticket_cancellation_report' %}"
+                    class="btn btn-danger flex-fill">
+                      Reset
+                  </a>
+              </div>
+        </div>
     </div>
   </div>
   </form>
@@ -108,29 +118,37 @@
       <div class="row align-items-end g-3">
 
         <div class="col-lg-2 fw-semibold">
-          Enter Date:
+          Enter User Cancellation Date:
         </div>
 
-        <div class="col-lg-4 col-md-6">
+        <div class="col-lg-3 col-md-6">
           <label class="form-label small">From</label>
-          <input type="date"
+          <input type="date"id="start_date"
                  name="start_date"
                  class="form-control"
                  value="{{ start_date }}">
         </div>
 
-        <div class="col-lg-4 col-md-6">
+        <div class="col-lg-3 col-md-6">
           <label class="form-label small">To</label>
-          <input type="date"
+          <input type="date"id="end_date"
                  name="end_date"
                  class="form-control"
                  value="{{ end_date }}">
         </div>
 
-        <div class="col-lg-2">
-          <button class="btn btn-primary w-100">
-            Generate Report
-          </button>
+        <div class="col-lg-4 col-md-12">
+          <label class="form-label small mb-1">&nbsp;</label>
+              <div class="d-flex gap-2">
+                  <button type="submit" class="btn btn-primary flex-fill">
+                      Generate Report
+                  </button>
+
+                  <a href="{% url 'admin_ticket_cancellation_report' %}"
+                    class="btn btn-danger flex-fill">
+                      Reset
+                  </a>
+              </div>
         </div>
 
       </div>
@@ -223,13 +241,6 @@
 
 </tr>
 
-
-{% empty %}
-<tr>
-  <td colspan="9" class="text-center text-muted">
-    No cancellation records found.
-  </td>
-</tr>
 {% endfor %}
 
 </tbody>
@@ -277,6 +288,10 @@
 $(document).ready(function () {
 
   $('#cancellationReport').DataTable({
+
+    language: {
+      emptyTable: "No records found."
+    },
     dom:
       "<'row mb-2'<'col-md-6'l><'col-md-6 d-flex justify-content-end align-items-center'fB>>" +
   "<'row'<'col-12'tr>>" +
@@ -347,5 +362,69 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 </script>
+<script>
+$(document).ready(function () {
 
+    $("#category").on("change", function () {
+
+        var categoryId = $(this).val();
+
+        $("#tour").html(
+            '<option value="">Select Tour</option>'
+        );
+
+        if (!categoryId) {
+            return;
+        }
+
+        $.ajax({
+            url: "{% url 'get_tours_by_category' %}",
+            type: "GET",
+            data: {
+                category_id: categoryId
+            },
+            success: function (data) {
+
+                $.each(data, function (index, tour) {
+
+                    $("#tour").append(
+                        '<option value="' + tour.id + '">' +
+                        tour.tour_name +
+                        '</option>'
+                    );
+
+                });
+
+            }
+        });
+
+    });
+
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const form = document.getElementById("feedbackForm");
+    const startDate = document.getElementById("start_date");
+    const endDate = document.getElementById("end_date");
+
+    form.addEventListener("submit", function (e) {
+
+        if (!startDate.value || !endDate.value) {
+            e.preventDefault();
+            alert("Both Start Date and End Date are required.");
+            return;
+        }
+
+        if (new Date(startDate.value) > new Date(endDate.value)) {
+            e.preventDefault();
+            alert("End Date cannot be earlier than Start Date.");
+            return;
+        }
+    });
+
+});
+</script>
 {% endblock %}

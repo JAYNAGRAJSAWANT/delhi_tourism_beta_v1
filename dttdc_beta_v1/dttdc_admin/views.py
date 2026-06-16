@@ -936,6 +936,8 @@ def admin_ticket_cancellation_requests(request):
     start_date = request.GET.get("start_date")
     end_date = request.GET.get("end_date")
 
+    
+
     booking_list = (
         DTTDCTourBooking.objects
         .select_related("dttdc_tour", "cancellation", "user_details")
@@ -943,14 +945,25 @@ def admin_ticket_cancellation_requests(request):
         .order_by("-cancellation__cancellation_date")
     )
 
-    # ✅ Apply date filter
-    if start_date and end_date:
-        start_date = parse_date(start_date)
-        end_date = parse_date(end_date)
+    print("START:", start_date)
+    print("END:", end_date)
 
-        booking_list = booking_list.filter(
-            cancellation__cancellation_date__date__range=(start_date, end_date)
+    for booking in booking_list:
+        print(
+            booking.id,
+            booking.cancellation.cancellation_date
         )
+
+    #  Apply date filter
+    if start_date and end_date:
+        booking_list = booking_list.extra(
+            where=[
+                "DATE(ebooking_dttdctourcancellation.cancellation_date) >= %s",
+                "DATE(ebooking_dttdctourcancellation.cancellation_date) <= %s"
+            ],
+            params=[start_date, end_date]
+        )
+        print("COUNT AFTER FILTER:", booking_list.count())
 
     return render(
         request,
@@ -1106,10 +1119,10 @@ def admin_transaction_report(request):
         booking_date__lte=f"{end_date} 23:59:59"
     )
 
-    print("START:", start_obj)
-    print("END:", end_obj)
-    print("COUNT:", bookings.count())
-    print("FILTERED COUNT:", bookings.count())
+        print("START:", start_obj)
+        print("END:", end_obj)
+        print("COUNT:", bookings.count())
+        print("FILTERED COUNT:", bookings.count())
 
     for b in bookings:
      print(
@@ -1164,6 +1177,11 @@ def admin_ticket_cancellation_report(request):
     start_date = request.GET.get("start_date")
     end_date = request.GET.get("end_date")
 
+    print("REQUEST GET:", request.GET)
+    print("START:", start_date)
+    print("END:", end_date)
+    
+
     # -------- BASE QUERY --------
     booking_list = (
         DTTDCTourBooking.objects
@@ -1172,37 +1190,84 @@ def admin_ticket_cancellation_report(request):
         .filter(cancellation__isnull=False)
         .order_by("-cancellation__cancellation_date")
     )
+    print("COUNT BEFORE:", booking_list.count())
+
+    
+
+
 
     # -------- FILTER: CATEGORY --------
     if category_id:
         booking_list = booking_list.filter(
             dttdc_tour__tour_category_id=category_id
         )
+        print("After category:", booking_list.count())
 
     # -------- FILTER: TOUR --------
     if tour_id:
         booking_list = booking_list.filter(
             dttdc_tour_id=tour_id
         )
+        print("After tour:", booking_list.count())
+
 
     # -------- FILTER: YEAR --------
     if year:
         booking_list = booking_list.filter(
             cancellation__cancellation_date__year=year
         )
+        print("After year:", booking_list.count())
+
+        print(
+    booking_list.values(
+        "id",
+        "cancellation__cancellation_date"
+    )
+)
 
     # -------- FILTER: MONTH --------
     if month:
-        booking_list = booking_list.filter(
-            cancellation__cancellation_date__month=month
+        booking_list = booking_list.annotate(
+            cancel_month=RawSQL(
+                "MONTH(ebooking_dttdctourcancellation.cancellation_date)",
+                []
+            )
+        ).filter(
+            cancel_month=int(month)
         )
+
+        print(
+    booking_list.values_list(
+        "cancellation__cancellation_date",
+        flat=True
+    )
+)
 
     # -------- DATE RANGE FILTER --------
+    print(
+    DTTDCTourCancellation.objects.values_list(
+        "cancellation_date",
+        flat=True
+    )
+)
     if start_date and end_date:
-        booking_list = booking_list.filter(
-            cancellation__cancellation_date__date__range=[start_date, end_date]
+
+        start_dt = timezone.make_aware(
+            datetime.strptime(start_date, "%Y-%m-%d")
         )
 
+        end_dt = timezone.make_aware(
+            datetime.strptime(end_date, "%Y-%m-%d") + timedelta(days=1)
+        )
+
+        booking_list = booking_list.filter(
+            cancellation__cancellation_date__gte=start_dt,
+            cancellation__cancellation_date__lt=end_dt
+        )
+
+        print("After date filter:", booking_list.count())
+
+     
     # -------- YOUR LOGIC (DO NOT SUM, TAKE FIRST) --------
     total_amount = 0
 
@@ -1212,11 +1277,16 @@ def admin_ticket_cancellation_report(request):
         else:
          booking.total_refund = 0
 
-         total_amount += booking.total_refund
+        total_amount += booking.total_refund
 
     # -------- DROPDOWN DATA --------
     categories = DTTDCTourCategory.objects.all()
-    tours = DTTDCTour.objects.all()
+    if category_id:
+      tours = DTTDCTour.objects.filter(
+        tour_category_id=category_id
+    )
+    else:
+     tours = DTTDCTour.objects.none()
 
     years = (
     DTTDCTourCancellation.objects
@@ -1237,6 +1307,16 @@ def admin_ticket_cancellation_report(request):
         (7, "July"), (8, "August"), (9, "September"),
         (10, "October"), (11, "November"), (12, "December"),
     ]
+
+    for booking in booking_list:
+        print(
+            "Booking:",
+            booking.id,
+            "Cancellation Date:",
+            booking.cancellation.cancellation_date,
+            "Month:",
+            booking.cancellation.cancellation_date.month
+        )
 
     return render(
         request,
@@ -1641,3 +1721,14 @@ def old_online_ccd_reports(request):
             "booking_id": booking_id,
         }
     )
+
+
+@admin_jwt_required
+def get_tours_by_category(request):
+    category_id = request.GET.get("category_id")
+
+    tours = DTTDCTour.objects.filter(
+        tour_category_id=category_id
+    ).values("id", "tour_name")
+
+    return JsonResponse(list(tours), safe=False)
